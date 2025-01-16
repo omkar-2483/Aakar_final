@@ -135,7 +135,6 @@ const MyStage = () => {
             </button>
           </div>
         </section>
-
         <div className="formDiv">
           <h2>Stage details</h2>
           <div className="infoDiv">
