@@ -665,3 +665,109 @@ LOCK TABLES `ticket_title` WRITE;
 INSERT INTO `ticket_title` VALUES (1,1,'Software Not Responding'),(2,1,'Application Crashes on Startup'),(3,2,'Internet Connectivity Problem'),(4,2,'Cannot Connect to the VPN'),(5,3,'Leave Application Not Processing'),(6,3,'Unable to Submit Leave Request'),(8,4,'Payroll Error in System'),(9,7,'Bug in Software Update'),(10,7,'Unexpected Error During Operation'),(11,1,'testing testing');
 /*!40000 ALTER TABLE `ticket_title` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+
+
+-- Create Project Table
+CREATE TABLE `project` (
+  `projectNumber` int NOT NULL,
+  `companyName` varchar(255) NOT NULL,
+  `dieName` varchar(255) NOT NULL,
+  `dieNumber` varchar(11) NOT NULL,
+  `projectStatus` varchar(255) NOT NULL,
+  `startDate` date NOT NULL,
+  `endDate` date NOT NULL,
+  `projectType` varchar(255) NOT NULL,
+  `projectPOLink` varchar(255) NOT NULL,
+  `projectDesignDocLink` varchar(255) NOT NULL,
+  `projectCreatedBy` int DEFAULT NULL,
+  `updateReason` text,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `historyOf` int DEFAULT NULL,
+  `progress` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`projectNumber`),
+  KEY `projectCreatedByForeign` (`projectCreatedBy`),
+  KEY `historyOfForeign` (`historyOf`),
+  CONSTRAINT `historyOfForeign` FOREIGN KEY (`historyOf`) REFERENCES `project` (`projectNumber`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `projectCreatedByForeign` FOREIGN KEY (`projectCreatedBy`) REFERENCES `employee` (`employeeId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+DROP TABLE IF EXISTS `stage`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `stage` (
+  `stageId` int NOT NULL AUTO_INCREMENT,
+  `projectNumber` int NOT NULL,
+  `stageName` varchar(255)   NOT NULL,
+  `startDate` date NOT NULL,
+  `endDate` date NOT NULL,
+  `owner` int DEFAULT NULL,
+  `machine` varchar(255)   NOT NULL,
+  `duration` int NOT NULL,
+  `seqPrevStage` int DEFAULT NULL,
+  `createdBy` int DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `historyOf` int DEFAULT NULL,
+  `updateReason` text  ,
+  `progress` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`stageId`),
+  KEY `projectNumberForeign` (`projectNumber`),
+  KEY `seqPrevStageForeign` (`seqPrevStage`),
+  KEY `createdByForeign` (`createdBy`),
+  KEY `ownerForeign` (`owner`),
+  CONSTRAINT `createdByForeign` FOREIGN KEY (`createdBy`) REFERENCES `employee` (`employeeId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `ownerForeign` FOREIGN KEY (`owner`) REFERENCES `employee` (`employeeId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `projectNumberForeign` FOREIGN KEY (`projectNumber`) REFERENCES `project` (`projectNumber`),
+  CONSTRAINT `seqPrevStageForeign` FOREIGN KEY (`seqPrevStage`) REFERENCES `stage` (`stageId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=37767 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `stage`
+--
+
+LOCK TABLES `stage` WRITE;
+/*!40000 ALTER TABLE `stage` DISABLE KEYS */;
+INSERT INTO `stage` VALUES (37758,1,'Stage 1','2024-08-20','2024-08-22',38,'machine1',2,NULL,38,'2025-01-15 17:15:51',NULL,NULL,80),(37759,1,'Stage2','2024-08-22','2024-08-24',38,'machine1',2,37758,38,'2025-01-15 17:15:51',NULL,NULL,60),(37761,1,'stage 3','2024-09-27','2024-09-30',38,'machine 3',3,37758,38,'2025-01-15 17:26:06',37760,'machine changed',60),(37762,1,'stage 3','2024-09-27','2024-09-30',38,'machine 3',3,37758,38,'2025-01-15 17:27:12',37760,'machine changed',60),(37763,1,'stage 3','2024-09-27','2024-09-30',38,'machine 3',3,37758,38,'2025-01-15 17:29:16',37760,'machine changed',60),(37764,1,'stage 3','2024-09-27','2024-09-30',38,'machine 3',3,37758,38,'2025-01-15 17:30:12',37760,'machine changed',60);
+/*!40000 ALTER TABLE `stage` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `substage`
+--
+
+DROP TABLE IF EXISTS `substage`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `substage` (
+  `projectNumber` int NOT NULL,
+  `substageId` int NOT NULL AUTO_INCREMENT,
+  `stageId` int NOT NULL,
+  `stageName` varchar(255)   NOT NULL,
+  `startDate` date NOT NULL,
+  `endDate` date NOT NULL,
+  `owner` int NOT NULL,
+  `machine` varchar(255)   NOT NULL,
+  `duration` int NOT NULL,
+  `seqPrevStage` int DEFAULT NULL,
+  `createdBy` int NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `historyOf` int DEFAULT NULL,
+  `updateReason` text  ,
+  `progress` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`substageId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1256 DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `substage`
+--
+
+LOCK TABLES `substage` WRITE;
+/*!40000 ALTER TABLE `substage` DISABLE KEYS */;
+INSERT INTO `substage` VALUES (1,1255,37758,'stage 1','2024-09-28','2024-09-30',38,'machine 4',1,8,38,'2025-01-15 17:44:10',1254,'stage name changed',60);
+/*!40000 ALTER TABLE `substage` ENABLE KEYS */;
+UNLOCK TABLES;

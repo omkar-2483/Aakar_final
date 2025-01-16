@@ -1,0 +1,59 @@
+.allProject {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.info-section {
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  gap: 20px;
+}
+
+.info-tab {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tables {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-left: 10px;
+}
+
+.infoCard:hover {
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .info-section {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 580px) {
+  .info {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  .infocard {
+    gap: 10px;
+    width: 250px;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+  }
+}

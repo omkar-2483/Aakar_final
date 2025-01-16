@@ -1,49 +1,48 @@
-import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
+import express from 'express'
+import cors from 'cors'
+import bodyParser from 'body-parser'
 
 // Import route modules using ES module syntax (all with `import`)
-import attendanceRoutes from "../controllers/attendance.js";
-import departmentRoutes from "../controllers/departments.js";
-import employeeRoutes from "../controllers/employees.js";
-import gradeRoutes from "../controllers/grade.js";
-import managerGiveTrainingRoutes from "../controllers/managerGiveTraining.js";
-import managerHomeRoutes from "../controllers/managerHome.js";
-import sessionRoutes from "../controllers/sessions.js";
-import skillRoutes from "../controllers/skills.js";
-import trainerRoutes from "../controllers/trainer.js";
-import trainingRoutes from "../controllers/trainings.js";
-import updateSkillRoutes from "../controllers/updateSkill.js";
+import attendanceRoutes from '../controllers/attendance.js'
+import departmentRoutes from '../controllers/departments.js'
+import employeeRoutes from '../controllers/employees.js'
+import gradeRoutes from '../controllers/grade.js'
+import managerGiveTrainingRoutes from '../controllers/managerGiveTraining.js'
+import managerHomeRoutes from '../controllers/managerHome.js'
+import sessionRoutes from '../controllers/sessions.js'
+import skillRoutes from '../controllers/skills.js'
+import trainerRoutes from '../controllers/trainer.js'
+import trainingRoutes from '../controllers/trainings.js'
+import updateSkillRoutes from '../controllers/updateSkill.js'
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(bodyParser.json());
-
+const app = express()
+app.use(cors())
+app.use(express.json())
+app.use(bodyParser.json())
 
 // Use route modules
-app.use(attendanceRoutes);
-app.use(departmentRoutes);
-app.use(employeeRoutes);
-app.use(gradeRoutes);
-app.use(managerGiveTrainingRoutes);
-app.use(managerHomeRoutes);
-app.use(sessionRoutes);
-app.use(skillRoutes);
-app.use(trainerRoutes);
-app.use(trainingRoutes);
-app.use(updateSkillRoutes);
+app.use(attendanceRoutes)
+app.use(departmentRoutes)
+app.use(employeeRoutes)
+app.use(gradeRoutes)
+app.use(managerGiveTrainingRoutes)
+app.use(managerHomeRoutes)
+app.use(sessionRoutes)
+app.use(skillRoutes)
+app.use(trainerRoutes)
+app.use(trainingRoutes)
+app.use(updateSkillRoutes)
 
-export default app;
+export default app
 
 // app.get('/get-skills-by-department/:departmentId', (req, res) => {
 //   const departmentId = req.params.departmentId;
 
 //   const query = `
-//     SELECT skillId, skillName 
-//     FROM skill 
+//     SELECT skillId, skillName
+//     FROM skill
 //     WHERE departmentId = ?`;
-  
+
 //   connection.query(query, [departmentId], (err, results) => {
 //     if (err) {
 //       console.error('Error fetching skills:', err);
@@ -87,7 +86,7 @@ export default app;
 
 //   // SQL query to get all trainings for the department, with at least one selected skill
 //   const query = `
-//     SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, 
+//     SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate,
 //       GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills, e.employeeName AS trainerName
 //     FROM training t
 //     INNER JOIN trainingSkills ts ON ts.trainingId = t.trainingId
@@ -119,7 +118,7 @@ export default app;
 // // Trainings where we can send an employees
 // app.get('/department-eligible-for-training/:departmentId',(req,res)=>{
 //   const departmentID = req.params.departmentId;
-//   const query = `SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, 
+//   const query = `SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate,
 //     GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills, e.employeeName as trainerName
 //     FROM training t
 //     INNER JOIN trainingSkills ts ON ts.trainingId = t.trainingId
@@ -127,7 +126,7 @@ export default app;
 //     INNER JOIN skill s ON s.skillId = ts.skillId
 //     WHERE s.departmentId = ?
 //     GROUP BY t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate;`
-    
+
 //   connection.query(query,[departmentID],(err,result)=>{
 //     if(err){
 //       console.error("Failed to fetch eligible department training")
