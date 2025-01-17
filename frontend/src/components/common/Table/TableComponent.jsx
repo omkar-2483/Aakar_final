@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import {
+  TextField,
   Table,
   TableBody,
   TableCell,
@@ -10,6 +11,8 @@ import {
   Collapse,
   Typography,
   Box,
+  Menu,
+  MenuItem,
   TablePagination,
   TableSortLabel,
   IconButton,
@@ -35,6 +38,12 @@ import {
   deleteSubStage,
   getHistorySubStagesBySubStageId,
 } from '../../../features/subStageSlice'
+import downloadasexcel from '../../../assets/downlaodasexcel.svg'
+import downloadaspdf from '../../../assets/downlaodaspdf.svg'
+import { jsPDF } from 'jspdf'
+import 'jspdf-autotable'
+import * as XLSX from 'xlsx'
+import { FiDownload } from 'react-icons/fi'
 
 const TableComponent = ({
   whose,
@@ -51,6 +60,7 @@ const TableComponent = ({
   ]
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [order, setOrder] = useState('asc')
@@ -82,7 +92,33 @@ const TableComponent = ({
         return []
     }
   })
+  const [anchorEl, setAnchorEl] = useState(null)
+  const handleDownloadClick = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+  const exportToExcel = (rows) => {
+    const worksheet = XLSX.utils.json_to_sheet(rows)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
+    XLSX.writeFile(workbook, 'data.xlsx')
+  }
 
+  const exportToPDF = (rows) => {
+    const doc = new jsPDF()
+    doc.autoTable({
+      head: [columns.map((col) => col.label)],
+      body: rows.map((row) => columns.map((col) => row[col.id])),
+    })
+    doc.save('data.pdf')
+  }
+
+  const downloadFile = (type) => {
+    type === 'excel' ? exportToExcel(sortedRows) : exportToPDF(sortedRows)
+    handleClose()
+  }
   const historyData = useMemo(
     () =>
       historyData1.map((row) => ({
@@ -190,10 +226,19 @@ const TableComponent = ({
     },
     [dispatch]
   )
-
+  const filteredRows = useMemo(() => {
+    return rows.filter((row) =>
+      columns.some((column) => {
+        const value = row[column.id]
+        return value
+          ? value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          : false
+      })
+    )
+  }, [rows, columns, searchTerm])
   const sortedRows = useMemo(() => {
-    return stableSort(formattedRows, getComparator(order, orderBy))
-  }, [formattedRows, stableSort, getComparator, order, orderBy])
+    return stableSort(filteredRows, getComparator(order, orderBy))
+  }, [filteredRows, stableSort, getComparator, order, orderBy])
 
   const paginatedRows = useMemo(() => {
     return sortedRows.slice(
@@ -203,33 +248,58 @@ const TableComponent = ({
   }, [sortedRows, page, rowsPerPage])
 
   return (
-    <Paper className="table-container">
-      <TableContainer
-        className={`custom-scrollbar ${whose == 'project' ? 'project' : ''}`}
+    <>
+      <div
+        className="flex items-center justify-between"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
       >
-        <Table aria-label="data table">
-          <TableHead>
-            <TableRow>
-              <TableCell
-                align="left"
-                sx={{
-                  fontWeight: 'bold',
-                  backgroundColor: '#FFFFFF',
-                  color: '#002773',
-                  fontSize: '16px',
-                  textAlign: 'left',
-                  fontFamily: 'Inter, sans-serif',
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 1,
-                }}
-              >
-                Sr. No.
-              </TableCell>
-              {columns.map((column) => (
+        <Box p={2}>
+          <TextField
+            label="Search"
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)} // Update search term
+            placeholder="Search by any field..."
+            className="w-[250px]"
+          />
+        </Box>
+        <div>
+          <div
+            className="hover:cursor-pointer border-2 border-[#0061A1] rounded px-4 py-1.5 font-semibold text-[#0061A1] flex justify-between items-center gap-3"
+            onClick={handleDownloadClick}
+          >
+            <FiDownload />
+            <p>Download</p>
+          </div>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={() => downloadFile('excel')}>
+              <img src={downloadasexcel} alt="Excel" />
+              Excel
+            </MenuItem>
+            <MenuItem onClick={() => downloadFile('pdf')}>
+              <img src={downloadaspdf} alt="PDF" />
+              PDF
+            </MenuItem>
+          </Menu>
+        </div>
+      </div>
+      <Paper className="table-container">
+        <TableContainer
+          className={`custom-scrollbar ${whose == 'project' ? 'project' : ''}`}
+        >
+          <Table aria-label="data table">
+            <TableHead>
+              <TableRow>
                 <TableCell
-                  key={column.id}
-                  align={column.align}
+                  align="left"
                   sx={{
                     fontWeight: 'bold',
                     backgroundColor: '#FFFFFF',
@@ -241,248 +311,271 @@ const TableComponent = ({
                     top: 0,
                     zIndex: 1,
                   }}
-                  sortDirection={orderBy === column.id ? order : false}
                 >
-                  <TableSortLabel
-                    active={orderBy === column.id}
-                    direction={orderBy === column.id ? order : 'asc'}
-                    onClick={() => handleRequestSort(column.id)}
-                  >
-                    {column.label}
-                  </TableSortLabel>
+                  Sr. No.
                 </TableCell>
-              ))}
-              <TableCell
-                align="center"
-                sx={{
-                  fontWeight: 'bold',
-                  backgroundColor: '#FFFFFF',
-                  color: '#002773',
-                  fontSize: '16px',
-                  fontFamily: 'Inter, sans-serif',
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 1,
-                }}
-              />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedRows.map((row, index) => {
-              const rowIndex = page * rowsPerPage + index
-              return (
-                <React.Fragment key={row.id || rowIndex}>
-                  <TableRow
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    align={column.align}
                     sx={{
-                      cursor: linkBasePath ? 'pointer' : 'default',
-                      textDecoration: 'none',
+                      fontWeight: 'bold',
+                      backgroundColor: '#FFFFFF',
+                      color: '#002773',
+                      fontSize: '16px',
+                      textAlign: 'left',
+                      fontFamily: 'Inter, sans-serif',
+                      position: 'sticky',
+                      top: 0,
+                      zIndex: 1,
                     }}
-                    className="table-row"
+                    sortDirection={orderBy === column.id ? order : false}
                   >
-                    <TableCell
-                      component={linkBasePath ? Link : 'td'}
-                      to={
-                        linkBasePath
-                          ? `${linkBasePath}/${
-                              row.empId || row.deptId || row.projectNumber
-                            }
-                            }`
-                          : undefined
-                      }
-                      align="center"
+                    <TableSortLabel
+                      active={orderBy === column.id}
+                      direction={orderBy === column.id ? order : 'asc'}
+                      onClick={() => handleRequestSort(column.id)}
                     >
-                      {rowIndex + 1}
-                    </TableCell>
-                    {columns.map((column) => (
+                      {column.label}
+                    </TableSortLabel>
+                  </TableCell>
+                ))}
+                <TableCell
+                  align="center"
+                  sx={{
+                    fontWeight: 'bold',
+                    backgroundColor: '#FFFFFF',
+                    color: '#002773',
+                    fontSize: '16px',
+                    fontFamily: 'Inter, sans-serif',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1,
+                  }}
+                />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedRows.map((row, index) => {
+                const rowIndex = page * rowsPerPage + index
+                return (
+                  <React.Fragment key={row.id || rowIndex}>
+                    <TableRow
+                      sx={{
+                        cursor: linkBasePath ? 'pointer' : 'default',
+                        textDecoration: 'none',
+                      }}
+                      className="table-row"
+                    >
                       <TableCell
-                        key={column.id}
                         component={linkBasePath ? Link : 'td'}
                         to={
                           linkBasePath
                             ? `${linkBasePath}/${
-                                row.stageId || row.projectNumber
-                              }`
+                                row.empId || row.deptId || row.projectNumber
+                              }
+                            }`
                             : undefined
                         }
-                        align={column.align}
+                        align="center"
                       >
-                        <p
-                          className={
-                            row[column.id] === 'Completed'
-                              ? 'completed'
-                              : row[column.id] === 'Overdue'
-                              ? 'overdue'
-                              : row[column.id] === 'Pending'
-                              ? 'pending'
-                              : ''
-                          }
-                        >
-                          {row[column.id]}
-                        </p>
+                        {rowIndex + 1}
                       </TableCell>
-                    ))}
-                    <TableCell
-                      sx={{
-                        fontFamily: 'Inter, sans-serif',
-                        cursor: 'pointer',
-                        paddingLeft: '0',
-                        paddingRight: '0',
-                      }}
-                    >
-                      {(access[1] && whose == 'project') ||
-                      (access[5] && whose == 'stage')
-                        ? whose !== 'substage' && (
-                            <IconButton
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                navigate(
-                                  optionLinkBasePath
-                                    ? `${optionLinkBasePath}/${
-                                        row.stageId || row.projectNumber
-                                      }`
-                                    : undefined
-                                )
-                              }}
-                            >
-                              <FiEdit2 className="option-icon" />
-                            </IconButton>
-                          )
-                        : ''}
-                      {(access[3] && whose == 'project') ||
-                      (access[7] && whose == 'stage') ||
-                      (access[9] && whose == 'substage') ? (
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleRowClick(rowIndex, row)
-                          }}
+                      {columns.map((column) => (
+                        <TableCell
+                          key={column.id}
+                          component={linkBasePath ? Link : 'td'}
+                          to={
+                            linkBasePath
+                              ? `${linkBasePath}/${
+                                  row.stageId || row.projectNumber
+                                }`
+                              : undefined
+                          }
+                          align={column.align}
                         >
-                          <FaRegClock className="option-icon" />
-                        </IconButton>
-                      ) : (
-                        ''
-                      )}
-                      {(access[2] && whose == 'project') ||
-                      (access[6] && whose == 'stage') ||
-                      (access[8] && whose == 'substage') ? (
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDelete(row)
-                          }}
-                        >
-                          <RiDeleteBinLine className="option-icon" />
-                        </IconButton>
-                      ) : (
-                        ''
-                      )}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className="historyOfStages">
-                    <TableCell
-                      style={{ paddingBottom: 0, paddingTop: 0 }}
-                      colSpan={columns.length + 2}
-                    >
-                      <Collapse
-                        in={openIndex === rowIndex} // Use the single openIndex
-                        timeout="auto"
-                        unmountOnExit
+                          <p
+                            className={
+                              row[column.id] === 'Completed'
+                                ? 'completed'
+                                : row[column.id] === 'Overdue'
+                                ? 'overdue'
+                                : row[column.id] === 'Pending'
+                                ? 'pending'
+                                : ''
+                            }
+                          >
+                            {row[column.id]}
+                          </p>
+                        </TableCell>
+                      ))}
+                      <TableCell
+                        sx={{
+                          fontFamily: 'Inter, sans-serif',
+                          cursor: 'pointer',
+                          paddingLeft: '0',
+                          paddingRight: '0',
+                        }}
                       >
-                        <Box margin={1}>
-                          <Typography variant="h6" gutterBottom>
-                            {whose === 'substage'
-                              ? 'Substage '
-                              : whose === 'stage'
-                              ? 'Stage '
-                              : whose === 'project'
-                              ? 'Project '
-                              : ''}{' '}
-                            History
-                          </Typography>
-                          {historyData &&
-                          historyData.filter((data) =>
-                            whose == 'project'
-                              ? data.historyOf == row.projectNumber
-                              : whose == 'stage'
-                              ? data.historyOf == row.stageId
-                              : whose == 'substage'
-                              ? data.historyOf == row.substageId
-                              : ''
-                          ).length > 0 ? (
-                            <table className="history-table">
-                              <thead>
-                                <tr>
-                                  {columns
-                                    .filter(
-                                      (column) => column.id !== 'projectNumber'
-                                    )
-                                    .map((column) => (
-                                      <td key={column.id} align={column.align}>
-                                        {column.label}
-                                      </td>
-                                    ))}
-                                  <td>Update Reason</td>
-                                  <td>Updated At</td>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {historyData
-                                  .filter((data) =>
-                                    whose == 'project'
-                                      ? data.historyOf == row.projectNumber
-                                      : whose == 'stage'
-                                      ? data.historyOf == row.stageId
-                                      : whose == 'substage'
-                                      ? data.historyOf == row.substageId
-                                      : ''
+                        {(access[1] && whose == 'project') ||
+                        (access[5] && whose == 'stage')
+                          ? whose !== 'substage' && (
+                              <IconButton
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  navigate(
+                                    optionLinkBasePath
+                                      ? `${optionLinkBasePath}/${
+                                          row.stageId || row.projectNumber
+                                        }`
+                                      : undefined
                                   )
-                                  .map((historyRow, historyIndex) => (
-                                    <tr key={historyRow.id || historyIndex}>
-                                      {columns
-                                        .filter(
-                                          (column) =>
-                                            column.id !== 'projectNumber'
-                                        )
-                                        .map((column) => (
-                                          <td
-                                            key={column.id}
-                                            align={column.align}
-                                          >
-                                            {historyRow[column.id]}
-                                          </td>
-                                        ))}
-                                      <td>{historyRow.updateReason}</td>
-                                      <td>
-                                        {formatDate(historyRow.timestamp)},{' '}
-                                        {formatTimeDate(historyRow.timestamp)}
-                                      </td>
-                                    </tr>
-                                  ))}
-                              </tbody>
-                            </table>
-                          ) : (
-                            <Typography>No history found.</Typography>
-                          )}
-                        </Box>
-                      </Collapse>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 100]}
-        component="div"
-        count={formattedRows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-    </Paper>
+                                }}
+                              >
+                                <FiEdit2 className="option-icon" />
+                              </IconButton>
+                            )
+                          : ''}
+                        {(access[3] && whose == 'project') ||
+                        (access[7] && whose == 'stage') ||
+                        (access[9] && whose == 'substage') ? (
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleRowClick(rowIndex, row)
+                            }}
+                          >
+                            <FaRegClock className="option-icon" />
+                          </IconButton>
+                        ) : (
+                          ''
+                        )}
+                        {(access[2] && whose == 'project') ||
+                        (access[6] && whose == 'stage') ||
+                        (access[8] && whose == 'substage') ? (
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDelete(row)
+                            }}
+                          >
+                            <RiDeleteBinLine className="option-icon" />
+                          </IconButton>
+                        ) : (
+                          ''
+                        )}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow className="historyOfStages">
+                      <TableCell
+                        style={{ paddingBottom: 0, paddingTop: 0 }}
+                        colSpan={columns.length + 2}
+                      >
+                        <Collapse
+                          in={openIndex === rowIndex} // Use the single openIndex
+                          timeout="auto"
+                          unmountOnExit
+                        >
+                          <Box margin={1}>
+                            <Typography variant="h6" gutterBottom>
+                              {whose === 'substage'
+                                ? 'Substage '
+                                : whose === 'stage'
+                                ? 'Stage '
+                                : whose === 'project'
+                                ? 'Project '
+                                : ''}{' '}
+                              History
+                            </Typography>
+                            {historyData &&
+                            historyData.filter((data) =>
+                              whose == 'project'
+                                ? data.historyOf == row.projectNumber
+                                : whose == 'stage'
+                                ? data.historyOf == row.stageId
+                                : whose == 'substage'
+                                ? data.historyOf == row.substageId
+                                : ''
+                            ).length > 0 ? (
+                              <table className="history-table">
+                                <thead>
+                                  <tr>
+                                    {columns
+                                      .filter(
+                                        (column) =>
+                                          column.id !== 'projectNumber'
+                                      )
+                                      .map((column) => (
+                                        <td
+                                          key={column.id}
+                                          align={column.align}
+                                        >
+                                          {column.label}
+                                        </td>
+                                      ))}
+                                    <td>Update Reason</td>
+                                    <td>Updated At</td>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {historyData
+                                    .filter((data) =>
+                                      whose == 'project'
+                                        ? data.historyOf == row.projectNumber
+                                        : whose == 'stage'
+                                        ? data.historyOf == row.stageId
+                                        : whose == 'substage'
+                                        ? data.historyOf == row.substageId
+                                        : ''
+                                    )
+                                    .map((historyRow, historyIndex) => (
+                                      <tr key={historyRow.id || historyIndex}>
+                                        {columns
+                                          .filter(
+                                            (column) =>
+                                              column.id !== 'projectNumber'
+                                          )
+                                          .map((column) => (
+                                            <td
+                                              key={column.id}
+                                              align={column.align}
+                                            >
+                                              {historyRow[column.id]}
+                                            </td>
+                                          ))}
+                                        <td>{historyRow.updateReason}</td>
+                                        <td>
+                                          {formatDate(historyRow.timestamp)},{' '}
+                                          {formatTimeDate(historyRow.timestamp)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                </tbody>
+                              </table>
+                            ) : (
+                              <Typography>No history found.</Typography>
+                            )}
+                          </Box>
+                        </Collapse>
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 100]}
+          component="div"
+          count={filteredRows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper>
+    </>
   )
 }
 
