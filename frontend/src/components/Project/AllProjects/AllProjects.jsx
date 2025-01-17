@@ -98,7 +98,7 @@ const AllProjects = () => {
         <div className="info-tab">
           <div onClick={() => handleTabClick('all')}>
             <Infocard
-              icon={'<FiClipboard />'}
+              icon={'<TbSubtask />'}
               number={counts.all}
               text={'All Projects'}
               className={`infoCard ${selectedTab === 'all' ? 'selected' : ''}`}
