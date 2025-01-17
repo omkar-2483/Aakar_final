@@ -106,13 +106,13 @@ const Sidebar = () => {
       children: [
         {
           name: 'Create Ticket',
-          slug: '/create-ticket',
+          slug: '/createTicket',
           icon: 'BsTicket',
           access: TicketManagementAccess[2],
         },
         {
           name: 'View Tickets',
-          slug: '/view-tickets',
+          slug: '/tickettracking',
           icon: 'BsTicket',
           access: TicketManagementAccess[6],
         },

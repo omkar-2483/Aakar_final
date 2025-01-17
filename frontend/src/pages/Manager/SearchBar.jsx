@@ -276,9 +276,10 @@ const SearchBar = () => {
   };
 
   return (
-    <div className='content'>
-      <div className='assign-cls'>
-        <button className='assign' 
+    <div className='searchbar-content'>
+      {(gradeUpdate || checkboxUpdate) && (
+        <div className='searchbar-assign-cls'>
+        <button className='searchbar-assign' 
           onClick={handleSave} 
           disabled={disableAssign}
           style={{
@@ -288,8 +289,8 @@ const SearchBar = () => {
         >
           Assign
         </button>
-      </div>
-      <div className='button-bar'>
+      </div>)}
+      <div className='searchbar-button-bar'>
         <h1 className='search-bar-dept-name'>Department name: {departmentName}</h1>
         <GeneralSearchBar 
           options={departmentExpSkill}
@@ -297,6 +298,7 @@ const SearchBar = () => {
           isMultiSelect = {true}
           selectedValues={selectedSkills}
           setSelectedValues={setSelectedSkills}
+          label='Select skills'
         />
       </div>
     
@@ -312,7 +314,10 @@ const SearchBar = () => {
       {loading && <p>Loading...</p>}
       {error && <p>{error}</p>}
   
-      {data.length > 0 && (
+      {selectedSkills.length === 0 ? (
+        <p className='searchbar-no-data'>No data available!</p>
+      ) :
+      data.length > 0 && (
         <div className="table-containerr">
           <table>
             <thead>

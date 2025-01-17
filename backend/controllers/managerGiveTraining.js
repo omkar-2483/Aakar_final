@@ -277,7 +277,7 @@ router.get(`/get-department-needed-trainings/:departmentId`, (req, res) => {
   const departmentId = req.params.departmentId;
   const query = `
   SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, e.employeeName AS trainerName,t.trainerId ,
-  GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills ,GROUP_CONCAT(s.skillId SEPARATOR ', ') AS skillIds
+  GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills ,GROUP_CONCAT(s.skillId SEPARATOR ', ') AS skillIds, t.evaluationType
   FROM training t
   join trainingSkills ts on t.trainingId = ts.trainingId
   join skill s on s.skillId = ts.skillId
