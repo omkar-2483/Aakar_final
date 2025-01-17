@@ -10,6 +10,7 @@ const Infocard = ({ icon, number, text, className }) => {
   return (
     <div className={`infocard ${className}`}>
       {icon === `<TbSubtask />` && <TbSubtask size={40} fontWeight={300} />}
+      {icon === `<FiClipboard />` && <FiClipboard size={40} fontWeight={300} />}
       {icon === `<FiBell />` && <FiBell size={40} fontWeight={300} />}
       {icon === `<FiAlertCircle />` && (
         <FiAlertCircle size={40} fontWeight={300} />
