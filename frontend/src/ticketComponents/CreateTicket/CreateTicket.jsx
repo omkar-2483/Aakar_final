@@ -9,7 +9,7 @@ import BackButton from '../Backbutton/Backbutton.jsx';
 import axios from 'axios';
 import UserContext from '../context/UserContext.jsx';
 import Autocomplete from '@mui/material/Autocomplete';
-
+import './CreateTicket.css';
 function TicketForm() {
     const { user } = useContext(UserContext);
     const [title, setTitle] = useState('');
@@ -68,9 +68,25 @@ function TicketForm() {
         fetchIssueTypes();
     }, []);
 
+    // Add the handleClear function
+    const handleClear = () => {
+        setTitle('');
+        setDescription('');
+        setDetails('');
+        setDepartment('');
+        setIssueType('');
+        setPriority('low');
+        setStatus('open');
+        setAssignee('');
+        setAttachments([]);
+        setBasicSolutions([]);
+        setSolutionChecks([]);
+    };
+
+
     useEffect(() => {
         const updateIssueTypeAndDepartment = async () => {
-            if (title) {
+            if (title && ticketTitles.map(ticket => ticket.title).includes(title)) {
                 try {
                     const response = await axios.get(`http://localhost:3000/ticketTitles/ticket_titles/details_by_title/${title}`);
                     const data = response.data;
@@ -104,17 +120,18 @@ function TicketForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (!allChecked) {
             alert('Please try all basic solutions before submitting the ticket.');
             return;
         }
 
-        if(!title || !description || !details || !department || !issueType || !priority || !status ) {
+        if (!title || !description || !details || !department || !issueType || !priority || !status) {
+            console.log(title, description, details, department, issueType, priority, status);
             alert('Please fill in all required fields.');
             return;
         }
-    
+
         try {
             const formData = new FormData();
             formData.append('title', title);
@@ -127,18 +144,18 @@ function TicketForm() {
             formData.append('assignee', assignee);
             formData.append('employee_id', employeeId);
             formData.append('createdBy', employeeName);
-    
+
             // Append each file in the attachments array to formData under the same field name
             attachments.forEach((file) => {
                 formData.append('attachments', file); // Use 'attachments' consistently
             });
-    
+
             const response = await axios.post('http://localhost:3000/tickets', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-    
+
             alert('Ticket created successfully: ' + response.data.ticketId);
-    
+
             // Reset form fields
             setTitle('');
             setDescription('');
@@ -149,7 +166,7 @@ function TicketForm() {
             setStatus('open');
             setAssignee('');
             setAttachments([]);
-    
+
             setBasicSolutions([]);
             setSolutionChecks([]);
         } catch (error) {
@@ -157,7 +174,7 @@ function TicketForm() {
             alert('Error creating ticket');
         }
     };
-    
+
 
     const handleFileChange = (e) => {
         setAttachments([...attachments, ...Array.from(e.target.files)]);
@@ -172,11 +189,11 @@ function TicketForm() {
 
     return (
         <div className="content-container">
-            <div className="content">
+            <div className="ticketContent">
                 <BackButton title={"Create Ticket"} />
             </div>
 
-            <div className="content">
+            <div className="ticketContent">
                 <div className="ticket-form">
                     <Box sx={{ border: '1px solid #ccc', borderRadius: 2, padding: 2, boxShadow: 1, marginBottom: 2, width: '99%', marginTop: 2, marginLeft: 1 }}>
                         <Box
@@ -204,6 +221,40 @@ function TicketForm() {
                                     <Typography>{formattedDate}</Typography>
                                 </div>
                             </Box>
+
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 2,
+                                    width: '100%',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}
+                            >
+
+                                <Button
+                                    variant="outlined"
+                                    color="secondary"
+                                    onClick={handleClear}
+                                >
+                                    Clear All
+                                </Button>
+
+
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<Save />}
+                                    type="submit"
+                                >
+                                    Save Ticket
+                                </Button>
+
+
+                            </Box>
+
+
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -216,6 +267,10 @@ function TicketForm() {
                                     options={ticketTitles.map(ticket => ticket.title)}
                                     value={title}
                                     onChange={(event, newValue) => setTitle(newValue)}
+                                    onInputChange={(event, newInputValue) => {
+                                        setTitle(newInputValue); // Set the value when typing a custom input
+                                    }}
+                                    freeSolo
                                     renderInput={(params) => <TextField {...params} label="Ticket Title" variant="outlined" sx={{ width: '280px' }} />}
                                 />
 
@@ -232,6 +287,10 @@ function TicketForm() {
                                     options={issueTypes.map(issue => issue.issue)}
                                     value={issueType}
                                     onChange={(event, newValue) => setIssueType(newValue)}
+                                    onInputChange={(event, newInputValue) => {
+                                        setIssueType(newInputValue); // Set the value when typing a custom input
+                                    }}
+                                    freeSolo
                                     renderInput={(params) => <TextField {...params} label="Issue Type" variant="outlined" sx={{ width: '220px' }} />}
                                 />
 
@@ -295,20 +354,29 @@ function TicketForm() {
                                 )}
 
 
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    startIcon={<Save />}
-                                    type="submit"
-                                >
-                                    Save Ticket
-                                </Button>
+
+
                             </Box>
 
-                            <Box>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 2,
+                                    width: '100%',
+                                    justifyContent: 'flex-start',
+                                    alignItems: 'center'
+                                }}
+                            >
                                 <Typography variant="h6" gutterBottom>
                                     Basic Solutions
                                 </Typography>
+                            </Box>
+
+                            <Box>
+                                
+
+
                                 {basicSolutions.map((solution, index) => (
                                     <FormControlLabel
                                         key={index}

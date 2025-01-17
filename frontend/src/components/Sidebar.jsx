@@ -50,7 +50,7 @@ const Sidebar = () => {
   const HRManagementAccess = access[0]
   const ProjectManagementAccess = access[1]
   const TrainingManagementAccess = access[2]
-  const TicketManagementAccess = access[3]
+  const TicketManagementAccess = "11111111111111"
 
   const toggleSection = (section) => {
     setOpenSection((prev) => (prev === section ? null : section))
