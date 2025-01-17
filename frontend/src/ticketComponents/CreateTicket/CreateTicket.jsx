@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
-import { Button, FormControlLabel, Checkbox } from '@mui/material';
+import { IconButton, Button, FormControlLabel, Checkbox } from '@mui/material';
 import { Save } from '@mui/icons-material';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import BackButton from '../Backbutton/Backbutton.jsx';
@@ -10,6 +10,9 @@ import axios from 'axios';
 import UserContext from '../context/UserContext.jsx';
 import Autocomplete from '@mui/material/Autocomplete';
 import './CreateTicket.css';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+
 function TicketForm() {
     const { user } = useContext(UserContext);
     const [title, setTitle] = useState('');
@@ -186,6 +189,10 @@ function TicketForm() {
     const today = new Date();
     const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
     const formattedDate = today.toLocaleDateString('en-US', options);
+    const removeAttachment = (index) => {
+        setAttachments(attachments.filter((_, i) => i !== index));
+    };
+    
 
     return (
         <div className="content-container">
@@ -344,19 +351,20 @@ function TicketForm() {
                                         hidden
                                     />
                                 </Button>
-
-                                {attachments && (
-                                    <Typography>
-                                        {attachments.map((file, index) => (
-                                            <span key={index}>{file.name}{index < attachments.length - 1 ? ', ' : ''}</span>
-                                        ))}
-                                    </Typography>
-                                )}
-
-
-
-
-                            </Box>
+                                </Box>
+                                <Box>
+                                {attachments.map((attachment, index) => (
+                                    <Box key={index} display="flex" alignItems="center">
+                                    <Typography>{attachment.name}</Typography>
+                                    <IconButton onClick={() => removeAttachment(index)}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                    </Box>
+                                    ))}
+                                </Box>
+        
+    
+                            
 
                             <Box
                                 sx={{
@@ -372,6 +380,8 @@ function TicketForm() {
                                     Basic Solutions
                                 </Typography>
                             </Box>
+                            
+                            
 
                             <Box>
                                 

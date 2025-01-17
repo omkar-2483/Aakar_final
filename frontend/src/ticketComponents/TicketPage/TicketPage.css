@@ -4,11 +4,12 @@
 }
 
 /* General content block styles */
-.content {
+.ticketPageContent {
   flex: 1;
   padding: 16px;
   /* margin-bottom: 20px; */
   overflow-y: auto;
+  margin: 10px 0px 0px 0px;
 }
 
 /* Assignee functionality section */
