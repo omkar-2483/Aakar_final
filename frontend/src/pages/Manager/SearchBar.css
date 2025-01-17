@@ -160,20 +160,20 @@
   margin-top: 20px;
 }
 
-table {
+.searchbar-table-containerr table {
   width: 100%; 
   border-collapse: collapse;
   table-layout: auto; 
   margin-top: 5px;
 }
 
-table th, table td {
+.searchbar-table-containerr table th, table td {
   padding: 8px 12px;
   text-align: center;
   border: none;
 }
 
-table th {
+.searchbar-table-containerr table th {
   background-color: white;
   color: #333;
   border-bottom: 2px solid #ccc;
@@ -182,11 +182,11 @@ table th {
   font-size: 14px;
 }
 
-table td {
+.searchbar-table-containerr table td {
   border-bottom: 2px solid #e0e0e0;
 }
 
-table tr:hover {
+.searchbar-table-containerr table tr:hover {
   background-color: rgba(50, 173, 255, 0.05);
 }
 

@@ -318,7 +318,7 @@ const SearchBar = () => {
         <p className='searchbar-no-data'>No data available!</p>
       ) :
       data.length > 0 && (
-        <div className="table-containerr">
+        <div className="searchbar-table-containerr">
           <table>
             <thead>
               <tr>

@@ -58,7 +58,8 @@ router.get('/trainer-employee', (req, res) => {
           JOIN employeeDesignation ed ON e.employeeId = ed.employeeId
           WHERE es.skillId IN (${placeholdersSkill})
             AND es.grade = 4
-            AND ed.departmentId = ?
+            AND ed.departmentId = ? group by ed.employeeId
+            having count (DISTINCT es.skillId) = ${type3Skills.length}
         `;
         queryParams = [...type3Skills, departmentId];
       } else if (type1Skills.length > 0) {
