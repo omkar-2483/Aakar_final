@@ -96,7 +96,7 @@ tbody tr:hover {
 }
 
 .custom-scrollbar.project {
-  max-height: 60vh;
+  max-height: 50vh;
 }
 .history-table td {
   max-width: 250px;

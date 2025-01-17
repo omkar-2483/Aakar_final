@@ -250,7 +250,7 @@ const TableComponent = ({
   return (
     <>
       <div
-        className="flex items-center justify-between"
+        className="flex items-center justify-between w-[100%]"
         style={{
           display: 'flex',
           alignItems: 'center',
