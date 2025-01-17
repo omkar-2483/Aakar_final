@@ -58,7 +58,8 @@ router.get('/trainer-employee', (req, res) => {
           JOIN employeeDesignation ed ON e.employeeId = ed.employeeId
           WHERE es.skillId IN (${placeholdersSkill})
             AND es.grade = 4
-            AND ed.departmentId = ?
+            AND ed.departmentId = ? group by ed.employeeId
+            having count (DISTINCT es.skillId) = ${type3Skills.length}
         `;
         queryParams = [...type3Skills, departmentId];
       } else if (type1Skills.length > 0) {
@@ -277,7 +278,7 @@ router.get(`/get-department-needed-trainings/:departmentId`, (req, res) => {
   const departmentId = req.params.departmentId;
   const query = `
   SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, e.employeeName AS trainerName,t.trainerId ,
-  GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills ,GROUP_CONCAT(s.skillId SEPARATOR ', ') AS skillIds
+  GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills ,GROUP_CONCAT(s.skillId SEPARATOR ', ') AS skillIds, t.evaluationType
   FROM training t
   join trainingSkills ts on t.trainingId = ts.trainingId
   join skill s on s.skillId = ts.skillId

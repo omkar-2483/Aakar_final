@@ -288,6 +288,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
 
   const handleSaveTraining = async () => {
     console.log("New training:",newTraining);
+    console.log("Selected Skills :",selectedSkills)
     if (!newTraining.trainingTitle || !newTraining.trainerId || !newTraining.startTrainingDate || !newTraining.endTrainingDate) {
       toast.error('Please fill in all required fields!');
       return;
@@ -319,12 +320,14 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
           if (!confirmUpdate) return;
     
           const success = await updateTraining(editTrainingData?.trainingId, formattedTraining);
-          resetForm();
-          setIsEditing(false);
           onTrainingAdded(formattedTraining);
+          resetForm();
+
+          setIsEditing(false);
+          
         } else {
           toast.success('Training added successfully!');
-          onTrainingAdded(updateTraining);
+         // onTrainingAdded(updateTraining);
           try{
             const success = await addTraining(formattedTraining);
             console.log("Success:", success.trainingId);
@@ -332,6 +335,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
               ...formattedTraining,
               trainingId: success.trainingId,
             }
+            onTrainingAdded(updateTraining);
             resetForm();
           }catch{
             console.log("Error in adding training");
@@ -340,6 +344,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
     
         resetForm();
       } catch (error) {
+        console.log("DGYTYE F ",newTraining)
         console.error('Error saving training:', error);
         toast.error('Failed to save the training!');
       }

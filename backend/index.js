@@ -37,7 +37,7 @@ app.use(cookieParser())
 
 app.use(
   cors({
-    origin: 'http://localhost:5173', // Your frontend URL (adjust port if necessary)
+    origin: 'http://localhost:5174', // Your frontend URL (adjust port if necessary)
     credentials: true, // Allow credentials like cookies to be sent
   })
 )

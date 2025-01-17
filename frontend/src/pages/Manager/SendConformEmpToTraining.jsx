@@ -35,7 +35,7 @@ const SendConformEmpToTraining = () => {
     const Read = employeeAccess[14] === "1" ;
     const Update = employeeAccess[15] === "1" ;
     const Delete = employeeAccess[16] === "1";
-    const addTraining = employeeAccess[17] === "0";
+    const addTraining = employeeAccess[17] === "1";
 
     const formatDateToYYYYMMDD = (date) => {
         if (!date) return null;

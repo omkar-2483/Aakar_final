@@ -1,4 +1,4 @@
-.content {
+.searchbar-content {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -6,13 +6,13 @@
   top: 0;
 }
 
-.assign-cls{
+.searchbar-assign-cls{
   position: absolute; 
   margin-top: 0%; 
   margin-left: 85% !important;
 }
 
-.assign {
+.searchbar-assign {
   background-color: white;
   color: #0061A1;
   border: 2px solid #0061A1;
@@ -28,11 +28,11 @@
   right: 0;
 }
 
-.assign:hover {
+.searchbar-assign:hover {
   background-color: rgb(215, 245, 255);
 }
 
-.button-bar {
+.searchbar-button-bar {
   display:flex;
   justify-content: space-between;
   width: 85%; 
@@ -91,7 +91,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
 }
 
-.clear-button {
+.searchbar-clear-button {
   height: 40px;
   font-size: 12px;
   border: none;
@@ -106,7 +106,7 @@
   width: 80px;
 }
 
-.clear-button:hover {
+.searchbar-clear-button:hover {
   background-color: #c9302c; 
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
 }
@@ -136,7 +136,19 @@
   cursor: pointer;
 }
 
-.table-containerr {
+.searchbar-no-data{
+  font-size: 20px;
+  font-weight: bolder;
+  justify-self: center;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  align-items: center;
+  margin-left: 40%;
+}
+
+
+.searchbar-table-containerr {
   width: 85%;
   margin: 0 auto;
   padding: 20px;
@@ -148,20 +160,20 @@
   margin-top: 20px;
 }
 
-table {
+.searchbar-table-containerr table {
   width: 100%; 
   border-collapse: collapse;
   table-layout: auto; 
   margin-top: 5px;
 }
 
-table th, table td {
+.searchbar-table-containerr table th, table td {
   padding: 8px 12px;
   text-align: center;
   border: none;
 }
 
-table th {
+.searchbar-table-containerr table th {
   background-color: white;
   color: #333;
   border-bottom: 2px solid #ccc;
@@ -170,11 +182,11 @@ table th {
   font-size: 14px;
 }
 
-table td {
+.searchbar-table-containerr table td {
   border-bottom: 2px solid #e0e0e0;
 }
 
-table tr:hover {
+.searchbar-table-containerr table tr:hover {
   background-color: rgba(50, 173, 255, 0.05);
 }
 
