@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import Infocard from '../Infocard/Infocard.jsx'
+import Infocard from '../../Infocard/Infocard.jsx'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiPlusCircle } from 'react-icons/fi'
 import { useDispatch, useSelector } from 'react-redux'

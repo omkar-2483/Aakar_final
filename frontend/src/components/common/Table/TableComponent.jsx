@@ -299,18 +299,12 @@ const TableComponent = ({
             <TableHead>
               <TableRow>
                 <TableCell
-                  align="left"
-                  sx={{
+                  style={{
+                    color: '#0061A1',
                     fontWeight: 'bold',
-                    backgroundColor: '#FFFFFF',
-                    color: '#002773',
-                    fontSize: '16px',
                     textAlign: 'left',
-                    fontFamily: 'Inter, sans-serif',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 1,
                   }}
+                  align="left"
                 >
                   Sr. No.
                 </TableCell>
@@ -318,18 +312,11 @@ const TableComponent = ({
                   <TableCell
                     key={column.id}
                     align={column.align}
-                    sx={{
-                      fontWeight: 'bold',
-                      backgroundColor: '#FFFFFF',
-                      color: '#002773',
-                      fontSize: '16px',
-                      textAlign: 'left',
-                      fontFamily: 'Inter, sans-serif',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 1,
-                    }}
                     sortDirection={orderBy === column.id ? order : false}
+                    style={{
+                      color: '#0061A1', // Text color
+                      fontWeight: 'bold', // Makes it bold
+                    }}
                   >
                     <TableSortLabel
                       active={orderBy === column.id}
@@ -342,15 +329,9 @@ const TableComponent = ({
                 ))}
                 <TableCell
                   align="center"
-                  sx={{
-                    fontWeight: 'bold',
-                    backgroundColor: '#FFFFFF',
-                    color: '#002773',
-                    fontSize: '16px',
-                    fontFamily: 'Inter, sans-serif',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 1,
+                  style={{
+                    color: '#0061A1', // Text color
+                    fontWeight: 'bold', // Makes it bold
                   }}
                 />
               </TableRow>
@@ -362,12 +343,12 @@ const TableComponent = ({
                   <React.Fragment key={row.id || rowIndex}>
                     <TableRow
                       sx={{
-                        cursor: linkBasePath ? 'pointer' : 'default',
+                        cursor: 'pointer',
                         textDecoration: 'none',
                       }}
-                      className="table-row"
                     >
                       <TableCell
+                        align="left"
                         component={linkBasePath ? Link : 'td'}
                         to={
                           linkBasePath
@@ -377,7 +358,6 @@ const TableComponent = ({
                             }`
                             : undefined
                         }
-                        align="center"
                       >
                         {rowIndex + 1}
                       </TableCell>
@@ -406,6 +386,7 @@ const TableComponent = ({
                             }
                           >
                             {row[column.id]}
+                            {column.id == 'progress' ? '%' : ''}
                           </p>
                         </TableCell>
                       ))}
@@ -541,6 +522,10 @@ const TableComponent = ({
                                               align={column.align}
                                             >
                                               {historyRow[column.id]}
+
+                                              {column.id == 'progress'
+                                                ? '%'
+                                                : ''}
                                             </td>
                                           ))}
                                         <td>{historyRow.updateReason}</td>

@@ -7,7 +7,11 @@ export const getSubStagesByStageId = asyncHandler(async (req, res) => {
   // console.log(req.params)
 
   const stageId = req.params.id
-  const query = 'SELECT * FROM substage WHERE stageId = ?'
+  const query = `SELECT ss.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+FROM substage ss
+INNER JOIN employee eo ON ss.owner = eo.employeeId
+INNER JOIN employee cb ON ss.createdBy = cb.employeeId
+WHERE ss.stageId = ?;`
 
   db.query(query, [stageId], (err, data) => {
     if (err) {
@@ -37,8 +41,12 @@ export const getSubStagesByStageId = asyncHandler(async (req, res) => {
 export const getHistorySubStagesBySubStageId = asyncHandler(
   async (req, res) => {
     const subStageId = req.params.id
-    const query =
-      'SELECT * FROM substage WHERE historyOf = ? ORDER BY timestamp DESC'
+    const query = `SELECT ss.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+       FROM substage ss
+       INNER JOIN employee eo ON ss.owner = eo.employeeId
+       INNER JOIN employee cb ON ss.createdBy = cb.employeeId
+       WHERE ss.historyOf = ? 
+       ORDER BY ss.timestamp DESC;`
 
     db.query(query, [subStageId], (err, data) => {
       if (err) {
@@ -78,7 +86,12 @@ export const getHistorySubStagesBySubStageId = asyncHandler(
 
 export const getActiveSubStagesByStageId = asyncHandler(async (req, res) => {
   const stageId = req.params.id
-  const query = 'SELECT * FROM substage WHERE stageId = ? AND historyOf IS NULL'
+  const query = `SELECT ss.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+FROM substage ss
+INNER JOIN employee eo ON ss.owner = eo.employeeId
+INNER JOIN employee cb ON ss.createdBy = cb.employeeId
+WHERE ss.stageId = ? 
+AND ss.historyOf IS NULL;`
 
   db.query(query, [stageId], (err, data) => {
     if (err) {
@@ -165,7 +178,11 @@ export const getSubStagesByProjectNumber = asyncHandler(async (req, res) => {
   // console.log(req.params)
 
   const projectNumber = req.params.projectNumber
-  const query = 'SELECT * FROM substage WHERE projectNumber = ?'
+  const query = `SELECT ss.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+FROM substage ss
+INNER JOIN employee eo ON ss.owner = eo.employeeId
+INNER JOIN employee cb ON ss.createdBy = cb.employeeId
+WHERE ss.projectNumber = ?;`
 
   db.query(query, [projectNumber], (err, data) => {
     if (err) {

@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react'
+import React, { useRef, useCallback, useEffect, useState } from 'react'
 import { RiDeleteBinLine } from 'react-icons/ri'
 import { TextField, Autocomplete } from '@mui/material'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -7,20 +7,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs from 'dayjs'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useSelector } from 'react-redux'
-
-const sx = {
-  width: '200px',
-  borderRadius: '1px solid #7D7D7D',
-  MuiOutlinedInputRoot: {
-    height: '50px',
-  },
-  MuiFormLabelRoot: {
-    height: '50px',
-    lineHeight: '50px',
-    top: '-15px',
-  },
-}
+import { useDispatch, useSelector } from 'react-redux'
+import { getAllEmployees } from '../../../features/employeeSlice'
 
 const StageComponent = ({
   stage,
@@ -32,8 +20,26 @@ const StageComponent = ({
   setIsChanged,
   name,
 }) => {
+  const dispatch = useDispatch()
   const { stages: stagesList } = useSelector((state) => state.stages)
-
+  const { employees } = useSelector((state) => state.employee)
+  const [employeeList, setEmployeeList] = useState(
+    employees.map(
+      (employee) =>
+        `${employee.employee.employeeName}(${employee.employee.customEmployeeId})`
+    )
+  )
+  useEffect(() => {
+    dispatch(getAllEmployees())
+  }, [dispatch])
+  useEffect(() => {
+    setEmployeeList(
+      employees.map(
+        (employee) =>
+          `${employee.employee.employeeName}(${employee.employee.customEmployeeId})`
+      )
+    )
+  }, [employees])
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: index })
 
@@ -120,27 +126,46 @@ const StageComponent = ({
             />
           )}
         />
-
-        <TextField
-          label="Owner"
-          variant="outlined"
-          name="owner"
-          value={stage.owner}
-          onChange={handleChange}
-          required
+        <Autocomplete
+          disablePortal
+          freeSolo
+          value={stage.owner || ''}
+          onInputChange={(event, newInputValue) => {
+            console.log({ newInputValue: newInputValue })
+            const employeeId = employees.filter(
+              (employee) =>
+                `${employee.employee.employeeName}(${employee.employee.customEmployeeId})` ==
+                newInputValue
+            )
+            console.log({ employeeId: employeeId })
+            handleChange({
+              target: { name: 'owner', value: newInputValue },
+            })
+          }}
+          options={employeeList}
           sx={{
             width: '200px',
-            borderRadius: '1px solid #7D7D7D',
-            '& .MuiOutlinedInput-root': {
-              height: '50px',
-            },
-            '& .MuiFormLabel-root': {
-              height: '50px',
-              lineHeight: '50px',
-              top: '-15px',
-            },
           }}
-          InputProps={{ sx: { borderRadius: 2 } }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Owner"
+              name="owner"
+              sx={{
+                width: '150px',
+                borderRadius: '1px solid #7D7D7D',
+                '& .MuiOutlinedInput-root': {
+                  height: '50px',
+                },
+                '& .MuiFormLabel-root': {
+                  height: '50px',
+                  lineHeight: '50px',
+                  top: '-15px',
+                },
+              }}
+              required
+            />
+          )}
         />
         <TextField
           label="Machine"
@@ -149,7 +174,7 @@ const StageComponent = ({
           value={stage.machine}
           onChange={handleChange}
           sx={{
-            width: '200px',
+            width: '150px',
             borderRadius: '1px solid #7D7D7D',
             '& .MuiOutlinedInput-root': {
               height: '50px',
@@ -160,7 +185,6 @@ const StageComponent = ({
               top: '-15px',
             },
           }}
-          InputProps={{ sx: { borderRadius: 2 } }}
         />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
@@ -194,11 +218,9 @@ const StageComponent = ({
                     top: '-15px',
                   },
                 }}
-                InputProps={{ sx: { borderRadius: 2 } }}
               />
             )}
             required
-            InputProps={{ sx: { borderRadius: 2 } }}
           />
         </LocalizationProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -221,7 +243,6 @@ const StageComponent = ({
                     top: '-15px',
                   },
                 }}
-                InputProps={{ sx: { borderRadius: 2 } }}
               />
             )}
             required
@@ -237,7 +258,6 @@ const StageComponent = ({
                 top: '-15px',
               },
             }}
-            InputProps={{ sx: { borderRadius: 2 } }}
           />
         </LocalizationProvider>
         <TextField
@@ -260,7 +280,6 @@ const StageComponent = ({
               top: '-15px',
             },
           }}
-          InputProps={{ sx: { borderRadius: 2 } }}
         />
 
         <TextField
@@ -279,7 +298,6 @@ const StageComponent = ({
               top: '-15px',
             },
           }}
-          InputProps={{ sx: { borderRadius: 2 } }}
           name="progress"
           value={
             stage.progress < 0 ? 0 : stage.progress > 100 ? 100 : stage.progress

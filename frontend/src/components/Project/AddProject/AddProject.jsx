@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { stageList } from '../../../features/stageSlice.js'
+import { getAllEmployees } from '../../../features/employeeSlice.js'
 
 const AddProject = () => {
   const { user } = useSelector((state) => state.auth)
@@ -18,9 +19,10 @@ const AddProject = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const access = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-
+  const { employees } = useSelector((state) => state.employee)
   useEffect(() => {
     dispatch(stageList())
+    dispatch(getAllEmployees())
   }, [dispatch])
 
   const [inputValues, setInputValues] = useState({
@@ -77,6 +79,7 @@ const AddProject = () => {
         ...inputValues,
         stages,
       }
+
       console.log('Saving project data:', projectData)
       dispatch(addProject(projectData))
 
@@ -132,13 +135,12 @@ const AddProject = () => {
           </div>
           <button
             className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
-            onClick={handleSave}
+            type="submit"
           >
             <FiEdit size={20} className="edit-icon" />
             <span>Save details</span>
           </button>
         </section>
-
         <div className="formDiv">
           <ProjectForm
             inputValues={inputValues}
@@ -151,6 +153,7 @@ const AddProject = () => {
             setInputValues={setInputValues}
             action={'add'}
             stageList={stageList}
+            employees={employees}
           />
         </div>
       </form>

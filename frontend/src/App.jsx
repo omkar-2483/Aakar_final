@@ -394,10 +394,38 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-            <Route path="/allProjects" element={<AllProjects />} />
-            <Route path="/addProject" element={<AddProject />} />
-            <Route path="/myProject/:id" element={<MyProject />} />
-            <Route path="/updateProject/:id" element={<UpdateProject />} />
+            <Route
+              path="/allProjects"
+              element={
+                <PrivateRoute>
+                  <AllProjects />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/addProject"
+              element={
+                <PrivateRoute>
+                  <AddProject />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/myProject/:id"
+              element={
+                <PrivateRoute>
+                  <MyProject />{' '}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/updateProject/:id"
+              element={
+                <PrivateRoute>
+                  <UpdateProject />{' '}
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/myProject/gantt/:pNo"
               element={<ProjectGanttChart />}

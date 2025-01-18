@@ -21,7 +21,8 @@ export const getStageList = asyncHandler(async (req, res) => {
 
 // Get all stages
 export const getAllStages = asyncHandler(async (req, res) => {
-  const query = 'SELECT * FROM stage'
+  const query =
+    'SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy FROM stage s INNER JOIN employee eo ON s.owner = eo.employeeId INNER JOIN employee cb ON s.createdBy = cb.employeeId;'
 
   db.query(query, (err, data) => {
     if (err) {
@@ -44,8 +45,12 @@ export const getAllStages = asyncHandler(async (req, res) => {
 
 export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
   const pNo = req.params.id
-  const query =
-    'SELECT * FROM stage WHERE projectNumber = ? AND historyOf IS NULL'
+  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+     FROM stage s
+     INNER JOIN employee eo ON s.owner = eo.employeeId
+     INNER JOIN employee cb ON s.createdBy = cb.employeeId
+     WHERE s.projectNumber = ? 
+     AND s.historyOf IS NULL;`
 
   db.query(query, [pNo], (err, data) => {
     if (err) {
@@ -123,7 +128,12 @@ export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
 
 export const getHistoryStagesByStageId = asyncHandler(async (req, res) => {
   const sId = req.params.id
-  const query = 'SELECT * FROM stage WHERE historyOf = ? ORDER BY timestamp'
+  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+                 FROM stage s
+                 INNER JOIN employee eo ON s.owner = eo.employeeId
+                 INNER JOIN employee cb ON s.createdBy = cb.employeeId
+                 WHERE s.historyOf = ? 
+                 ORDER BY s.timestamp;`
 
   db.query(query, [sId], (err, data) => {
     if (err) {
@@ -152,7 +162,12 @@ export const getHistoryStagesByStageId = asyncHandler(async (req, res) => {
 // Get stage by stage ID
 export const getSingleStageByStageId = asyncHandler(async (req, res) => {
   const stageId = req.params.id
-  const query = 'SELECT * FROM stage WHERE stageId = ?'
+  const query = `
+          SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+          FROM stage s
+          INNER JOIN employee eo ON s.owner = eo.employeeId
+          INNER JOIN employee cb ON s.createdBy = cb.employeeId
+          WHERE s.stageId = ?;`
 
   db.query(query, [stageId], (err, data) => {
     if (err) {
@@ -185,7 +200,11 @@ export const getStagesByProjectNumber = asyncHandler(async (req, res) => {
   // console.log(req.params)
 
   const projectNumber = req.params.projectNumber
-  const query = 'SELECT * FROM stage WHERE projectNumber = ?'
+  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+                 FROM stage s
+                 INNER JOIN employee eo ON s.owner = eo.employeeId
+                 INNER JOIN employee cb ON s.createdBy = cb.employeeId
+                 WHERE s.projectNumber = ?;`
 
   db.query(query, [projectNumber], (err, data) => {
     if (err) {

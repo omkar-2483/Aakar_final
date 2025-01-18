@@ -129,7 +129,6 @@ const SubstageForm = ({ inputValues, setInputValues, stagesList }) => {
               top: '-15px',
             },
           }}
-          InputProps={{ sx: { borderRadius: 2 } }}
           name="owner"
           value={inputValues.owner}
           onChange={handleChange}
@@ -150,7 +149,6 @@ const SubstageForm = ({ inputValues, setInputValues, stagesList }) => {
               top: '-15px',
             },
           }}
-          InputProps={{ sx: { borderRadius: 2 } }}
           name="machine"
           value={inputValues.machine}
           onChange={handleChange}
@@ -229,7 +227,6 @@ const SubstageForm = ({ inputValues, setInputValues, stagesList }) => {
               top: '-15px',
             },
           }}
-          InputProps={{ sx: { borderRadius: 2 } }}
           name="progress"
           value={
             inputValues.progress < 0

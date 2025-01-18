@@ -115,7 +115,6 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
                 top: '-15px',
               },
             }}
-            InputProps={{ sx: { borderRadius: 2 } }}
             name={input.name}
             value={input.value}
             onChange={input.onChange}
@@ -246,7 +245,6 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
                 top: '-15px',
               },
             }}
-            InputProps={{ sx: { borderRadius: 2 } }}
             label="Project Status"
           >
             <MenuItem value="">
