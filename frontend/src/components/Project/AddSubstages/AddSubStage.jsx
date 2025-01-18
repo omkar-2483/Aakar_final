@@ -26,6 +26,7 @@ import {
   resetSubstageState,
   updateSubStage,
 } from '../../../features/subStageSlice'
+import { getAllEmployees } from '../../../features/employeeSlice'
 
 const AddSubStage = () => {
   const dispatch = useDispatch()
@@ -54,7 +55,24 @@ const AddSubStage = () => {
   }, [dispatch, pNo, sNo])
 
   const { project = {} } = useSelector((state) => state.projects)
-
+  const { employees } = useSelector((state) => state.employee)
+  const [employeeList, setEmployeeList] = useState(
+    employees.map(
+      (employee) =>
+        `${employee.employee.employeeName}(${employee.employee.customEmployeeId})`
+    )
+  )
+  useEffect(() => {
+    dispatch(getAllEmployees())
+  }, [dispatch])
+  useEffect(() => {
+    setEmployeeList(
+      employees.map(
+        (employee) =>
+          `${employee.employee.employeeName}(${employee.employee.customEmployeeId})`
+      )
+    )
+  }, [employees])
   const {
     stage: stageData = {},
     activeStages = [],
@@ -229,6 +247,7 @@ const AddSubStage = () => {
             inputValues={inputValues}
             setInputValues={setInputValues}
             stagesList={stagesList}
+            employeeList={employeeList}
           />
           <AddStage
             name={'substage'}

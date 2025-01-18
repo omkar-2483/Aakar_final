@@ -44,6 +44,7 @@ import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
 import * as XLSX from 'xlsx'
 import { FiDownload } from 'react-icons/fi'
+import { IoIosSearch } from 'react-icons/io'
 
 const TableComponent = ({
   whose,
@@ -259,12 +260,27 @@ const TableComponent = ({
       >
         <Box p={2}>
           <TextField
-            label="Search"
+            label={
+              <span className="flex justify-center items-center">
+                <IoIosSearch style={{ marginRight: '5px', fontSize: '19px' }} />
+                Search
+              </span>
+            }
             variant="outlined"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)} // Update search term
             placeholder="Search by any field..."
-            className="w-[250px]"
+            className=" w-[250px]"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                height: '45px', // Adjust the input field height
+                fontSize: '16px', // Adjust font size for better alignment
+              },
+              '& .MuiInputLabel-root': {
+                fontSize: '12px', // Adjust label font size if needed
+                top: '-4px', // Adjust the label position
+              },
+            }}
           />
         </Box>
         <div>

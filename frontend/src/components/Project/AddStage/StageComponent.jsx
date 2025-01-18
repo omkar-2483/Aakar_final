@@ -131,13 +131,6 @@ const StageComponent = ({
           freeSolo
           value={stage.owner || ''}
           onInputChange={(event, newInputValue) => {
-            console.log({ newInputValue: newInputValue })
-            const employeeId = employees.filter(
-              (employee) =>
-                `${employee.employee.employeeName}(${employee.employee.customEmployeeId})` ==
-                newInputValue
-            )
-            console.log({ employeeId: employeeId })
             handleChange({
               target: { name: 'owner', value: newInputValue },
             })

@@ -8,9 +8,13 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs from 'dayjs'
 import { differenceInDays } from 'date-fns'
 
-const SubstageForm = ({ inputValues, setInputValues, stagesList }) => {
+const SubstageForm = ({
+  inputValues,
+  setInputValues,
+  stagesList,
+  employeeList,
+}) => {
   const [isChanged, setIsChanged] = useState(false)
-
   const handleChange = (e) => {
     const { name, value } = e.target
     const updatedValues = { ...inputValues, [name]: value }
@@ -114,25 +118,40 @@ const SubstageForm = ({ inputValues, setInputValues, stagesList }) => {
             />
           )}
         />
-
-        <TextField
-          label="Stage owner"
-          variant="outlined"
+        <Autocomplete
+          disablePortal
+          freeSolo
+          value={inputValues.owner || ''}
+          onInputChange={(event, newInputValue) => {
+            console.log({ newInputValue: newInputValue })
+            handleChange({
+              target: { name: 'owner', value: newInputValue },
+            })
+          }}
+          options={employeeList}
           sx={{
             width: '200px',
-            '& .MuiOutlinedInput-root': {
-              height: '50px',
-            },
-            '& .MuiFormLabel-root': {
-              height: '50px',
-              lineHeight: '50px',
-              top: '-15px',
-            },
           }}
-          name="owner"
-          value={inputValues.owner}
-          onChange={handleChange}
-          required
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Stage owner"
+              name="owner"
+              sx={{
+                width: '150px',
+                borderRadius: '1px solid #7D7D7D',
+                '& .MuiOutlinedInput-root': {
+                  height: '50px',
+                },
+                '& .MuiFormLabel-root': {
+                  height: '50px',
+                  lineHeight: '50px',
+                  top: '-15px',
+                },
+              }}
+              required
+            />
+          )}
         />
 
         <TextField
