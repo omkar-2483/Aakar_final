@@ -53,6 +53,13 @@ const TableComponent = ({
   linkBasePath,
   optionLinkBasePath,
 }) => {
+  const employeeAccess = useSelector(
+    (state) => state.auth.user?.employeeAccess
+  ).split(',')[1]
+  console.log({ employeeAccess: employeeAccess })
+  const accessSegment1 = employeeAccess.substring(1, 5)
+  const accessSegment2 = employeeAccess.substring(5, 9)
+  const accessSegment3 = employeeAccess.substring(9, 13)
   const access = [
     1 /*add project*/, 1 /*edit project*/, 1 /*delete project*/,
     1 /*view history project*/, 1 /*add stage*/, 1 /*edit stage*/,
@@ -414,8 +421,8 @@ const TableComponent = ({
                           paddingRight: '0',
                         }}
                       >
-                        {(access[1] && whose == 'project') ||
-                        (access[5] && whose == 'stage')
+                        {(employeeAccess[3] == '1' && whose == 'project') ||
+                        (employeeAccess[7] == '1' && whose == 'stage')
                           ? whose !== 'substage' && (
                               <IconButton
                                 onClick={(e) => {
@@ -433,9 +440,9 @@ const TableComponent = ({
                               </IconButton>
                             )
                           : ''}
-                        {(access[3] && whose == 'project') ||
-                        (access[7] && whose == 'stage') ||
-                        (access[9] && whose == 'substage') ? (
+                        {(accessSegment1 === '1111' && whose == 'project') ||
+                        (accessSegment2 === '1111' && whose == 'stage') ||
+                        (accessSegment3 === '1111' && whose == 'substage') ? (
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation()
@@ -447,9 +454,9 @@ const TableComponent = ({
                         ) : (
                           ''
                         )}
-                        {(access[2] && whose == 'project') ||
-                        (access[6] && whose == 'stage') ||
-                        (access[8] && whose == 'substage') ? (
+                        {(employeeAccess[4] == '1' && whose == 'project') ||
+                        (employeeAccess[8] == '1' && whose == 'stage') ||
+                        (employeeAccess[12] == '1' && whose == 'substage') ? (
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation()
