@@ -61,10 +61,6 @@
   left: 0;
 }
 
-.progress {
-  color: rgba(79, 79, 79, 1);
-}
-
 .headData {
   display: flex;
   justify-content: space-around;

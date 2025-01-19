@@ -131,9 +131,11 @@ const StageComponent = ({
           freeSolo
           value={stage.owner || ''}
           onInputChange={(event, newInputValue) => {
-            handleChange({
-              target: { name: 'owner', value: newInputValue },
-            })
+            if (newInputValue !== stage.owner) {
+              handleChange({
+                target: { name: 'owner', value: newInputValue },
+              })
+            }
           }}
           options={employeeList}
           sx={{

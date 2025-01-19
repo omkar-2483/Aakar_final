@@ -124,9 +124,11 @@ const SubstageForm = ({
           value={inputValues.owner || ''}
           onInputChange={(event, newInputValue) => {
             console.log({ newInputValue: newInputValue })
-            handleChange({
-              target: { name: 'owner', value: newInputValue },
-            })
+            if (newInputValue !== inputValues.owner) {
+              handleChange({
+                target: { name: 'owner', value: newInputValue },
+              })
+            }
           }}
           options={employeeList}
           sx={{
@@ -138,7 +140,7 @@ const SubstageForm = ({
               label="Stage owner"
               name="owner"
               sx={{
-                width: '150px',
+                width: '200px',
                 borderRadius: '1px solid #7D7D7D',
                 '& .MuiOutlinedInput-root': {
                   height: '50px',

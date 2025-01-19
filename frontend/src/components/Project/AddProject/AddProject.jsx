@@ -19,6 +19,10 @@ const AddProject = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const access = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  const employeeAccess = useSelector(
+    (state) => state.auth.user?.employeeAccess
+  ).split(',')[1]
+  console.log({ employeeAccess: employeeAccess })
   const { employees } = useSelector((state) => state.employee)
   useEffect(() => {
     dispatch(stageList())
@@ -116,6 +120,7 @@ const AddProject = () => {
       console.error('Error saving project:', error)
       toast.error('Failed to save project successfully!')
     }
+    navigate(-1)
   }
 
   return (
