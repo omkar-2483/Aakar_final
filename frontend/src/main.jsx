@@ -9,11 +9,9 @@ import { UserProvider } from './ticketComponents/context/UserContext';
 
 
 createRoot(document.getElementById('root')).render(
-    <StrictMode>
         <Provider store={store}>
         <UserProvider>
                 <App/>
             </UserProvider>
         </Provider>
-    </StrictMode>,
 )

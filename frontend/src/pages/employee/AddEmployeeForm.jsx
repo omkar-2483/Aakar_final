@@ -3,11 +3,10 @@ import TextField from "@mui/material/TextField";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { Autocomplete, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import dayjs from "dayjs";
-import AddEmployeeDepartment from "./AddEmployeeDepartment.jsx"; // Assuming this is part of your system
 
-const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
+const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues, handleFormSubmit }) => {
 
     // Handle changes in input fields
     const handleChange = (e) => {
@@ -32,7 +31,7 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
         return age;
     };
 
-    // Handle date changes for DOB and Join date
+    // Handle date changes for DOB and joining date
     const handleDateChange = (date, fieldName) => {
         if (date) {
             setEmployeeInputValues((prevValues) => ({
@@ -54,21 +53,31 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
     };
 
     return (
-        <>
+        <form
+            onSubmit={(e) => {
+                e.preventDefault();
+                if (handleFormSubmit) {
+                    handleFormSubmit();
+                }
+            }}
+        >
             {/* Personal Details Section */}
             <div className="add-employee-details my-4 bg-white rounded">
-                <h3 style={{fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold"}}>Personal details</h3>
+                <h3 style={{ fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold" }}>Personal details</h3>
                 <div className="employee-details flex gap-10">
 
                     {/* Employee Id */}
                     <TextField
-                        label="Employee Id"
+                        label="Custom Employee Id"
                         variant="outlined"
+                        autoComplete="off"
                         value={employeeInputValues.customEmployeeId}
                         onChange={handleChange}
-                        name={'customEmployeeId'}
+                        name="customEmployeeId"
+                        type="text"
                         sx={{ width: "300px" }}
                     />
+
 
                     {/* Employee Name */}
                     <TextField
@@ -84,10 +93,10 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                             label="Employee DOB"
-                            format={"YYYY/MM/DD"}
+                            format={"DD/MM/YYYY"}
                             onChange={(date) => handleDateChange(date, 'employeeDOB')}
                             value={employeeInputValues.employeeDOB ? dayjs(employeeInputValues.employeeDOB) : null}
-                            renderInput={(params) => <TextField {...params} />}
+                            textField={(params) => <TextField {...params} />}
                         />
                     </LocalizationProvider>
 
@@ -131,7 +140,7 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
 
             {/* Contact Details Section */}
             <div className="add-employee-details my-4 bg-white rounded">
-                <h3 style={{fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold"}}>Contact details</h3>
+                <h3 style={{ fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold" }}>Contact details</h3>
                 <div className="employee-details flex gap-10">
                     <TextField
                         label="Phone Number"
@@ -153,6 +162,7 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
                         name={'employeeEmail'}
                         value={employeeInputValues.employeeEmail}
                         onChange={handleChange}
+                        type={"email"}
                         sx={{
                             width: "300px",
                             borderRadius: "1px solid #7D7D7D",
@@ -163,7 +173,7 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
 
             {/* Employment Details Section */}
             <div className="add-employee-details my-4 bg-white rounded">
-                <h3 style={{fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold"}}>Employment details</h3>
+                <h3 style={{ fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold" }}>Employment details</h3>
                 <div className="employee-details flex gap-10">
                     <TextField
                         label="Company Name"
@@ -216,12 +226,12 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
                     {/* Joining Date */}
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            format={"YYYY/MM/DD"}
+                            format={"DD/MM/YYYY"}
                             label="Joining date"
                             name={'employeeJoinDate'}
                             onChange={(date) => handleDateChange(date, 'employeeJoinDate')}
                             value={employeeInputValues.employeeJoinDate ? dayjs(employeeInputValues.employeeJoinDate) : null}
-                            renderInput={(params) => <TextField {...params} />}
+                            textField={(params) => <TextField {...params} />}
                         />
                     </LocalizationProvider>
                 </div>
@@ -229,7 +239,7 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
 
             {/* Security Details Section */}
             <div className="add-employee-details bg-white rounded">
-                <h3 style={{fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold"}}>Security details</h3>
+                <h3 style={{ fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold" }}>Security details</h3>
                 <div className="employee-details">
                     <TextField
                         label="Password"
@@ -246,8 +256,8 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues }) => {
                     />
                 </div>
             </div>
-        </>
+        </form>
     );
-}
+};
 
 export default AddEmployeeForm;
