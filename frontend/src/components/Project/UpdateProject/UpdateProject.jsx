@@ -136,7 +136,7 @@ const UpdateProject = () => {
         },
       })
     )
-    navigate('-1')
+    navigate(-1)
   }
 
   const hasChanges = (stage, originalStage) => {

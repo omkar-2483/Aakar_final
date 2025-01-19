@@ -212,58 +212,66 @@ WHERE ss.projectNumber = ?;`
 
 // Update substage and store history
 export const updateSubStage = asyncHandler(async (req, res) => {
-  const substageId = req.params.id; // Get the current substage ID from the request parameters
+  const substageId = req.params.id // Get the current substage ID from the request parameters
 
   // SQL queries
-  const selectQuery = `SELECT * FROM substage WHERE substageId = ?`;
+  const selectQuery = `SELECT * FROM substage WHERE substageId = ?`
   const insertQuery = `
     INSERT INTO substage (
       stageId, stageName, startDate, endDate, owner, machine, duration, 
       seqPrevStage, createdBy, progress, historyOf, updateReason, projectNumber
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+  `
   const updateQuery = `
     UPDATE substage SET 
       stageId = ?, stageName = ?, startDate = ?, endDate = ?, 
       owner = ?, machine = ?, duration = ?, seqPrevStage = ?, 
       createdBy = ?, timestamp = ?, progress = ?, historyOf = NULL
     WHERE substageId = ?
-  `;
+  `
 
   // Retrieve the current substage data
   db.query(selectQuery, [substageId], (err, substageData) => {
     if (err) {
-      console.error('Error retrieving substage:', err);
-      return res.status(500).send(new ApiError(500, 'Error retrieving substage'));
+      console.error('Error retrieving substage:', err)
+      return res
+        .status(500)
+        .send(new ApiError(500, 'Error retrieving substage'))
     }
 
     if (substageData.length === 0) {
-      return res.status(404).send(new ApiError(404, 'Substage not found'));
+      return res.status(404).send(new ApiError(404, 'Substage not found'))
     }
 
-    const substage = substageData[0];
+    const substage = substageData[0]
 
     // Extract customEmployeeId from the owner field
-    const match = req.body.owner ? req.body.owner.match(/\(([^)]+)\)/) : null;
-    const customEmployeeId = match ? match[1] : null;
+    const match = req.body.owner ? req.body.owner.match(/\(([^)]+)\)/) : null
+    const customEmployeeId = match ? match[1] : null
 
     if (!customEmployeeId) {
-      return res.status(400).json(new ApiResponse(400, null, 'customEmployeeId is required'));
+      return res
+        .status(400)
+        .json(new ApiResponse(400, null, 'customEmployeeId is required'))
     }
 
     // Query to find the corresponding employeeId
-    const checkOwnerQuery = `SELECT employeeId FROM employee WHERE customEmployeeId = ?`;
+    const checkOwnerQuery = `SELECT employeeId FROM employee WHERE customEmployeeId = ?`
     db.query(checkOwnerQuery, [customEmployeeId], (err, result) => {
       if (err) {
-        console.log('Error checking owner:', err);
-        return res.status(500).json(new ApiResponse(500, null, 'Error checking owner'));
+        console.log('Error checking owner:', err)
+        return res
+          .status(500)
+          .json(new ApiResponse(500, null, 'Error checking owner'))
       }
       if (result.length === 0) {
-        return res.status(400).json(new ApiResponse(400, null, 'Owner not found in employee table'));
+        return res
+          .status(400)
+          .json(new ApiResponse(400, null, 'Owner not found in employee table'))
       }
 
-      const employeeId = result[0].employeeId; // Get the employeeId
-      const owner = employeeId; // Set the owner as employeeId
+      const employeeId = result[0].employeeId // Get the employeeId
+      const owner = employeeId // Set the owner as employeeId
 
       // Create history for the substage
       const insertValues = [
@@ -280,12 +288,14 @@ export const updateSubStage = asyncHandler(async (req, res) => {
         substageId, // Correctly set historyOf to the current substageId
         req.body.updateReason || '', // Store reason for the update; fallback to an empty string
         substage.projectNumber, // Correctly set projectNumber from the existing substage record
-      ];
+      ]
 
       db.query(insertQuery, insertValues, (err) => {
         if (err) {
-          console.error('Error creating new substage in history:', err);
-          return res.status(500).send(new ApiError(500, 'Error creating new substage in history'));
+          console.error('Error creating new substage in history:', err)
+          return res
+            .status(500)
+            .send(new ApiError(500, 'Error creating new substage in history'))
         }
 
         // Update the current substage with new data
@@ -302,48 +312,59 @@ export const updateSubStage = asyncHandler(async (req, res) => {
           req.body.timestamp || new Date(), // Use provided timestamp or the current date
           req.body.progress || substage.progress,
           substageId, // Update the existing substage by its current ID
-        ];
+        ]
 
         db.query(updateQuery, updateValues, (err, updateData) => {
           if (err) {
-            console.error('Error updating substage:', err);
-            return res.status(500).send(new ApiError(500, 'Error updating substage'));
+            console.error('Error updating substage:', err)
+            return res
+              .status(500)
+              .send(new ApiError(500, 'Error updating substage'))
           }
 
-          res.status(200).json(new ApiResponse(200, updateData, 'Substage updated successfully.'));
-        });
-      });
-    });
-  });
-});
-
+          res
+            .status(200)
+            .json(
+              new ApiResponse(200, updateData, 'Substage updated successfully.')
+            )
+        })
+      })
+    })
+  })
+})
 
 export const createSubStage = asyncHandler(async (req, res) => {
   // Extract customEmployeeId from owner field
-  const match = req.body.owner ? req.body.owner.match(/\(([^)]+)\)/) : null;
-  const customEmployeeId = match ? match[1] : null;
+  const match = req.body.owner ? req.body.owner.match(/\(([^)]+)\)/) : null
+  const customEmployeeId = match ? match[1] : null
 
   if (!customEmployeeId) {
-    return res.status(400).json(new ApiResponse(400, null, 'customEmployeeId is required'));
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, 'customEmployeeId is required'))
   }
 
   // Query to find the corresponding employeeId
-  const checkOwnerQuery = `SELECT employeeId FROM employee WHERE customEmployeeId = ?`;
+  const checkOwnerQuery = `SELECT employeeId FROM employee WHERE customEmployeeId = ?`
   db.query(checkOwnerQuery, [customEmployeeId], (err, result) => {
     if (err) {
-      console.log('Error checking owner:', err);
-      return res.status(500).json(new ApiResponse(500, null, 'Error checking owner'));
+      console.log('Error checking owner:', err)
+      return res
+        .status(500)
+        .json(new ApiResponse(500, null, 'Error checking owner'))
     }
     if (result.length === 0) {
-      return res.status(400).json(new ApiResponse(400, null, 'Owner not found in employee table'));
+      return res
+        .status(400)
+        .json(new ApiResponse(400, null, 'Owner not found in employee table'))
     }
 
-    const employeeId = result[0].employeeId;
+    const employeeId = result[0].employeeId
 
     const stageQuery = `INSERT INTO substage (
       stageId, stageName, startDate, endDate, owner, machine, duration, 
       seqPrevStage, createdBy, progress, projectNumber
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
     const values = [
       req.body.stageId,
@@ -357,19 +378,21 @@ export const createSubStage = asyncHandler(async (req, res) => {
       req.body.createdBy,
       req.body.progress,
       req.body.projectNumber,
-    ];
+    ]
 
     db.query(stageQuery, values, (err, data) => {
       if (err) {
-        console.log(err);
-        return res.status(500).json(new ApiResponse(500, null, 'Error creating substage'));
+        console.log(err)
+        return res
+          .status(500)
+          .json(new ApiResponse(500, null, 'Error creating substage'))
       }
-      res.status(201).json(new ApiResponse(201, data, 'Substage created successfully'));
-    });
-  });
-});
-
-
+      res
+        .status(201)
+        .json(new ApiResponse(201, data, 'Substage created successfully'))
+    })
+  })
+})
 
 export const deleteSubStage = asyncHandler(async (req, res) => {
   const substageId = req.params.id
@@ -395,8 +418,6 @@ export const deleteSubStage = asyncHandler(async (req, res) => {
     const [updateResult] = await db
       .promise()
       .query(updateSubsequentSubStagesQuery, [prevSubStageId, substageId])
-
-    console.log(`Updated ${updateResult.affectedRows} subsequent substages`)
 
     // Delete the substage
     const deleteSubStageQuery = 'DELETE FROM substage WHERE substageId = ?'

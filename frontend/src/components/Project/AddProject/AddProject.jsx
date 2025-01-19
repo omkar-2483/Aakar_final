@@ -116,6 +116,7 @@ const AddProject = () => {
       console.error('Error saving project:', error)
       toast.error('Failed to save project successfully!')
     }
+    navigate(-1)
   }
 
   return (
