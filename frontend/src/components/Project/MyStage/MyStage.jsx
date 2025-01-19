@@ -67,6 +67,10 @@ const columns = [
 ]
 
 const MyStage = () => {
+  const employeeAccess = useSelector(
+    (state) => state.auth.user?.employeeAccess
+  ).split(',')[1]
+  console.log({ employeeAccess: employeeAccess })
   const params = useParams()
   const { pNo, sNo } = params
   const dispatch = useDispatch()
@@ -121,18 +125,22 @@ const MyStage = () => {
               <FaChartGantt size={20} className="edit-icon" />
               <span>View Gantt Chart</span>
             </button>
-            <button
-              className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
-              type="submit"
-              onClick={() =>
-                navigate(`/myProject/${pNo}/updateStage/${sNo}`, {
-                  replace: true,
-                })
-              }
-            >
-              <FiEdit size={20} className="edit-icon" />
-              <span>Edit Stage</span>
-            </button>
+            {(employeeAccess[7] == '1' ||
+              employeeAccess[9] == '1' ||
+              employeeAccess[11] == '1') && (
+              <button
+                className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
+                type="submit"
+                onClick={() =>
+                  navigate(`/myProject/${pNo}/updateStage/${sNo}`, {
+                    replace: true,
+                  })
+                }
+              >
+                <FiEdit size={20} className="edit-icon" />
+                <span>Edit Stage</span>
+              </button>
+            )}
           </div>
         </section>
         <div className="formDiv">

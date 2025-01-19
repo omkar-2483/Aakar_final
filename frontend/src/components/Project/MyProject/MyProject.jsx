@@ -57,6 +57,11 @@ const columns = [
 ]
 
 const MyProject = () => {
+  const employeeAccess = useSelector(
+    (state) => state.auth.user?.employeeAccess
+  ).split(',')[1]
+  console.log({ employeeAccess: employeeAccess })
+
   const access = [
     1 /*add project*/, 1 /*edit project*/, 1 /*add project*/, 1 /*add project*/,
     1 /*add project*/, 1 /*add project*/, 1 /*add project*/, 1 /*add project*/,
@@ -120,7 +125,7 @@ const MyProject = () => {
               <span>View Gantt Chart</span>
             </button>
 
-            {access[1] ? (
+            {(employeeAccess[3] == '1' || employeeAccess[5] == '1') && (
               <button
                 className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
                 onClick={() => navigate(`/updateProject/${projectNumber}`)}
@@ -128,8 +133,6 @@ const MyProject = () => {
                 <FiEdit size={20} className="edit-icon" />
                 <span>Edit Project</span>
               </button>
-            ) : (
-              ''
             )}
           </div>
         </section>

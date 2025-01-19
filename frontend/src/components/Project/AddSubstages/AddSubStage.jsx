@@ -29,6 +29,10 @@ import {
 import { getAllEmployees } from '../../../features/employeeSlice'
 
 const AddSubStage = () => {
+  const employeeAccess = useSelector(
+    (state) => state.auth.user?.employeeAccess
+  ).split(',')[1]
+  console.log({ employeeAccess: employeeAccess })
   const dispatch = useDispatch()
   const params = useParams()
   const { pNo, sNo } = params
@@ -243,12 +247,14 @@ const AddSubStage = () => {
         </section>
 
         <div className="formDiv">
-          <SubstageForm
-            inputValues={inputValues}
-            setInputValues={setInputValues}
-            stagesList={stagesList}
-            employeeList={employeeList}
-          />
+          {employeeAccess[7] == '1' && (
+            <SubstageForm
+              inputValues={inputValues}
+              setInputValues={setInputValues}
+              stagesList={stagesList}
+              employeeList={employeeList}
+            />
+          )}
           <AddStage
             name={'substage'}
             stages={stage}

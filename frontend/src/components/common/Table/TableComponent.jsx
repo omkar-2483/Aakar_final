@@ -53,6 +53,8 @@ const TableComponent = ({
   linkBasePath,
   optionLinkBasePath,
 }) => {
+  const { user } = useSelector((state) => state.auth)
+  console.log({ user: user })
   const employeeAccess = useSelector(
     (state) => state.auth.user?.employeeAccess
   ).split(',')[1]
@@ -60,12 +62,7 @@ const TableComponent = ({
   const accessSegment1 = employeeAccess.substring(1, 5)
   const accessSegment2 = employeeAccess.substring(5, 9)
   const accessSegment3 = employeeAccess.substring(9, 13)
-  const access = [
-    1 /*add project*/, 1 /*edit project*/, 1 /*delete project*/,
-    1 /*view history project*/, 1 /*add stage*/, 1 /*edit stage*/,
-    1 /*delete stage*/, 1 /*view stage history*/, 1 /*view substage history*/,
-    1 /*add project*/, 1 /*add project*/, 1 /*add project*/,
-  ]
+
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
@@ -88,18 +85,6 @@ const TableComponent = ({
     }
   })
 
-  const historyDataLoading = useSelector((state) => {
-    switch (whose) {
-      case 'project':
-        return state.projects.loading
-      case 'stage':
-        return state.stages.loading
-      case 'substage':
-        return state.substages.loading
-      default:
-        return []
-    }
-  })
   const [anchorEl, setAnchorEl] = useState(null)
   const handleDownloadClick = (event) => {
     setAnchorEl(event.currentTarget)
@@ -135,16 +120,6 @@ const TableComponent = ({
         endDate: formatDate(row.endDate),
       })),
     [historyData1]
-  )
-
-  const formattedRows = useMemo(
-    () =>
-      rows.map((row) => ({
-        ...row,
-        startDate: formatDate(row.startDate),
-        endDate: formatDate(row.endDate),
-      })),
-    [rows]
   )
 
   const handleChangePage = useCallback((event, newPage) => {
@@ -281,7 +256,7 @@ const TableComponent = ({
             sx={{
               '& .MuiOutlinedInput-root': {
                 height: '45px', // Adjust the input field height
-                fontSize: '16px', // Adjust font size for better alignment
+                fontSize: '14px', // Adjust font size for better alignment
               },
               '& .MuiInputLabel-root': {
                 fontSize: '12px', // Adjust label font size if needed
@@ -419,10 +394,17 @@ const TableComponent = ({
                           cursor: 'pointer',
                           paddingLeft: '0',
                           paddingRight: '0',
+                          padding: '0',
                         }}
                       >
-                        {(employeeAccess[3] == '1' && whose == 'project') ||
-                        (employeeAccess[7] == '1' && whose == 'stage')
+                        {console.log({ row: row })}
+                        {((employeeAccess[3] == '1' ||
+                          employeeAccess[5] == '1') &&
+                          whose == 'project') ||
+                        ((employeeAccess[7] == '1' ||
+                          employeeAccess[9] == '1' ||
+                          employeeAccess[11] == '1') &&
+                          whose == 'stage')
                           ? whose !== 'substage' && (
                               <IconButton
                                 onClick={(e) => {

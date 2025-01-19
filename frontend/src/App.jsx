@@ -1,6 +1,11 @@
 import React from 'react'
-import {useSelector} from 'react-redux'
-import {BrowserRouter as Router, Navigate, Route, Routes,} from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import {
+  BrowserRouter as Router,
+  Navigate,
+  Route,
+  Routes,
+} from 'react-router-dom'
 import PrivateRoute from './components/PrivateRoute'
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -10,7 +15,7 @@ import EmployeeProfile from './pages/employee/EmployeeProfile.jsx'
 import AddEmployee from './pages/employee/AddEmployee.jsx'
 import EditEmployee from './pages/employee/EditEmployee.jsx'
 import DepartmentDashboard from './pages/department/DepartmentDashboard.jsx'
-import {Bounce, ToastContainer} from 'react-toastify'
+import { Bounce, ToastContainer } from 'react-toastify'
 import AddDepartment from './pages/department/AddDepartment.jsx'
 import DepartmentProfile from './pages/department/DepartmentProfile.jsx'
 import Profile from './pages/Profile.jsx'
@@ -54,404 +59,423 @@ import SubstagesGanttChart from './components/Project/GanttChart/SubstagesGanttC
 import AddSubStage from './components/Project/AddSubstages/AddSubStage.jsx'
 import MyStage from './components/Project/MyStage/MyStage.jsx'
 import AllProjects from './components/Project/AllProjects/AllProjects.jsx'
-import DesignationDashboard from "./pages/designation/DesignationDashboard.jsx";
+import DesignationDashboard from './pages/designation/DesignationDashboard.jsx'
 
 export const API_BASE_URL = `http://localhost:3000`
 const App = () => {
-    const {isAuthenticated} = useSelector((state) => state.auth)
+  const { isAuthenticated } = useSelector((state) => state.auth)
 
-    return (
-        <>
-            <ToastContainer
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-                transition={Bounce}
+  return (
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+      />
+      <Router>
+        <Routes>
+          <Route
+            path="/login"
+            element={isAuthenticated ? <Navigate to="/" /> : <Login />}
+          />
+
+          <Route element={<Layout />}>
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Home />
+                </PrivateRoute>
+              }
             />
-            <Router>
-                <Routes>
-                    <Route
-                        path="/login"
-                        element={isAuthenticated ? <Navigate to="/"/> : <Login/>}
-                    />
+            <Route
+              path="/employees"
+              element={
+                <PrivateRoute>
+                  <EmployeeDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/departments"
+              element={
+                <PrivateRoute>
+                  <DepartmentDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/department/addDepartment"
+              element={
+                <PrivateRoute>
+                  <AddDepartment />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/department/:id"
+              element={
+                <PrivateRoute>
+                  <DepartmentProfile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/employee/:id"
+              element={
+                <PrivateRoute>
+                  <EmployeeProfile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/employee/addEmployee"
+              element={
+                <PrivateRoute>
+                  <AddEmployee />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/employee/edit/:id"
+              element={
+                <PrivateRoute>
+                  <EditEmployee />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/designations"
+              element={
+                <PrivateRoute>
+                  <DesignationDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/ManagerSwitch"
+              element={
+                <PrivateRoute>
+                  <ManagerSwitch />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/SearchBar"
+              element={
+                <PrivateRoute>
+                  <SearchBar />
+                </PrivateRoute>
+              }
+            />
 
-                    <Route element={<Layout/>}>
-                        <Route
-                            path="/"
-                            element={
-                                <PrivateRoute>
-                                    <Home/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/employees"
-                            element={
-                                <PrivateRoute>
-                                    <EmployeeDashboard/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/departments"
-                            element={
-                                <PrivateRoute>
-                                    <DepartmentDashboard/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/department/addDepartment"
-                            element={
-                                <PrivateRoute>
-                                    <AddDepartment/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/department/:id"
-                            element={
-                                <PrivateRoute>
-                                    <DepartmentProfile/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/employee/:id"
-                            element={
-                                <PrivateRoute>
-                                    <EmployeeProfile/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/employee/addEmployee"
-                            element={
-                                <PrivateRoute>
-                                    <AddEmployee/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/employee/edit/:id"
-                            element={
-                                <PrivateRoute>
-                                    <EditEmployee/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/profile"
-                            element={
-                                <PrivateRoute>
-                                    <Profile/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/designations"
-                            element={
-                                <PrivateRoute>
-                                    <DesignationDashboard/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/ManagerSwitch"
-                            element={
-                                <PrivateRoute>
-                                    <ManagerSwitch/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/SearchBar"
-                            element={
-                                <PrivateRoute>
-                                    <SearchBar/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/trainings"
+              element={
+                <PrivateRoute>
+                  <AllTraining />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/trainings"
-                            element={
-                                <PrivateRoute>
-                                    <AllTraining/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/training-details"
+              element={
+                <PrivateRoute>
+                  <TrainingDetails />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/training-details"
-                            element={
-                                <PrivateRoute>
-                                    <TrainingDetails/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/Update_skills"
+              element={
+                <PrivateRoute>
+                  <UpdateSkill />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/attendance/:sessionId"
+              element={
+                <PrivateRoute>
+                  <Attendance />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/Dept_G_training"
+              element={
+                <PrivateRoute>
+                  <ShowTrainingDept />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/Update_skills"
-                            element={
-                                <PrivateRoute>
-                                    <UpdateSkill/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/attendance/:sessionId"
-                            element={
-                                <PrivateRoute>
-                                    <Attendance/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/Dept_G_training"
-                            element={
-                                <PrivateRoute>
-                                    <ShowTrainingDept/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/SendConformEmpToTraining"
+              element={
+                <PrivateRoute>
+                  <SendConformEmpToTraining />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/SendAndGiveTraining"
+              element={
+                <PrivateRoute>
+                  <TrainingSwitch />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/EmployeeSwitch"
+              element={
+                <PrivateRoute>
+                  <EmployeeSwitch />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/SendConformEmpToTraining"
-                            element={
-                                <PrivateRoute>
-                                    <SendConformEmpToTraining/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/SendAndGiveTraining"
-                            element={
-                                <PrivateRoute>
-                                    <TrainingSwitch/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/EmployeeSwitch"
-                            element={
-                                <PrivateRoute>
-                                    <EmployeeSwitch/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/EmployeeTrainingDetails"
+              element={
+                <PrivateRoute>
+                  <EmployeeTrainingDetails />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/EmployeeTrainingDetails"
-                            element={
-                                <PrivateRoute>
-                                    <EmployeeTrainingDetails/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/TrainerSwitch"
+              element={
+                <PrivateRoute>
+                  <TrainerSwitch />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/TrainerSwitch"
-                            element={
-                                <PrivateRoute>
-                                    <TrainerSwitch/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/TrainerTrainingDetails"
+              element={
+                <PrivateRoute>
+                  <TrainerTrainingDetails />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/TrainerTrainingDetails"
-                            element={
-                                <PrivateRoute>
-                                    <TrainerTrainingDetails/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/TrainerAttendance"
+              element={
+                <PrivateRoute>
+                  <TrainerAttendance />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/TrainerAttendance"
-                            element={
-                                <PrivateRoute>
-                                    <TrainerAttendance/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/TrainerViewAttendance"
+              element={
+                <PrivateRoute>
+                  <TrainerViewAttendance />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/TrainerViewAttendance"
-                            element={
-                                <PrivateRoute>
-                                    <TrainerViewAttendance/>
-                                </PrivateRoute>
-                            }
-                        />
+            <Route
+              path="/TrainerEditAttendance"
+              element={
+                <PrivateRoute>
+                  <TrainerEditAttendance />
+                </PrivateRoute>
+              }
+            />
 
-                        <Route
-                            path="/TrainerEditAttendance"
-                            element={
-                                <PrivateRoute>
-                                    <TrainerEditAttendance/>
-                                </PrivateRoute>
-                            }
-                        />
-
-                        <Route
-                            path="/EmployeeTrainingEnrolled"
-                            element={
-                                <PrivateRoute>
-                                    <EmployeeTrainingEnrolled/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/ManagerEmployeeTrainingEnrolled"
-                            element={
-                                <PrivateRoute>
-                                    <ManagerEmployeeTrainingEnrolled/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/tickettracking"
-                            element={
-                                <PrivateRoute>
-                                    <Dashboard/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/createTicket"
-                            element={
-                                <PrivateRoute>
-                                    <TicketForm/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/ticketPage/:id"
-                            element={
-                                <PrivateRoute>
-                                    <TicketPage/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/FilteredTicketPage"
-                            element={
-                                <PrivateRoute>
-                                    <FilteredTicketPage/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/adminFunctionalities"
-                            element={
-                                <PrivateRoute>
-                                    <AdminFunctionalities/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/issue-types"
-                            element={
-                                <PrivateRoute>
-                                    <ManageIssueTypes/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/basic-solutions"
-                            element={
-                                <PrivateRoute>
-                                    <ManageBasicSolutions/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/ticket-titles"
-                            element={
-                                <PrivateRoute>
-                                    <ManageTicketTitles/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/send-mail-to"
-                            element={
-                                <PrivateRoute>
-                                    <ManageSendMailTo/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/profile"
-                            element={
-                                <PrivateRoute>
-                                    <Profile/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/allProjects"
-                            element={
-                                <PrivateRoute>
-                                    <AllProjects/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/addProject"
-                            element={
-                                <PrivateRoute>
-                                    <AddProject/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/myProject/:id"
-                            element={
-                                <PrivateRoute>
-                                    <MyProject/>{' '}
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/updateProject/:id"
-                            element={
-                                <PrivateRoute>
-                                    <UpdateProject/>{' '}
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/myProject/gantt/:pNo"
-                            element={<ProjectGanttChart/>}
-                        />
-                        <Route
-                            path="/myStage/gantt/:sNo"
-                            element={<SubstagesGanttChart/>}
-                        />
-                        <Route
-                            path="myProject/:pNo/updateStage/:sNo"
-                            element={<AddSubStage/>}
-                        />
-                        <Route path="myProject/:pNo/myStage/:sNo" element={<MyStage/>}/>
-                    </Route>
-                    <Route
-                        path="*"
-                        element={<Navigate to={isAuthenticated ? '/' : '/login'}/>}
-                    />
-                </Routes>
-            </Router>
-        </>
-    )
+            <Route
+              path="/EmployeeTrainingEnrolled"
+              element={
+                <PrivateRoute>
+                  <EmployeeTrainingEnrolled />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/ManagerEmployeeTrainingEnrolled"
+              element={
+                <PrivateRoute>
+                  <ManagerEmployeeTrainingEnrolled />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/tickettracking"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/createTicket"
+              element={
+                <PrivateRoute>
+                  <TicketForm />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/ticketPage/:id"
+              element={
+                <PrivateRoute>
+                  <TicketPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/FilteredTicketPage"
+              element={
+                <PrivateRoute>
+                  <FilteredTicketPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/adminFunctionalities"
+              element={
+                <PrivateRoute>
+                  <AdminFunctionalities />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/issue-types"
+              element={
+                <PrivateRoute>
+                  <ManageIssueTypes />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/basic-solutions"
+              element={
+                <PrivateRoute>
+                  <ManageBasicSolutions />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/ticket-titles"
+              element={
+                <PrivateRoute>
+                  <ManageTicketTitles />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/send-mail-to"
+              element={
+                <PrivateRoute>
+                  <ManageSendMailTo />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/allProjects"
+              element={
+                <PrivateRoute>
+                  <AllProjects />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/addProject"
+              element={
+                <PrivateRoute>
+                  <AddProject />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/myProject/:id"
+              element={
+                <PrivateRoute>
+                  <MyProject />{' '}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/updateProject/:id"
+              element={
+                <PrivateRoute>
+                  <UpdateProject />{' '}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/myProject/gantt/:pNo"
+              element={
+                <PrivateRoute>
+                  <ProjectGanttChart />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/myStage/gantt/:sNo"
+              element={
+                <PrivateRoute>
+                  <SubstagesGanttChart />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="myProject/:pNo/updateStage/:sNo"
+              element={
+                <PrivateRoute>
+                  <AddSubStage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="myProject/:pNo/myStage/:sNo"
+              element={
+                <PrivateRoute>
+                  <MyStage />
+                </PrivateRoute>
+              }
+            />
+          </Route>
+          <Route
+            path="*"
+            element={<Navigate to={isAuthenticated ? '/' : '/login'} />}
+          />
+        </Routes>
+      </Router>
+    </>
+  )
 }
 
 export default App
