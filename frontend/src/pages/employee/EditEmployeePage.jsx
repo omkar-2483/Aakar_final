@@ -29,11 +29,8 @@ const EditEmployeePage = () => {
     jobProfiles: [],
   })
   useEffect(() => {
-    if (employeeId && employeeData) {
-      console.log({ employeeData: employeeData })
-      setEmployeeInputValues(employeeData)
-    }
-  }, [employeeData, employeeId])
+    setEmployeeInputValues(employeeData)
+  }, [employeeId])
 
   // Handle input changes for employee details
   const handleInputChange = (e) => {
