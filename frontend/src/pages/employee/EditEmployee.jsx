@@ -13,7 +13,7 @@ const EditEmployee = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { id } = useParams();
-    const { employees, loading, error } = useSelector((state) => state.employee);
+    const { employees } = useSelector((state) => state.employee);
 
     const [employeeInputValues, setEmployeeInputValues] = useState({
         customEmployeeId: '',
@@ -66,10 +66,11 @@ const EditEmployee = () => {
     const handleSave = (e) => {
         e.preventDefault();
 
+        // Create payload object
         const payload = {
             employee: {
                 ...employeeInputValues,
-                employeeAccess: access,
+                employeeAccess: access, // Updated access string
                 employeeEndDate: employeeInputValues.employeeEndDate || null,
             },
             jobProfiles: employeeDesignations.map((designation) => ({
@@ -80,7 +81,10 @@ const EditEmployee = () => {
             })),
         };
 
-        dispatch(updateEmployee({ employeeId: id, payload }))
+        // Dispatch Redux action
+        console.log(payload);
+        dispatch(updateEmployee({ employeeId: payload.employee.employeeId, payload }))
+            .unwrap()
             .then(() => {
                 notify();
                 navigate('/employees');
@@ -90,7 +94,6 @@ const EditEmployee = () => {
             });
     };
 
-    console.log(employeeDesignations)
 
     return (
         <div className="edit-employee-dashboard">
@@ -125,7 +128,7 @@ const EditEmployee = () => {
                     setEmployeeDesignations={setEmployeeDesignations}
                 />
 
-                <AccessTable access={access} setAccess={setAccess} />
+                <AccessTable access={access} setAccess={setAccess} mode={"edit"} />
             </section>
             <ToastContainer />
         </div>

@@ -479,6 +479,8 @@ export const editEmployeeWithRelations = asyncHandler(async (req, res) => {
     const { id } = req.params; // employeeId from URL
     const { employee, jobProfiles } = req.body;
 
+    console.log(id);
+
     // Validate required fields in employee object
     if (
         !employee.customEmployeeId ||
@@ -490,79 +492,70 @@ export const editEmployeeWithRelations = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'All required fields must be filled.' });
     }
 
-    connection.beginTransaction(async (err) => {
-        if (err) {
-            return res.status(500).json({ message: 'Failed to start transaction.' });
+    try {
+        // Update the employee table
+        const updateEmployeeQuery =
+            `UPDATE employee 
+            SET 
+              customEmployeeId = ?, 
+              employeeName = ?, 
+              companyName = ?, 
+              employeeQualification = ?, 
+              experienceInYears = ?, 
+              employeeDOB = ?, 
+              employeeJoinDate = ?, 
+              employeeGender = ?, 
+              employeePhone = ?, 
+              employeeEmail = ?, 
+              employeeAccess = ?,
+              employeeEndDate = ? 
+            WHERE employeeId = ?`;
+
+        const employeeValues = [
+            employee.customEmployeeId,
+            employee.employeeName,
+            employee.companyName,
+            employee.employeeQualification,
+            employee.experienceInYears,
+            employee.employeeDOB,
+            employee.employeeJoinDate,
+            employee.employeeGender,
+            employee.employeePhone,
+            employee.employeeEmail,
+            employee.employeeAccess,
+            employee.employeeEndDate,
+            id,
+        ];
+
+        const [employeeResult] = await connection.promise().query(updateEmployeeQuery, employeeValues);
+
+        if (employeeResult.affectedRows === 0) {
+            throw new Error('Employee not found.');
         }
 
-        try {
-            // Update the employee table
-            const updateEmployeeQuery = `
-        UPDATE employee 
-        SET 
-          customEmployeeId = ?, 
-          employeeName = ?, 
-          companyName = ?, 
-          employeeQualification = ?, 
-          experienceInYears = ?, 
-          employeeDOB = ?, 
-          employeeJoinDate = ?, 
-          employeeGender = ?, 
-          employeePhone = ?, 
-          employeeEmail = ?, 
-          employeeEndDate = ?
-        WHERE employeeId = ?
-      `;
-
-            const employeeValues = [
-                employee.customEmployeeId,
-                employee.employeeName,
-                employee.companyName,
-                employee.employeeQualification,
-                employee.experienceInYears,
-                employee.employeeDOB,
-                employee.employeeJoinDate,
-                employee.employeeGender,
-                employee.employeePhone,
-                employee.employeeEmail,
-                employee.employeeEndDate,
-                id,
-            ];
-
-            const [employeeResult] = await connection.promise().query(updateEmployeeQuery, employeeValues);
-
-            if (employeeResult.affectedRows === 0) {
-                throw new Error('Employee not found.');
-            }
-
+        // Handle jobProfiles only if not empty
+        if (jobProfiles && jobProfiles.length > 0) {
             // Delete existing job profiles for the employee
             const deleteProfilesQuery = `DELETE FROM employeedesignation WHERE employeeId = ?`;
             await connection.promise().query(deleteProfilesQuery, [id]);
 
-            // Insert new job profiles into employeedesignations table
-            const insertProfilesQuery = `
-        INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId) 
-        VALUES (?, ?, ?, ?)
-      `;
+            // Insert new job profiles into employeedesignation table
+            const insertProfilesQuery =
+                `INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId) 
+                VALUES (?, ?, ?, ?)`;
 
             for (const profile of jobProfiles) {
                 const profileValues = [id, profile.designationId, profile.departmentId, profile.managerId];
                 await connection.promise().query(insertProfilesQuery, profileValues);
             }
-
-            connection.commit((commitErr) => {
-                if (commitErr) {
-                    return res.status(500).json({ message: 'Failed to commit transaction.' });
-                }
-                res.status(200).json({ message: 'Employee and job profiles updated successfully.' });
-            });
-        } catch (error) {
-            connection.rollback(() => {
-                res.status(500).json({ message: error.message });
-            });
         }
-    });
+
+        res.status(200).json({ message: 'Employee updated successfully.' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
+
 
 
 
