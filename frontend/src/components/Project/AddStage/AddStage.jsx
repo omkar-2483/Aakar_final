@@ -45,7 +45,7 @@ const AddStage = ({
     console.log({ stages: stages })
     setIsChanged([...isChanged, false])
   }
-
+  console.log(stages)
   return (
     <>
       <div className="schedule">

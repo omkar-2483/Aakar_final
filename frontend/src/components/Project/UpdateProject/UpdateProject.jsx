@@ -104,7 +104,13 @@ const UpdateProject = () => {
 
   useEffect(() => {
     if (activeStages && activeStages.length > 0) {
-      setStage(activeStages.map((s) => ({ ...s })))
+      setStage(
+        activeStages.map((s) => ({
+          ...s,
+          owner: `${s.owner}(${s.ownerId})`,
+          createdBy: user.employeeId,
+        }))
+      )
       setOriginalStages(activeStages.map((s) => ({ ...s })))
     }
   }, [activeStages])

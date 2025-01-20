@@ -29,6 +29,7 @@ import {
 import { getAllEmployees } from '../../../features/employeeSlice'
 
 const AddSubStage = () => {
+  const { user } = useSelector((state) => state.auth)
   const employeeAccess = useSelector(
     (state) => state.auth.user?.employeeAccess
   ).split(',')[1]
@@ -98,7 +99,7 @@ const AddSubStage = () => {
       activeStages.length > 0
         ? activeStages[activeStages.length - 1].stageId
         : null,
-    createdBy: 'John Doe',
+    createdBy: user.employeeId,
     stageId: null,
   })
 
@@ -133,13 +134,21 @@ const AddSubStage = () => {
         ...prevValues,
         ...stageData,
         stageId: stageData.stageId || prevValues.stageId,
+        owner: `${stageData.owner}(${stageData.ownerId})`,
+        createdBy: user.employeeId,
       }))
     }
   }, [stageData])
 
   useEffect(() => {
     if (activeSubStages.length > 0) {
-      setStage(activeSubStages.map((s) => ({ ...s })))
+      setStage(
+        activeSubStages.map((s) => ({
+          ...s,
+          owner: `${s.owner}(${s.ownerId})`,
+          createdBy: user.employeeId,
+        }))
+      )
       setOriginalStages(activeSubStages.map((s) => ({ ...s })))
     }
   }, [activeSubStages])
