@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import React, { useEffect } from "react";
 import { FiPlusCircle, FiBriefcase } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import {getAllEmployees} from "../../features/employeeSlice.js";
-import {fetchDesignations} from "../../features/designationSlice.js";
+import {getAllEmployees} from "../..//features/employeeSlice.js";
+import {fetchDesignations} from "../..//features/designationSlice.js";
 
 const DesignationDashboard = () => {
     const dispatch = useDispatch();

@@ -7,7 +7,7 @@ import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import {useDispatch} from "react-redux";
-import {addDepartment} from "../../features/departmentSlice.js";
+import {addDepartment} from "../..//features/departmentSlice.js";
 import {Bounce, toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
 
