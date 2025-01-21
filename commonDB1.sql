@@ -316,6 +316,15 @@ CREATE TABLE `substage` (
 --
 -- Table structure for table `training`
 --
+CREATE TABLE `training` (
+  `trainingId` int(10) UNSIGNED NOT NULL,
+  `trainerId` int(10) UNSIGNED DEFAULT NULL,
+  `startTrainingDate` date DEFAULT NULL,
+  `endTrainingDate` date DEFAULT NULL,
+  `skillId` tinyint(3) UNSIGNED DEFAULT NULL,
+  `trainingTitle` varchar(50) DEFAULT NULL,
+  `evaluationType` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `training`
