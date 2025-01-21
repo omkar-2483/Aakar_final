@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { updateEmployee } from '../../features/employeeSlice.js'
+import { updateEmployee } from '../..//features/employeeSlice.js'
 import {
   TextField,
   FormControl,

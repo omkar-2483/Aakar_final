@@ -3,9 +3,9 @@ import { FiPlusCircle } from 'react-icons/fi';
 import { MdOutlineDelete } from "react-icons/md";
 import { Autocomplete, TextField, FormControl } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
-import {fetchAllDepartments, fetchAllWorkingDepartments} from "../../features/departmentSlice.js"; // Import the fetchAllDepartments action
-import { fetchDesignations } from "../../features/designationSlice.js"; // Import the fetchAllDesignations action
-import { getAllEmployees } from "../../features/employeeSlice.js"; // Import the fetchAllEmployees action
+import {fetchAllDepartments, fetchAllWorkingDepartments} from "../..//features/departmentSlice.js"; // Import the fetchAllDepartments action
+import { fetchDesignations } from "../..//features/designationSlice.js"; // Import the fetchAllDesignations action
+import { getAllEmployees } from "../..//features/employeeSlice.js"; // Import the fetchAllEmployees action
 
 const AddEmployeeDepartment = ({ initialEmployeeDesignations, setEmployeeDesignations }) => {
     const [employeeDesignations, setLocalEmployeeDesignations] = useState(initialEmployeeDesignations || []);

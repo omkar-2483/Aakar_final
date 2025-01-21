@@ -1,3 +1,4 @@
+
 import React, {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {FiArrowLeftCircle, FiEdit} from "react-icons/fi";
@@ -5,11 +6,11 @@ import {useDispatch, useSelector} from "react-redux";
 import TableComponent from "../../components/Table/TableComponent.jsx";
 import {MdAutoDelete} from "react-icons/md";
 import '../employee/EmployeeDashboard.css';
-import {deleteDepartment} from "../../features/departmentSlice.js";
+import {deleteDepartment} from "../..//features/departmentSlice.js";
 import {notify} from "../../components/Toast/SuccessNotify.js";
 import moment from "moment";
 import Modal from 'react-modal';
-import {deleteMultipleEmployees, moveEmployee} from "../../features/employeeSlice.js";
+import {deleteMultipleEmployees, moveEmployee} from "../..//features/employeeSlice.js";
 
 function DepartmentProfile() {
     const {id} = useParams();
@@ -24,8 +25,6 @@ function DepartmentProfile() {
     const [showDeleteEmployeeModal, setShowDeleteEmployeeModal] = useState(false);
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [showDeleteDepartmentModal, setShowDeleteDepartmentModal] = useState(false);
-    const access = useSelector((state) =>  state?.auth?.user?.employeeAccess).split(',')
-    const HRManagementAccess = access[0];
 
     if (!workingDepartments || workingDepartments.length === 0) {
         return <div>Loading...</div>;
@@ -216,23 +215,18 @@ function DepartmentProfile() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        {
-                            HRManagementAccess[7] &&
-                            <button
-                                className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded">
-                                <FiEdit size={20} className="save-icon"/>
-                                <span>Edit details</span>
-                            </button>
-                        }
-                        {
-                            HRManagementAccess[8] &&
-                            <button
-                                className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
-                                onClick={openModal}>
-                                <MdAutoDelete size={20} className="delete-icon"/>
-                                <span>Delete Department</span>
-                            </button>
-                        }
+                        <button
+                            className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded">
+                            <FiEdit size={20} className="save-icon"/>
+                            <span>Edit details</span>
+                        </button>
+                        <button
+                            className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
+                            onClick={openModal}
+                        >
+                            <MdAutoDelete size={20} className="delete-icon"/>
+                            <span>Delete Department</span>
+                        </button>
                         {/* Modal Popup */}
                         <Modal
                             isOpen={isModalOpen}

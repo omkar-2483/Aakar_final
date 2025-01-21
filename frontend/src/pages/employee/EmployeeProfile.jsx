@@ -2,7 +2,7 @@ import React from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import { FiArrowLeftCircle, FiEdit } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
-import { deleteEmployee } from "../../features/employeeSlice.js"; // Import deleteEmployee action
+import { deleteEmployee } from "../..//features/employeeSlice.js"; // Import deleteEmployee action
 import TableComponent from "../../components/Table/TableComponent.jsx";
 import AccessTableOutput from "./AccessTableOutput.jsx";
 import { MdAutoDelete } from "react-icons/md";

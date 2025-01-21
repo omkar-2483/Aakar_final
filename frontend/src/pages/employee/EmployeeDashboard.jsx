@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigate} from 'react-router-dom';
-import {getAllEmployees} from '../../features/employeeSlice.js';
+import {getAllEmployees} from '../..//features/employeeSlice.js';
 import {FiPlusCircle} from 'react-icons/fi';
 import Infocard from "../../components/Infocard/Infocard.jsx";
 import TableComponent from "../../components/Table/TableComponent.jsx";
