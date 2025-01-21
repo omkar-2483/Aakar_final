@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Grade from './Grade';
@@ -10,7 +9,6 @@ import GeneralSearchBar from '../../components/GenralSearchBar';
 import { fetchDepartmentSkills, fetchAssignedEmployeeData, fetchSkillsForDepartment, fetchDataBySkillsAndDepartment, saveEmployeeData } from './SkillMatrixAPI';
 
 const SearchBar = () => {
-  const [departments, setDepartments] = useState([]);
   const [skills, setSkills] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [selectedSkills, setSelectedSkills] = useState([]);
@@ -43,34 +41,24 @@ const SearchBar = () => {
   
   function invalidSelection() {
     try {
-        const hasInvalidSelection = Object.values(gradeChanges).some((change) => {
-        console.log("Evaluating change:", change);
-  
-        const isCheckboxSelected = selectedEmp.some((emp) => {
-          const isMatch = emp.employeeId === change.employeeId && emp.skillId === change.skillId;
-          return isMatch;
-        });
-  
-        console.log(`Change grade: ${change.grade}, Checkbox selected: ${isCheckboxSelected}`);
+      const hasInvalidSelection = Object.values(gradeChanges).some((change) => {
+        const isCheckboxSelected = selectedEmp.some(
+          (emp) => emp.employeeId === change.employeeId && emp.skillId === change.skillId
+        );
         return change.grade === 4 && isCheckboxSelected;
       });
-  
-      console.log("Invalid selection result:", hasInvalidSelection);
-  
+    
       if (hasInvalidSelection) {
         toast.error('Cannot assign training for grade 4!');
       }
-  
       setDisableAssign(hasInvalidSelection);
     } catch (error) {
       console.error("Error in invalidSelection:", error);
     }
   }
-  
 
   useEffect(()=>{
     if(departmentId){
-      console.log("DEpartet d",departmentId)
       fetchDepartmentSkills(departmentId)
         .then(skills => {
           setDepartmentExpSkill(skills);
@@ -115,17 +103,17 @@ const SearchBar = () => {
     }
   }, [selectedSkills]);
 
-  useEffect(() => {
-      const department = departments.find(dept => dept.departmentId === departmentId);
-      if (department) {
-        const departmentDetails = {
-          label: department.departmentName,
-          value: departmentId,
-        };
-        const event = new CustomEvent('departmentSelected', { detail: departmentDetails });
-        window.dispatchEvent(event);
-      } 
-  }, [departmentId, departments]);
+  // useEffect(() => {
+  //     const department = departments.find(dept => dept.departmentId === departmentId);
+  //     if (department) {
+  //       const departmentDetails = {
+  //         label: department.departmentName,
+  //         value: departmentId,
+  //       };
+  //       const event = new CustomEvent('departmentSelected', { detail: departmentDetails });
+  //       window.dispatchEvent(event);
+  //     } 
+  // }, [departmentId, departments]);
   
 
   const fetchData = () => {
@@ -133,7 +121,7 @@ const SearchBar = () => {
     fetchDataBySkillsAndDepartment(selectedSkills, departmentId)
       .then(response => {
         console.log("Skill id :",selectedSkills)
-        console.log(response); 
+        console.log("All main data: ", response); 
         const groupedData = groupDataByEmployee(response);
         setData(groupedData);
         setLoading(false);
@@ -144,50 +132,60 @@ const SearchBar = () => {
       });
   }; 
 
-  const clearDepartment = () => {
-    setSelectedDepartment(null);
-    setSelectedSkills([]);
-    setData([]);
-  };
+  // const clearDepartment = () => {
+  //   setSelectedDepartment(null);
+  //   setSelectedSkills([]);
+  //   setData([]);
+  // };
 
 
   const OnGradeChange = (employeeId, skillId, newGrade) => {
-    // Check if the checkbox is selected for the given employee and skill
     const isCheckboxSelected = selectedEmp.some(
       (emp) => emp.employeeId === employeeId && emp.skillId === skillId
     );
   
-    // If grade is 4 and checkbox is selected, show an error and exit
     if (newGrade === 4 && isCheckboxSelected) {
       toast.error('Grade 4 cannot be assigned when the checkbox is selected!');
       setDisableAssign(true);
-      console.log("Grade 4 cannot be assigned for selected checkbox!");
-      return; // Prevent further execution
+      console.log("from grade change!!");
+      return; 
     }
   
-    // Update grade changes
     setGradeChanges((prev) => ({
       ...prev,
       [`${employeeId}-${skillId}`]: { employeeId, skillId, grade: newGrade },
     }));
-    setTimeout(() => invalidSelection(), 0);    
+
+    if (newGrade === 4) {
+      const isCheckboxSelected = selectedEmp.some(
+        (emp) => emp.employeeId === employeeId && emp.skillId === skillId
+      );
+  
+      if (isCheckboxSelected) {
+        setGradeChanges((prev) => {
+          const updated = { ...prev };
+          delete updated[`${employeeId}-${skillId}`]; 
+          return updated;
+        });
+      }
+    }
   };
   
 
-  const handleSkillChange = (selectedOptions) => {
-    const isSelectAllSelected = selectedOptions.some(option => option.value === 'select-all');
+  // const handleSkillChange = (selectedOptions) => {
+  //   const isSelectAllSelected = selectedOptions.some(option => option.value === 'select-all');
   
-    if (isSelectAllSelected) {
-      if (selectedOptions.length === 1) {
-        const allSkills = skills.filter(skill => skill.value !== 'select-all');
-        setSelectedSkills(allSkills);
-      } else {
-        setSelectedSkills([]);
-      }
-    } else {
-      setSelectedSkills(selectedOptions);
-    }
-  };
+  //   if (isSelectAllSelected) {
+  //     if (selectedOptions.length === 1) {
+  //       const allSkills = skills.filter(skill => skill.value !== 'select-all');
+  //       setSelectedSkills(allSkills);
+  //     } else {
+  //       setSelectedSkills([]);
+  //     }
+  //   } else {
+  //     setSelectedSkills(selectedOptions);
+  //   }
+  // };
 
   const removeSkill = (skillToRemove) => {
     setSelectedSkills((prevSkills) => {
@@ -208,6 +206,8 @@ const SearchBar = () => {
         groupedData[row.employeeId] = {
           employeeId: row.employeeId,
           employeeName: row.employeeName,
+          employeeQualification: row.employeeQualification,
+          experienceInYears: row.experienceInYears,
           skills: {},
         };
       }
@@ -218,7 +218,19 @@ const SearchBar = () => {
   };
 
   const onSelectionChange = (employeeId, skillId, isChecked) => {
-    //Update the selectedEmp state
+    const employee = data.find((emp) => emp.employeeId === employeeId);
+    const grade = employee.skills[skillId];
+    console.log("My grade: ", grade);
+  
+    if (isChecked && grade === 4) {
+      toast.error('Checkbox cannot be selected for Grade 4!');
+      setDisableAssign(true);
+      console.log("Called me");
+      return; 
+    }
+    
+    setDisableAssign(false);
+
     if (isChecked) {
       setNewSelectedEmp(prevEmp => {
           const exists = prevEmp.some(emp => emp.employeeId === employeeId && emp.skillId === skillId);
@@ -257,7 +269,7 @@ const SearchBar = () => {
   console.log('New Selected emp : ', newSelectedEmp);
   console.log('Remove emp : ', removeEmp);
   
-  setTimeout(() => invalidSelection(), 0);
+  //setTimeout(() => invalidSelection(), 0);
   };
   
   const handleSave = () => {
@@ -290,6 +302,7 @@ const SearchBar = () => {
           Assign
         </button>
       </div>)}
+
       <div className='searchbar-button-bar'>
         <h1 className='search-bar-dept-name'>Department name: {departmentName}</h1>
         <GeneralSearchBar 
@@ -323,6 +336,8 @@ const SearchBar = () => {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Qualifications</th>
+                <th>Experience</th>
                 {selectedSkills.map(skill => (
                   <th key={skill.id}>{skill.label}</th>
                 ))}
@@ -332,6 +347,8 @@ const SearchBar = () => {
               {data.map((row, index) => (
                 <tr key={index}>
                   <td>{row.employeeName}</td>
+                  <td>{row.employeeQualification}</td>
+                  <td>{row.experienceInYears}</td>
                   {selectedSkills.map(skill => (
                     <td key={skill.id}>
                       {gradeRead &&
@@ -348,7 +365,7 @@ const SearchBar = () => {
                         pskill_id={skill.id}
                         pselectedEmp={selectedEmp}
                         onSelectionChnge={onSelectionChange}
-                        disable={row?.skills?.[skill.id] === 4}
+                        disable={row.skills[skill.id] === 4}
                         disableCondition={!checkboxUpdate}
                       />}
                     </td>

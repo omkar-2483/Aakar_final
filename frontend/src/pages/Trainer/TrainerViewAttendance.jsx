@@ -18,7 +18,6 @@ const TrainerViewAttendance = () => {
 
     const loadAttendanceData = async () => {
     try {
-      console.log("hahahaha");
       const response = await viewAttendance(sessionId);
       if (Array.isArray(response.data)) {
         setAttendanceData(

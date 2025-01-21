@@ -10,6 +10,7 @@ const GenralCheckBox = ({ emp_id, onSelectionChnge, selectToSend }) => {
             type="checkbox"
             checked={isChecked}
             onChange={handleChange}
+            style={{ cursor: 'pointer' }}
         />
     );
 };

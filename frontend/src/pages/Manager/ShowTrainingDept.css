@@ -35,7 +35,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.tableComponent {
+.show-training-tableComponent {
   width: 95% !important;
   border-collapse: collapse;
   margin-top: 20px;
@@ -44,50 +44,66 @@
   border-radius: 10px;
 }
 
-.tableComponent th,
-.tableComponent td {
-  padding: 12px;
+.show-training-tableComponent table {
+  width: 100%; 
+  border-collapse: collapse;
+  table-layout: auto; 
+  margin-top: 5px;
+}
+
+.show-training-tableComponent th,
+.show-training-tableComponent td {
+  padding: 8px 12px;
   text-align: center;
+  border: none;
 }
 
-.tableComponent th {
-  font-size: 16px;
-  color: #444;
-  font-weight: bold;
-}
-
-.tableComponent td {
+.show-training-tableComponent th {
+  background-color: white;
+  color: #333;
+  border-bottom: 2px solid #ccc;
+  border-top: none;
+  font-family: Arial, sans-serif;
   font-size: 14px;
 }
 
-.tableComponent .clickable-header {
+.show-training-tableComponent td {
+  font-size: 14px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.show-training-tableComponent .clickable-header {
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
-.tableComponent .clickable-header:hover {
+.show-training-tableComponent .clickable-header:hover {
   color: #0061A1;
   text-decoration: none;
   cursor: pointer;
   font-weight: bolder;
 }
 
-.tableComponent .expanded-row {
+.show-training-tableComponent .expanded-row {
   background-color: #f9f9f9;
   border-top: 2px solid #0061A1;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-.tableComponent .expanded-row td {
+.show-training-tableComponent .expanded-row td {
   padding: 15px;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-.tableComponent .expanded-row td.employee-name {
-  text-align: left;
+.show-training-tableComponent .expanded-row td.employee-name {
+  text-align: center;
   padding-left: 20px;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-.tableComponent .expanded-row td {
+.show-training-tableComponent .expanded-row td {
   vertical-align: top;
   padding-top: 10px;
   padding-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
 }
