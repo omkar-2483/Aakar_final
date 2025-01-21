@@ -44,6 +44,7 @@ const CustomDatePicker = ({ label, selected, onChange }) => {
         label={label}
         value={dayjs(selected)}
         onChange={handleDateChange}
+        format="DD-MM-YYYY"
         slots={{
           textField: (params) => (
             <TextField

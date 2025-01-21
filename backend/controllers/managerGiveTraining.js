@@ -328,10 +328,10 @@ router.get('/department-eligible-for-training/:departmentId/:skillId?', (req, re
   const skillId = req.params.skillId;
 
   // SQL query to fetch training data based on the presence of skillId
-  const query = skillId
+  const query = skillIds
     ? `
       SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, 
-        GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills, e.employeeName AS trainerName
+        GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills, e.employeeName AS trainerName, t.evaluationType
       FROM training t
       INNER JOIN trainingSkills ts ON ts.trainingId = t.trainingId
       INNER JOIN employee e ON e.employeeId = t.trainerId
@@ -342,7 +342,7 @@ router.get('/department-eligible-for-training/:departmentId/:skillId?', (req, re
     `
     : `
       SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, 
-        GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills, e.employeeName AS trainerName
+        GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills, e.employeeName AS trainerName, t.evaluationType
       FROM training t
       INNER JOIN trainingSkills ts ON ts.trainingId = t.trainingId
       INNER JOIN employee e ON e.employeeId = t.trainerId

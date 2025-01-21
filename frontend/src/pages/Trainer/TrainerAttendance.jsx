@@ -48,8 +48,6 @@ const AttendancePage = () => {
     }
   };
   
-  
-  
   const handleSaveAttendance = async () => {
     const attendanceData = employeeData.map((employee) => ({
       employeeId: employee.employeeId,
@@ -62,19 +60,13 @@ const AttendancePage = () => {
       toast.success('Attendance saved successfully.');
       navigate('/TrainerViewAttendance', { state: { sessionId } });
     } catch (error) {
-      toast.error('Failed to save attendance. Please try again.');
+      //toast.error('Failed to save attendance. Please try again.');
       navigate('/TrainerViewAttendance', { state: { sessionId } });
     }
   };
 
-  
   // Define columns for the table
   const columns = [
-    {
-      label: 'Sr. No.',
-      id: 'srNo',
-      align: 'center',
-    },
     {
       label: 'Employee Name',
       id: 'employeeName',

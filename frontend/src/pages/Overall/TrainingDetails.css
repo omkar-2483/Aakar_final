@@ -50,6 +50,12 @@
   margin-left: 4%;
 }
 
+.trainer-training-details-actions{
+  display: flex;
+  flex-direction: row !important;
+  gap: 3px;
+}
+
 .training-details-form{
   width: 110%;
   padding-right: 2%;
