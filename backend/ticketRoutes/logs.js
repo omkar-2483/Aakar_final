@@ -102,7 +102,7 @@ router.post('/logs', upload.array('attachments'), async (req, res) => {
         const [results] = await db.query(query, [ticket_id, created_by, message, type]);
 
         const logId = results.insertId; // ID of the newly created log
-
+        console.log('Log created successfully with ID:', logId);
         // Handle attachments if provided
         if (req.files && req.files.length > 0) {
             const attachmentPromises = req.files.map(file => {

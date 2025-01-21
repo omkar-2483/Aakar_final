@@ -138,15 +138,15 @@ function TicketPage() {
 
   return (
     <div className="content-container">
-      <div className="content">
+      <div className="ticketPageContent">
         <BackButton />
       </div>
 
-      <div className="content">
+      <div className="ticketPageContent">
         <Ticket ticketId={id} />
       </div>
 
-      <div className="content assignee-functionality">
+      <div className="assignee-functionality">
         <StatusUpdate ticketId={id} onUpdate={onUpdate} />
         <AssigneeUpdate ticketId={id} assigneeOptions={assigneeOptions} onUpdate={onUpdate} />
 

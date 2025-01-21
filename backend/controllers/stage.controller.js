@@ -21,7 +21,8 @@ export const getStageList = asyncHandler(async (req, res) => {
 
 // Get all stages
 export const getAllStages = asyncHandler(async (req, res) => {
-  const query = 'SELECT * FROM stage'
+  const query =
+    'SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy, eo.employeeName AS owner,cb.customEmployeeId AS createdById  FROM stage s INNER JOIN employee eo ON s.owner = eo.employeeId INNER JOIN employee cb ON s.createdBy = cb.employeeId;'
 
   db.query(query, (err, data) => {
     if (err) {
@@ -44,8 +45,12 @@ export const getAllStages = asyncHandler(async (req, res) => {
 
 export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
   const pNo = req.params.id
-  const query =
-    'SELECT * FROM stage WHERE projectNumber = ? AND historyOf IS NULL'
+  const query = `SELECT s.*, eo.customEmployeeId AS ownerId , cb.employeeName AS createdBy,eo.employeeName AS owner,cb.customEmployeeId AS createdById 
+     FROM stage s
+     INNER JOIN employee eo ON s.owner = eo.employeeId
+     INNER JOIN employee cb ON s.createdBy = cb.employeeId
+     WHERE s.projectNumber = ? 
+     AND s.historyOf IS NULL;`
 
   db.query(query, [pNo], (err, data) => {
     if (err) {
@@ -54,8 +59,6 @@ export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
         .status(500)
         .send(new ApiError(500, 'Error retrieving active stages'))
     }
-
-    console.log('Raw stages data:', data)
 
     // Helper function to order stages based on seqPrevStage
     const orderStages = (stages) => {
@@ -70,8 +73,6 @@ export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
         }
       })
 
-      console.log('First stage:', firstStage)
-
       if (!firstStage) {
         return [] // If no first stage, return empty
       }
@@ -82,7 +83,6 @@ export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
       // Iteratively add stages in order by following seqPrevStage
       while (currentStage) {
         orderedStages.push(currentStage)
-        console.log('Current stage:', currentStage)
 
         // Move to the next stage where seqPrevStage matches the current stage id
         currentStage = stages.find(
@@ -107,8 +107,6 @@ export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
     // Get stages in order based on seqPrevStage
     const orderedStages = orderStages(stages)
 
-    console.log('Ordered stages:', orderedStages)
-
     res
       .status(200)
       .json(
@@ -123,7 +121,12 @@ export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
 
 export const getHistoryStagesByStageId = asyncHandler(async (req, res) => {
   const sId = req.params.id
-  const query = 'SELECT * FROM stage WHERE historyOf = ? ORDER BY timestamp'
+  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy,eo.customEmployeeId AS ownerId, cb.customEmployeeId AS createdByIds
+                 FROM stage s
+                 INNER JOIN employee eo ON s.owner = eo.employeeId
+                 INNER JOIN employee cb ON s.createdBy = cb.employeeId
+                 WHERE s.historyOf = ? 
+                 ORDER BY s.timestamp;`
 
   db.query(query, [sId], (err, data) => {
     if (err) {
@@ -152,7 +155,12 @@ export const getHistoryStagesByStageId = asyncHandler(async (req, res) => {
 // Get stage by stage ID
 export const getSingleStageByStageId = asyncHandler(async (req, res) => {
   const stageId = req.params.id
-  const query = 'SELECT * FROM stage WHERE stageId = ?'
+  const query = `
+          SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy, eo.customEmployeeId AS ownerId, cb.customEmployeeId AS createdById
+          FROM stage s
+          INNER JOIN employee eo ON s.owner = eo.employeeId
+          INNER JOIN employee cb ON s.createdBy = cb.employeeId
+          WHERE s.stageId = ?;`
 
   db.query(query, [stageId], (err, data) => {
     if (err) {
@@ -185,7 +193,11 @@ export const getStagesByProjectNumber = asyncHandler(async (req, res) => {
   // console.log(req.params)
 
   const projectNumber = req.params.projectNumber
-  const query = 'SELECT * FROM stage WHERE projectNumber = ?'
+  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy,eo.customEmployeeId AS ownerId, cb.customEmployeeId AS createdById
+                 FROM stage s
+                 INNER JOIN employee eo ON s.owner = eo.employeeId
+                 INNER JOIN employee cb ON s.createdBy = cb.employeeId
+                 WHERE s.projectNumber = ?;`
 
   db.query(query, [projectNumber], (err, data) => {
     if (err) {
@@ -215,7 +227,6 @@ export const getStagesByProjectNumber = asyncHandler(async (req, res) => {
 
 //create stage
 export const createStage = asyncHandler(async (req, res) => {
-  console.log(req.body)
   const {
     projectNumber,
     stageName,
@@ -236,8 +247,25 @@ export const createStage = asyncHandler(async (req, res) => {
       .json(new ApiResponse(400, null, 'Missing required fields'))
   }
 
-  const checkOwnerQuery = `SELECT employeeId FROM employee WHERE employeeId = ?`
-  db.query(checkOwnerQuery, [owner], (err, result) => {
+  // Extract customEmployeeId from owner field
+  const match = owner.match(/\(([^)]+)\)/) // Extracts customEmployeeId
+  const customEmployeeId = match ? match[1] : null
+
+  if (!customEmployeeId) {
+    return res
+      .status(400)
+      .json(
+        new ApiResponse(
+          400,
+          null,
+          'Invalid owner format, customEmployeeId not found.'
+        )
+      )
+  }
+
+  // Query to find the corresponding employeeId
+  const checkOwnerQuery = `SELECT employeeId FROM employee WHERE customEmployeeId = ?`
+  db.query(checkOwnerQuery, [customEmployeeId], (err, result) => {
     if (err) {
       console.error('Error checking owner:', err)
       return res
@@ -250,6 +278,8 @@ export const createStage = asyncHandler(async (req, res) => {
         .json(new ApiResponse(400, null, 'Owner not found in employee table'))
     }
 
+    const employeeId = result[0].employeeId
+
     const query = `INSERT INTO stage (
       projectNumber, stageName, startDate, endDate, owner, machine, duration, 
       seqPrevStage, createdBy, progress
@@ -260,7 +290,7 @@ export const createStage = asyncHandler(async (req, res) => {
       stageName,
       startDate,
       endDate,
-      owner,
+      employeeId, // Use employeeId instead of customEmployeeId
       machine,
       duration,
       seqPrevStage,
@@ -339,7 +369,6 @@ export const deleteStage = asyncHandler(async (req, res) => {
 export const updateStage = asyncHandler(async (req, res) => {
   const stageId = req.params.id
 
-  console.log(req.body)
   const selectQuery = `SELECT * FROM stage WHERE stageId = ?`
   const insertQuery = `INSERT INTO stage (
     projectNumber, stageName, startDate, endDate, owner, machine, duration, 
@@ -375,54 +404,139 @@ export const updateStage = asyncHandler(async (req, res) => {
         )
     }
 
-    const insertValues = [
-      stage.projectNumber,
-      stage.stageName,
-      stage.startDate,
-      stage.endDate,
-      stage.owner,
-      stage.machine,
-      stage.duration,
-      stage.seqPrevStage,
-      stage.createdBy,
-      stage.progress,
-      stageId, // historyOf should store the stageId
-      req.body.updateReason, // Pass the reason for the update
-    ]
+    // Extract customEmployeeId from owner field
+    const match = req.body.owner ? req.body.owner.match(/\(([^)]+)\)/) : null
+    const customEmployeeId = match ? match[1] : null
 
-    db.query(insertQuery, insertValues, (err, insertData) => {
-      if (err) {
-        console.log(err)
-        return res
-          .status(500)
-          .send(new ApiError(500, 'Error creating new stage in history'))
-      }
-
-      const updateValues = [
-        req.body.projectNumber,
-        req.body.stageName,
-        req.body.startDate,
-        req.body.endDate,
-        req.body.owner,
-        req.body.machine,
-        req.body.duration,
-        req.body.seqPrevStage,
-        req.body.createdBy,
-        req.body.progress,
-        req.body.timestamp,
-        stageId,
-      ]
-
-      db.query(updateQuery, updateValues, (err, updateData) => {
+    if (customEmployeeId) {
+      // Query to find the corresponding employeeId
+      const checkOwnerQuery = `SELECT employeeId FROM employee WHERE customEmployeeId = ?`
+      db.query(checkOwnerQuery, [customEmployeeId], (err, result) => {
         if (err) {
-          console.log(err)
-          return res.status(500).send(new ApiError(500, 'Error updating stage'))
+          console.log('Error checking owner:', err)
+          return res
+            .status(500)
+            .json(new ApiResponse(500, null, 'Error checking owner'))
+        }
+        if (result.length === 0) {
+          return res
+            .status(400)
+            .json(
+              new ApiResponse(400, null, 'Owner not found in employee table')
+            )
         }
 
-        res
-          .status(200)
-          .json(new ApiResponse(200, updateData, 'Stage updated successfully.'))
+        const employeeId = result[0].employeeId
+
+        const insertValues = [
+          stage.projectNumber,
+          stage.stageName,
+          stage.startDate,
+          stage.endDate,
+          stage.owner,
+          stage.machine,
+          stage.duration,
+          stage.seqPrevStage,
+          stage.createdBy,
+          stage.progress,
+          stageId, // historyOf should store the stageId
+          req.body.updateReason, // Pass the reason for the update
+        ]
+
+        db.query(insertQuery, insertValues, (err, insertData) => {
+          if (err) {
+            console.log(err)
+            return res
+              .status(500)
+              .send(new ApiError(500, 'Error creating new stage in history'))
+          }
+
+          const updateValues = [
+            req.body.projectNumber,
+            req.body.stageName,
+            req.body.startDate,
+            req.body.endDate,
+            employeeId, // Use employeeId for owner
+            req.body.machine,
+            req.body.duration,
+            req.body.seqPrevStage,
+            req.body.createdBy,
+            req.body.progress,
+            req.body.timestamp,
+            stageId,
+          ]
+
+          db.query(updateQuery, updateValues, (err, updateData) => {
+            if (err) {
+              console.log(err)
+              return res
+                .status(500)
+                .send(new ApiError(500, 'Error updating stage'))
+            }
+
+            res
+              .status(200)
+              .json(
+                new ApiResponse(200, updateData, 'Stage updated successfully.')
+              )
+          })
+        })
       })
-    })
+    } else {
+      // If customEmployeeId not found in owner, proceed with the existing owner
+      const insertValues = [
+        stage.projectNumber,
+        stage.stageName,
+        stage.startDate,
+        stage.endDate,
+        stage.owner,
+        stage.machine,
+        stage.duration,
+        stage.seqPrevStage,
+        stage.createdBy,
+        stage.progress,
+        stageId, // historyOf should store the stageId
+        req.body.updateReason, // Pass the reason for the update
+      ]
+
+      db.query(insertQuery, insertValues, (err, insertData) => {
+        if (err) {
+          console.log(err)
+          return res
+            .status(500)
+            .send(new ApiError(500, 'Error creating new stage in history'))
+        }
+
+        const updateValues = [
+          req.body.projectNumber,
+          req.body.stageName,
+          req.body.startDate,
+          req.body.endDate,
+          req.body.owner, // Keep the original owner if customEmployeeId is not provided
+          req.body.machine,
+          req.body.duration,
+          req.body.seqPrevStage,
+          req.body.createdBy,
+          req.body.progress,
+          req.body.timestamp,
+          stageId,
+        ]
+
+        db.query(updateQuery, updateValues, (err, updateData) => {
+          if (err) {
+            console.log(err)
+            return res
+              .status(500)
+              .send(new ApiError(500, 'Error updating stage'))
+          }
+
+          res
+            .status(200)
+            .json(
+              new ApiResponse(200, updateData, 'Stage updated successfully.')
+            )
+        })
+      })
+    }
   })
 })

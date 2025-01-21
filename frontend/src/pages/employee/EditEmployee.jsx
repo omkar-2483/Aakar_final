@@ -1,30 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiArrowLeftCircle, FiEdit } from 'react-icons/fi';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { addEmployee } from '../../features/employeeSlice.js'; // Redux action
+import { updateEmployee } from '../../features/employeeSlice.js';
 import AddEmployeeForm from './AddEmployeeForm.jsx';
 import AddEmployeeDepartment from './AddEmployeeDepartment.jsx';
 import AccessTable from './AccessTable.jsx';
 
-const AddEmployee = () => {
+const EditEmployee = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
-    const notify = () =>
-        toast.success('Employee Added Successfully!', {
-            position: 'top-right',
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: 'light',
-            transition: Bounce,
-        });
+    const { id } = useParams();
+    const { employees } = useSelector((state) => state.employee);
 
     const [employeeInputValues, setEmployeeInputValues] = useState({
         customEmployeeId: '',
@@ -41,25 +30,47 @@ const AddEmployee = () => {
         employeePassword: '',
     });
 
-    const [employeeDesignations, setEmployeeDesignations] = useState([
-        {
-            designationId: 0,
-            designationName: '',
-            departmentId: 0,
-            managerId: 0,
-        },
-    ]);
-
+    const [employeeDesignations, setEmployeeDesignations] = useState([]);
     const [access, setAccess] = useState('');
+
+    useEffect(() => {
+        const employeeData = employees.find((item) => item.employee.customEmployeeId === id);
+
+        if (employeeData) {
+            const { employee, jobProfiles } = employeeData;
+            setEmployeeInputValues({
+                ...employee,
+                employeeEndDate: employee.employeeEndDate || null,
+            });
+
+            setEmployeeDesignations(Array.isArray(jobProfiles) ? jobProfiles : [jobProfiles]);
+            setAccess(employee.employeeAccess || '');
+        } else {
+            toast.error('Employee details not found in Redux store.');
+        }
+    }, [employees, id]);
+
+    const notify = () =>
+        toast.success('Employee Updated Successfully!', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'light',
+            transition: Bounce,
+        });
 
     const handleSave = (e) => {
         e.preventDefault();
 
-        // Structure the payload
+        // Create payload object
         const payload = {
             employee: {
                 ...employeeInputValues,
-                employeeAccess: access,
+                employeeAccess: access, // Updated access string
                 employeeEndDate: employeeInputValues.employeeEndDate || null,
             },
             jobProfiles: employeeDesignations.map((designation) => ({
@@ -70,21 +81,23 @@ const AddEmployee = () => {
             })),
         };
 
+        // Dispatch Redux action
         console.log(payload);
-        // Dispatching the payload to the Redux action
-        dispatch(addEmployee(payload))
+        dispatch(updateEmployee({ employeeId: payload.employee.employeeId, payload }))
+            .unwrap()
             .then(() => {
                 notify();
                 navigate('/employees');
             })
             .catch(() => {
-                toast.error('Failed to add employee.');
+                toast.error('Failed to update employee.');
             });
     };
 
+
     return (
-        <div className="add-employee-dashboard">
-            <section className="add-employee-head flex justify-between mb-3">
+        <div className="edit-employee-dashboard">
+            <section className="edit-employee-head flex justify-between mb-3">
                 <div className="flex items-center gap-3">
                     <FiArrowLeftCircle
                         size={28}
@@ -93,7 +106,7 @@ const AddEmployee = () => {
                     />
                     <div className="text-[17px]">
                         <span>Dashboard / </span>
-                        <span className="font-semibold">Employee Details</span>
+                        <span className="font-semibold">Edit Employee Details</span>
                     </div>
                 </div>
                 <button
@@ -101,22 +114,25 @@ const AddEmployee = () => {
                     onClick={handleSave}
                 >
                     <FiEdit size={20} className="edit-icon" />
-                    <span>Save details</span>
+                    <span>Save changes</span>
                 </button>
             </section>
-            <section className="add-employee-body bg-white px-10 py-7 flex flex-col gap-5">
+            <section className="edit-employee-body bg-white px-10 py-7 flex flex-col gap-5">
                 <AddEmployeeForm
                     employeeInputValues={employeeInputValues}
                     setEmployeeInputValues={setEmployeeInputValues}
                 />
+
                 <AddEmployeeDepartment
-                    employeeDesignations={employeeDesignations}
+                    initialEmployeeDesignations={employeeDesignations}
                     setEmployeeDesignations={setEmployeeDesignations}
                 />
-                <AccessTable access={access} setAccess={setAccess} />
+
+                <AccessTable access={access} setAccess={setAccess} mode={"edit"} />
             </section>
+            <ToastContainer />
         </div>
     );
 };
 
-export default AddEmployee;
+export default EditEmployee;

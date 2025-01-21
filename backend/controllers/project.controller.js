@@ -58,7 +58,6 @@ export const getAllProjects = asyncHandler(async (req, res) => {
 // get active projects
 export const getActiveProjects = asyncHandler(async (req, res) => {
   const query = 'SELECT * FROM project WHERE historyOf IS NULL'
-  console.log('object')
   db.query(query, (err, data) => {
     if (err) {
       const error = new ApiError(400, 'Error retrieving active projects')
@@ -157,9 +156,6 @@ export const getProjectById = asyncHandler(async (req, res) => {
 
 // Create a new project
 export const createProject = asyncHandler(async (req, res) => {
-  console.log('Request Body:', req.body)
-  console.log('Uploaded Files:', req.files)
-
   const projectQuery = `INSERT INTO project (
     projectNumber, companyName, dieName, dieNumber, projectStatus, startDate, endDate,
     projectType, projectPOLink, projectDesignDocLink, projectCreatedBy, progress
@@ -233,26 +229,50 @@ export const createProject = asyncHandler(async (req, res) => {
       // Insert each stage
       const stageInserts = stages.map((stage) => {
         return new Promise((resolve, reject) => {
-          const stageValues = [
-            projectNumber,
-            stage.stageName,
-            stage.startDate,
-            stage.endDate,
-            stage.owner,
-            stage.machine,
-            stage.duration,
-            null, // seqPrevStage will be updated later
-            stage.createdBy,
-            stage.progress,
-          ]
-          db.query(stageQuery, stageValues, (err, result) => {
-            if (err) {
-              reject(err)
-            } else {
-              const stageId = result.insertId
-              stage.stageId = stageId
-              resolve(stage)
+          // Extract customEmployeeId from owner field
+          const match = stage.owner.match(/\(([^)]+)\)/) // Extracts customEmployeeId
+          const customEmployeeId = match ? match[1] : null
+
+          if (!customEmployeeId) {
+            reject(
+              new Error('Invalid owner format, customEmployeeId not found.')
+            )
+            return
+          }
+
+          // Query to find the corresponding employeeId
+          const employeeQuery = `SELECT employeeId FROM employee WHERE customEmployeeId = ?`
+          db.query(employeeQuery, [customEmployeeId], (err, employeeResult) => {
+            if (err || employeeResult.length === 0) {
+              reject(new Error('Employee not found for customEmployeeId.'))
+              return
             }
+
+            const employeeId = employeeResult[0].employeeId
+
+            // Prepare stage values with the correct employeeId as owner
+            const stageValues = [
+              projectNumber,
+              stage.stageName,
+              stage.startDate,
+              stage.endDate,
+              employeeId, // Use employeeId instead of customEmployeeId
+              stage.machine,
+              stage.duration,
+              null, // seqPrevStage will be updated later
+              stage.createdBy,
+              stage.progress,
+            ]
+
+            db.query(stageQuery, stageValues, (err, result) => {
+              if (err) {
+                reject(err)
+              } else {
+                const stageId = result.insertId
+                stage.stageId = stageId
+                resolve(stage)
+              }
+            })
           })
         })
       })
@@ -347,7 +367,7 @@ export const deleteProject = asyncHandler(async (req, res) => {
 // Update project and store history
 export const updateProject = asyncHandler(async (req, res) => {
   const projectNumber = req.params.id
-  console.log(req.body)
+
   // Query to select the current project data
   const selectQuery = `SELECT * FROM project WHERE projectNumber = ?`
 

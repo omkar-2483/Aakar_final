@@ -13,7 +13,7 @@ import Layout from './Layout.jsx'
 import EmployeeDashboard from './pages/employee/EmployeeDashboard.jsx'
 import EmployeeProfile from './pages/employee/EmployeeProfile.jsx'
 import AddEmployee from './pages/employee/AddEmployee.jsx'
-import EditEmployeePage from './pages/employee/EditEmployeePage.jsx'
+import EditEmployee from './pages/employee/EditEmployee.jsx'
 import DepartmentDashboard from './pages/department/DepartmentDashboard.jsx'
 import { Bounce, ToastContainer } from 'react-toastify'
 import AddDepartment from './pages/department/AddDepartment.jsx'
@@ -59,6 +59,7 @@ import SubstagesGanttChart from './components/Project/GanttChart/SubstagesGanttC
 import AddSubStage from './components/Project/AddSubstages/AddSubStage.jsx'
 import MyStage from './components/Project/MyStage/MyStage.jsx'
 import AllProjects from './components/Project/AllProjects/AllProjects.jsx'
+import DesignationDashboard from './pages/designation/DesignationDashboard.jsx'
 
 export const API_BASE_URL = `http://localhost:3000`
 const App = () => {
@@ -147,7 +148,7 @@ const App = () => {
               path="/employee/edit/:id"
               element={
                 <PrivateRoute>
-                  <EditEmployeePage />
+                  <EditEmployee />
                 </PrivateRoute>
               }
             />
@@ -156,6 +157,14 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/designations"
+              element={
+                <PrivateRoute>
+                  <DesignationDashboard />
                 </PrivateRoute>
               }
             />
@@ -394,23 +403,70 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-            <Route path="/allProjects" element={<AllProjects />} />
-            <Route path="/addProject" element={<AddProject />} />
-            <Route path="/myProject/:id" element={<MyProject />} />
-            <Route path="/updateProject/:id" element={<UpdateProject />} />
+            <Route
+              path="/allProjects"
+              element={
+                <PrivateRoute>
+                  <AllProjects />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/addProject"
+              element={
+                <PrivateRoute>
+                  <AddProject />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/myProject/:id"
+              element={
+                <PrivateRoute>
+                  <MyProject />{' '}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/updateProject/:id"
+              element={
+                <PrivateRoute>
+                  <UpdateProject />{' '}
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/myProject/gantt/:pNo"
-              element={<ProjectGanttChart />}
+              element={
+                <PrivateRoute>
+                  <ProjectGanttChart />
+                </PrivateRoute>
+              }
             />
             <Route
               path="/myStage/gantt/:sNo"
-              element={<SubstagesGanttChart />}
+              element={
+                <PrivateRoute>
+                  <SubstagesGanttChart />
+                </PrivateRoute>
+              }
             />
             <Route
               path="myProject/:pNo/updateStage/:sNo"
-              element={<AddSubStage />}
+              element={
+                <PrivateRoute>
+                  <AddSubStage />
+                </PrivateRoute>
+              }
             />
-            <Route path="myProject/:pNo/myStage/:sNo" element={<MyStage />} />
+            <Route
+              path="myProject/:pNo/myStage/:sNo"
+              element={
+                <PrivateRoute>
+                  <MyStage />
+                </PrivateRoute>
+              }
+            />
           </Route>
           <Route
             path="*"

@@ -82,17 +82,17 @@ const TicketDetails = ({ ticket = {} }) => {
       const fetchDetails = async () => {
         try {
           // Fetch messages
-          const messagesResponse = await fetch(`http://localhost:4000/logs/logs/ticket/${ticket.id}`);
+          const messagesResponse = await fetch(`http://localhost:3000/logs/logs/ticket/${ticket.id}`);
           const messagesData = await messagesResponse.json();
           setMessages(messagesData);
 
           // Fetch assignee history
-          const historyResponse = await fetch(`http://localhost:4000/ticketAssigneeHistory/assignee-history/${ticket.id}`);
+          const historyResponse = await fetch(`http://localhost:3000/ticketAssigneeHistory/assignee-history/${ticket.id}`);
           const historyData = await historyResponse.json();
           setHistoryData(historyData);
 
           // Fetch status history
-          const statusHistoryResponse = await fetch(`http://localhost:4000/ticketStatusHistory/status-history/${ticket.id}`);
+          const statusHistoryResponse = await fetch(`http://localhost:3000/ticketStatusHistory/status-history/${ticket.id}`);
           const statusHistoryData = await statusHistoryResponse.json();
           setStatusHistoryData(statusHistoryData);
           console.log(statusHistoryData);
@@ -234,56 +234,80 @@ const TicketDetails = ({ ticket = {} }) => {
     doc.text(`User: ${user.name}`, 10, 10);
     doc.text(`Date: ${currentDate}`, 10, 15);
 
-    doc.setFontSize(14);
-    doc.text('Assignee History', 10, 30);
+    const ticketDetails = [
+      ['Title', ticket.title || 'N/A'],
+      ['Created By', ticket.createdBy || 'N/A'],
+      ['Status', ticket.status || 'N/A'],
+      ['Created At', ticket.ticket_created_at ? new Date(ticket.ticket_created_at).toLocaleString() : 'N/A'],
+      ['Assigned To', ticket.assignee || 'N/A'],
+    ];
+  
+    doc.autoTable({
+      startY: 30,
+      head: [['Field', 'Value']],
+      body: ticketDetails,
+      theme: 'grid',
+      margin: { left: 10, right: 10 },
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' },
+      bodyStyles: { halign: 'left' },
+    });
 
-    if (historyData.length >= 0) {
-      doc.autoTable({
-        startY: 35,
-        head: [['Changed By', 'Old Assignee', 'New Assignee', 'Assigned Date']],
-        body: historyData.map(entry => [
+     // Assignee History Section
+  const assigneeHistoryStartY = doc.autoTable.previous.finalY + 10;
+  doc.text('Assignee History', 10, assigneeHistoryStartY);
+
+  doc.autoTable({
+    startY: assigneeHistoryStartY + 5,
+    head: [['Changed By', 'Old Assignee', 'New Assignee', 'Assigned Date']],
+    body: historyData.length > 0
+      ? historyData.map(entry => [
           entry.changed_by_name,
           entry.old_assignee_name || 'N/A',
           entry.new_assignee_name || 'N/A',
           new Date(entry.assigned_at).toLocaleDateString(),
-        ]),
-      });
-    } else {
-      doc.setFontSize(12);
-      doc.text('No records available', 10, 40);
-    }
-  
-    // Ticket Status History Table
-    doc.text('Ticket Status History', 10, doc.autoTable.previous.finalY + 10 || 50);
-  
-    if (statusHistoryData.length >= 0) {
-      doc.autoTable({
-        startY: doc.autoTable.previous.finalY + 15 || 55,
-        head: [['Old Status', 'New Status', 'Changed By', 'Change Date']],
-        body: statusHistoryData.map(entry => [
+        ])
+      : [['N/A', 'N/A', 'N/A', 'N/A']],
+    theme: 'grid',
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' },
+    bodyStyles: { halign: 'center' },
+  });
+
+  // Ticket Status History Section
+  const statusHistoryStartY = doc.autoTable.previous.finalY + 10;
+  doc.text('Ticket Status History', 10, statusHistoryStartY);
+
+  doc.autoTable({
+    startY: statusHistoryStartY + 5,
+    head: [['Old Status', 'New Status', 'Changed By', 'Change Date']],
+    body: statusHistoryData.length > 0
+      ? statusHistoryData.map(entry => [
           entry.old_status,
           entry.new_status,
           entry.changed_by_name,
           new Date(entry.changed_at).toLocaleDateString(),
-        ]),
-      });
-    } else {
-      doc.setFontSize(12);
-      doc.text('No records available', 10, (doc.autoTable.previous.finalY || 55) + 10);
-    }
-    // Handle Page Numbers
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.text(`${i}/${totalPagesExp}`, 230, 5, { align: 'right' });
-    }
+        ])
+      : [['N/A', 'N/A', 'N/A', 'N/A']],
+    theme: 'grid',
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' },
+    bodyStyles: { halign: 'center' },
+  });
 
-    // Replace placeholder with actual total page count
-    doc.putTotalPages(totalPagesExp);
+  // Add footer with total pages
+ // Handle Page Numbers
+ const pageCount = doc.internal.getNumberOfPages();
+ for (let i = 1; i <= pageCount; i++) {
+   doc.setPage(i);
+   doc.setFontSize(8);
+   doc.text(`${i}/${totalPagesExp}`, 230, 5, { align: 'right' });
+ }
+ doc.putTotalPages(totalPagesExp);
 
-    doc.save(`Ticket_History_Report_${ticket.id}.pdf`);
-  };
+  // Save the PDF
+  doc.save(`${ticket.title || 'Ticket_Details'}.pdf`);
+};
   
 
   return (

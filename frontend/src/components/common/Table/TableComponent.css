@@ -96,7 +96,7 @@ tbody tr:hover {
 }
 
 .custom-scrollbar.project {
-  max-height: 50vh;
+  max-height: 53vh;
 }
 .history-table td {
   max-width: 250px;
@@ -104,5 +104,7 @@ tbody tr:hover {
 #loaderLine {
   padding: 0;
 }
-@media (max-width: '') {
+
+.MuiTableBody-root tr a p {
+  margin: 12px 0px;
 }

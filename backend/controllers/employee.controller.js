@@ -406,74 +406,158 @@ export const deleteEmployee = asyncHandler(async (req, res) => {
     res.status(200).json({message: "Employee successfully deactivated"});
 });
 
-export const updateEmployee = asyncHandler(async (req, res) => {
-    const {employeeId, updates, jobProfiles} = req.body;
+// export const updateEmployee = asyncHandler(async (req, res) => {
+//     const {employeeId, updates, jobProfiles} = req.body;
+//
+//     if (!employeeId || (!updates && !jobProfiles)) {
+//         return res.status(400).json({message: "Employee ID, updates, or jobProfiles are required"});
+//     }
+//
+//     // Check if the employee exists
+//     const checkEmployeeQuery = "SELECT * FROM employee WHERE employeeId = ?";
+//     const [employee] = await connection.promise().query(checkEmployeeQuery, [employeeId]);
+//
+//     if (employee.length === 0) {
+//         return res.status(404).json({message: "Employee not found"});
+//     }
+//
+//     // 1. Update the employee table
+//     if (updates) {
+//         const fieldsToUpdate = [];
+//         const values = [];
+//
+//         for (const key in updates) {
+//             if (updates.hasOwnProperty(key)) {
+//                 fieldsToUpdate.push(`${key} = ?`);
+//                 values.push(updates[key]);
+//             }
+//         }
+//
+//         // Add the employeeId at the end for the WHERE clause
+//         values.push(employeeId);
+//
+//         const updateQuery = `UPDATE employee SET ${fieldsToUpdate.join(", ")} WHERE employeeId = ?`;
+//         await connection.promise().query(updateQuery, values);
+//     }
+//
+//     // 2. Update job profiles (employeedesignation table)
+//     if (jobProfiles && Array.isArray(jobProfiles)) {
+//         for (const profile of jobProfiles) {
+//             const {designationId, designationName, departmentId, managerId, operation} = profile;
+//
+//             if (!departmentId) {
+//                 return res.status(400).json({message: "Department ID is required for job profile update."});
+//             }
+//
+//             if (operation === "update") {
+//                 // Update existing job profile
+//                 const updateJobProfileQuery = `
+//                     UPDATE employeedesignation
+//                     SET designationId = ?, departmentId = ?, managerId = ?
+//                     WHERE employeeId = ? AND designationId = ?`;
+//                 await connection.promise().query(updateJobProfileQuery, [designationId, departmentId, managerId, employeeId, designationId]);
+//             } else if (operation === "add") {
+//                 // Add new job profile
+//                 const insertJobProfileQuery = `
+//                     INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId)
+//                     VALUES (?, ?, ?, ?)`;
+//                 await connection.promise().query(insertJobProfileQuery, [employeeId, designationId, departmentId, managerId]);
+//             } else if (operation === "delete") {
+//                 // Delete job profile
+//                 const deleteJobProfileQuery = `
+//                     DELETE FROM employeedesignation
+//                     WHERE employeeId = ? AND designationId = ?`;
+//                 await connection.promise().query(deleteJobProfileQuery, [employeeId, designationId]);
+//             }
+//         }
+//     }
+//
+//     res.status(200).json({message: "Employee and job profiles updated successfully"});
+// });
 
-    if (!employeeId || (!updates && !jobProfiles)) {
-        return res.status(400).json({message: "Employee ID, updates, or jobProfiles are required"});
+export const editEmployeeWithRelations = asyncHandler(async (req, res) => {
+    const { id } = req.params; // employeeId from URL
+    const { employee, jobProfiles } = req.body;
+
+    console.log(id);
+
+    // Validate required fields in employee object
+    if (
+        !employee.customEmployeeId ||
+        !employee.employeeName ||
+        !employee.companyName ||
+        !employee.employeeGender ||
+        !employee.employeeEmail
+    ) {
+        return res.status(400).json({ message: 'All required fields must be filled.' });
     }
 
-    // Check if the employee exists
-    const checkEmployeeQuery = "SELECT * FROM employee WHERE employeeId = ?";
-    const [employee] = await connection.promise().query(checkEmployeeQuery, [employeeId]);
+    try {
+        // Update the employee table
+        const updateEmployeeQuery =
+            `UPDATE employee 
+            SET 
+              customEmployeeId = ?, 
+              employeeName = ?, 
+              companyName = ?, 
+              employeeQualification = ?, 
+              experienceInYears = ?, 
+              employeeDOB = ?, 
+              employeeJoinDate = ?, 
+              employeeGender = ?, 
+              employeePhone = ?, 
+              employeeEmail = ?, 
+              employeeAccess = ?,
+              employeeEndDate = ? 
+            WHERE employeeId = ?`;
 
-    if (employee.length === 0) {
-        return res.status(404).json({message: "Employee not found"});
-    }
+        const employeeValues = [
+            employee.customEmployeeId,
+            employee.employeeName,
+            employee.companyName,
+            employee.employeeQualification,
+            employee.experienceInYears,
+            employee.employeeDOB,
+            employee.employeeJoinDate,
+            employee.employeeGender,
+            employee.employeePhone,
+            employee.employeeEmail,
+            employee.employeeAccess,
+            employee.employeeEndDate,
+            id,
+        ];
 
-    // 1. Update the employee table
-    if (updates) {
-        const fieldsToUpdate = [];
-        const values = [];
+        const [employeeResult] = await connection.promise().query(updateEmployeeQuery, employeeValues);
 
-        for (const key in updates) {
-            if (updates.hasOwnProperty(key)) {
-                fieldsToUpdate.push(`${key} = ?`);
-                values.push(updates[key]);
+        if (employeeResult.affectedRows === 0) {
+            throw new Error('Employee not found.');
+        }
+
+        // Handle jobProfiles only if not empty
+        if (jobProfiles && jobProfiles.length > 0) {
+            // Delete existing job profiles for the employee
+            const deleteProfilesQuery = `DELETE FROM employeedesignation WHERE employeeId = ?`;
+            await connection.promise().query(deleteProfilesQuery, [id]);
+
+            // Insert new job profiles into employeedesignation table
+            const insertProfilesQuery =
+                `INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId) 
+                VALUES (?, ?, ?, ?)`;
+
+            for (const profile of jobProfiles) {
+                const profileValues = [id, profile.designationId, profile.departmentId, profile.managerId];
+                await connection.promise().query(insertProfilesQuery, profileValues);
             }
         }
 
-        // Add the employeeId at the end for the WHERE clause
-        values.push(employeeId);
-
-        const updateQuery = `UPDATE employee SET ${fieldsToUpdate.join(", ")} WHERE employeeId = ?`;
-        await connection.promise().query(updateQuery, values);
+        res.status(200).json({ message: 'Employee updated successfully.' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    // 2. Update job profiles (employeedesignation table)
-    if (jobProfiles && Array.isArray(jobProfiles)) {
-        for (const profile of jobProfiles) {
-            const {designationId, designationName, departmentId, managerId, operation} = profile;
-
-            if (!departmentId) {
-                return res.status(400).json({message: "Department ID is required for job profile update."});
-            }
-
-            if (operation === "update") {
-                // Update existing job profile
-                const updateJobProfileQuery = `
-                    UPDATE employeedesignation
-                    SET designationId = ?, departmentId = ?, managerId = ?
-                    WHERE employeeId = ? AND designationId = ?`;
-                await connection.promise().query(updateJobProfileQuery, [designationId, departmentId, managerId, employeeId, designationId]);
-            } else if (operation === "add") {
-                // Add new job profile
-                const insertJobProfileQuery = `
-                    INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId)
-                    VALUES (?, ?, ?, ?)`;
-                await connection.promise().query(insertJobProfileQuery, [employeeId, designationId, departmentId, managerId]);
-            } else if (operation === "delete") {
-                // Delete job profile
-                const deleteJobProfileQuery = `
-                    DELETE FROM employeedesignation
-                    WHERE employeeId = ? AND designationId = ?`;
-                await connection.promise().query(deleteJobProfileQuery, [employeeId, designationId]);
-            }
-        }
-    }
-
-    res.status(200).json({message: "Employee and job profiles updated successfully"});
 });
+
+
+
 
 export const getAllEmployees = asyncHandler(async (req, res) => {
     const query = `

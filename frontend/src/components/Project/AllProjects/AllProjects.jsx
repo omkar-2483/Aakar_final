@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import Infocard from '../Infocard/Infocard.jsx'
+import Infocard from '../../Infocard/Infocard.jsx'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiPlusCircle } from 'react-icons/fi'
 import { useDispatch, useSelector } from 'react-redux'
@@ -42,11 +42,11 @@ const columns = [
 ]
 
 const AllProjects = () => {
-  const access = [
-    1 /*add project*/, 1 /*edit project*/, 1 /*add project*/, 1 /*add project*/,
-    1 /*add project*/, 1 /*add project*/, 1 /*add project*/, 1 /*add project*/,
-    1 /*add project*/, 1 /*add project*/, 1 /*add project*/, 1 /*add project*/,
-  ]
+  const employeeAccess = useSelector(
+    (state) => state.auth.user?.employeeAccess
+  ).split(',')[1]
+  console.log({ employeeAccess: employeeAccess })
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { activeProjects, status, error } = useSelector(
@@ -135,7 +135,7 @@ const AllProjects = () => {
             />
           </div>
         </div>
-        {access[0] ? (
+        {employeeAccess[1] ? (
           <button
             className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3 hover:cursor-pointer"
             onClick={() => navigate('/addProject')}

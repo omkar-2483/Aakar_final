@@ -25,6 +25,10 @@ import {
 import { resetSubstageState } from '../../../features/subStageSlice.js'
 
 const UpdateProject = () => {
+  const employeeAccess = useSelector(
+    (state) => state.auth.user?.employeeAccess
+  ).split(',')[1]
+  console.log({ employeeAccess: employeeAccess })
   const params = useParams()
   const pNo = params.id
   const dispatch = useDispatch()
@@ -100,7 +104,13 @@ const UpdateProject = () => {
 
   useEffect(() => {
     if (activeStages && activeStages.length > 0) {
-      setStage(activeStages.map((s) => ({ ...s })))
+      setStage(
+        activeStages.map((s) => ({
+          ...s,
+          owner: `${s.owner}(${s.ownerId})`,
+          createdBy: user.employeeId,
+        }))
+      )
       setOriginalStages(activeStages.map((s) => ({ ...s })))
     }
   }, [activeStages])
@@ -136,7 +146,7 @@ const UpdateProject = () => {
         },
       })
     )
-    navigate('-1')
+    navigate(-1)
   }
 
   const hasChanges = (stage, originalStage) => {
@@ -170,11 +180,14 @@ const UpdateProject = () => {
           </section>
 
           <div className="formDiv">
-            <ProjectForm
-              action={'update'}
-              inputValues={inputValues}
-              setInputValues={setInputValues}
-            />
+            {employeeAccess[3] == '1' && (
+              <ProjectForm
+                action={'update'}
+                inputValues={inputValues}
+                setInputValues={setInputValues}
+              />
+            )}
+
             <AddStage stages={stage} setStages={setStage} action={'update'} />
           </div>
         </form>

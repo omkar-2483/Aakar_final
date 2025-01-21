@@ -3,12 +3,19 @@ import { FiPlusCircle } from 'react-icons/fi'
 import { v4 as uuid4 } from 'uuid'
 import './AddStage.css'
 import getTodayDate from '../../common/functions/getTodayDate'
-
+import { getAllEmployees } from '../../../features/employeeSlice'
 import StageComponent from './StageComponent'
 import { useDispatch, useSelector } from 'react-redux'
 import { stageList } from '../../../features/stageSlice'
 
-const AddStage = ({ name, stages, setStages, action, stageList }) => {
+const AddStage = ({
+  name,
+  stages,
+  setStages,
+  action,
+  stageList,
+  employees,
+}) => {
   const [isChanged, setIsChanged] = useState(Array(stages.length).fill(false))
   const { user } = useSelector((state) => state.auth)
   const handleAddStage = () => {
@@ -38,8 +45,7 @@ const AddStage = ({ name, stages, setStages, action, stageList }) => {
     console.log({ stages: stages })
     setIsChanged([...isChanged, false])
   }
-  const dispatch = useDispatch()
-
+  console.log(stages)
   return (
     <>
       <div className="schedule">
@@ -68,6 +74,7 @@ const AddStage = ({ name, stages, setStages, action, stageList }) => {
               isChanged={isChanged}
               setIsChanged={setIsChanged}
               name={name}
+              employees={employees}
             />
           ))
         ) : (

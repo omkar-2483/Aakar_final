@@ -26,8 +26,14 @@ import {
   resetSubstageState,
   updateSubStage,
 } from '../../../features/subStageSlice'
+import { getAllEmployees } from '../../../features/employeeSlice'
 
 const AddSubStage = () => {
+  const { user } = useSelector((state) => state.auth)
+  const employeeAccess = useSelector(
+    (state) => state.auth.user?.employeeAccess
+  ).split(',')[1]
+  console.log({ employeeAccess: employeeAccess })
   const dispatch = useDispatch()
   const params = useParams()
   const { pNo, sNo } = params
@@ -54,7 +60,24 @@ const AddSubStage = () => {
   }, [dispatch, pNo, sNo])
 
   const { project = {} } = useSelector((state) => state.projects)
-
+  const { employees } = useSelector((state) => state.employee)
+  const [employeeList, setEmployeeList] = useState(
+    employees.map(
+      (employee) =>
+        `${employee.employee.employeeName}(${employee.employee.customEmployeeId})`
+    )
+  )
+  useEffect(() => {
+    dispatch(getAllEmployees())
+  }, [dispatch])
+  useEffect(() => {
+    setEmployeeList(
+      employees.map(
+        (employee) =>
+          `${employee.employee.employeeName}(${employee.employee.customEmployeeId})`
+      )
+    )
+  }, [employees])
   const {
     stage: stageData = {},
     activeStages = [],
@@ -76,7 +99,7 @@ const AddSubStage = () => {
       activeStages.length > 0
         ? activeStages[activeStages.length - 1].stageId
         : null,
-    createdBy: 'John Doe',
+    createdBy: user.employeeId,
     stageId: null,
   })
 
@@ -111,13 +134,21 @@ const AddSubStage = () => {
         ...prevValues,
         ...stageData,
         stageId: stageData.stageId || prevValues.stageId,
+        owner: `${stageData.owner}(${stageData.ownerId})`,
+        createdBy: user.employeeId,
       }))
     }
   }, [stageData])
 
   useEffect(() => {
     if (activeSubStages.length > 0) {
-      setStage(activeSubStages.map((s) => ({ ...s })))
+      setStage(
+        activeSubStages.map((s) => ({
+          ...s,
+          owner: `${s.owner}(${s.ownerId})`,
+          createdBy: user.employeeId,
+        }))
+      )
       setOriginalStages(activeSubStages.map((s) => ({ ...s })))
     }
   }, [activeSubStages])
@@ -225,11 +256,14 @@ const AddSubStage = () => {
         </section>
 
         <div className="formDiv">
-          <SubstageForm
-            inputValues={inputValues}
-            setInputValues={setInputValues}
-            stagesList={stagesList}
-          />
+          {employeeAccess[7] == '1' && (
+            <SubstageForm
+              inputValues={inputValues}
+              setInputValues={setInputValues}
+              stagesList={stagesList}
+              employeeList={employeeList}
+            />
+          )}
           <AddStage
             name={'substage'}
             stages={stage}

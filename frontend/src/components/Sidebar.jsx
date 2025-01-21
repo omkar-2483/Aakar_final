@@ -50,7 +50,7 @@ const Sidebar = () => {
   const HRManagementAccess = access[0]
   const ProjectManagementAccess = access[1]
   const TrainingManagementAccess = access[2]
-  const TicketManagementAccess = "11111111111111"
+  const TicketManagementAccess = access[3];
 
   const toggleSection = (section) => {
     setOpenSection((prev) => (prev === section ? null : section))
@@ -108,13 +108,13 @@ const Sidebar = () => {
           name: 'Create Ticket',
           slug: '/createTicket',
           icon: 'BsTicket',
-          access: TicketManagementAccess[2],
+          access: TicketManagementAccess[0],
         },
         {
           name: 'View Tickets',
           slug: '/tickettracking',
           icon: 'BsTicket',
-          access: TicketManagementAccess[6],
+          access: TicketManagementAccess[0],
         },
       ],
     },
