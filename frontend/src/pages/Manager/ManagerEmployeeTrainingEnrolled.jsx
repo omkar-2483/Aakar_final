@@ -27,9 +27,11 @@ const ManagerEmployeeTrainingEnrolled = () => {
 
     fetchEmployeesEnrolled(trainingId)
       .then((response) => {
-        if (Array.isArray(response.data)) {
+        console.log("Training Id  : ",trainingId)
+        console.log("Response Data : trainin planning : ".response);
+        if (Array.isArray(response)) {
           const skillSet = new Set();
-          const data = response.data.reduce((acc, curr) => {
+          const data = response.reduce((acc, curr) => {
             if (curr.skillName) {
               skillSet.add(curr.skillName);
             }
@@ -120,7 +122,6 @@ const ManagerEmployeeTrainingEnrolled = () => {
   };
 
   const baseColumns = [
-    { id: 'srNo', label: 'Sr. No.', align: 'center' },
     { id: 'employeeName', label: 'Employee Name', align: 'center' },
     { id: 'departmentName', label: 'Department', align: 'center' },
     { id: 'trainerFeedback', label: 'Trainer Feedback', align: 'center' },
@@ -149,7 +150,7 @@ const ManagerEmployeeTrainingEnrolled = () => {
 
   return (
     <div className="employee-training-enrolled-page">
-      <div className="employee-training-enrolled-title">
+      <div className="manager-employee-training-enrolled-title">
         <h2>Employees Enrolled for Training</h2>
       </div>
 

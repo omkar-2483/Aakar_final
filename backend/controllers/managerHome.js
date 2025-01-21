@@ -12,25 +12,27 @@ router.post('/fetch-data', (req, res) => {
   
     const query = `
       SELECT 
-        e.employeeId, 
+		ed.departmentId,
+        ed.employeeId, 
         e.employeeName, 
         es.skillId, 
         es.grade, 
-        s.skillName
+        s.skillName, e.employeeQualification, e.experienceInYears
       FROM 
-        employee e 
+      employeedesignation ed
+        
       LEFT JOIN 
-        employeeSkill es ON e.employeeId = es.employeeId
+        employeeSkill es ON ed.employeeId = es.employeeId
       LEFT JOIN 
-        employeedesignation ed ON ed.employeeId = e.employeeId
+         employee e ON ed.employeeId = e.employeeId
       LEFT JOIN 
         skill s ON es.skillId = s.skillId
       WHERE 
-        s.skillId IN (${placeholders}) AND ed.departmentId = ?
+         ed.departmentId = ?;
     `;
   
     // Spread the skillIds array and append departmentId
-    connection.query(query, [...skillIds, departmentId], (err, result) => {
+    connection.query(query, [departmentId], (err, result) => {
       if (err) {
         console.error('Error fetching data:', err);
         return res.status(500).json({ error: 'Failed to fetch data' });

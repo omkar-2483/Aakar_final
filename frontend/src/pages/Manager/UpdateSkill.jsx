@@ -159,6 +159,7 @@ const UpdateSkill = () => {
   
     if (currentSkill) {
       const departmentSkillTypes = selectedTrainingOption;
+      console.log("Selected triaing options",selectedTrainingOption)
       const skillData = {
         skillId: currentSkill,
         skillName,
@@ -170,6 +171,7 @@ const UpdateSkill = () => {
       try {
         const updatedSkill = await updateSkill(skillData);
         skillData.departmentSkillTypes = updatedSkill.departmentSkillType;
+        console.log("Ask me anything : ",skillData);
         console.log("From Update skill Data await : ",skillData)
         setSkills(
           skills.map(skill =>
@@ -307,15 +309,13 @@ const UpdateSkill = () => {
         render: (row) => (
           <div className='skill-action-buttons'>
               {Update && (
-                <button type='button' onClick={(e) => { e.stopPropagation(); handleUpdateSkill(row); }}>
-                <FiEdit size={20} className="update-skill-icon" />
-              </button>
+                
+                <FiEdit onClick = {(e) => { e.stopPropagation(); handleUpdateSkill(row); }} size={20} className="action-icon" />
+              
               )}
             {
               Delete && (
-                <button type='button' onClick={(e) => { e.stopPropagation(); handleDelete(row.skillId); }}>
-              <FiTrash2 size={20} className="update-skill-icon" />
-            </button>
+                <FiTrash2 onClick = {(e) => { e.stopPropagation(); handleDelete(row.skillId); }} size={20} className="action-icon" />
               )
             }
           </div>
@@ -349,10 +349,10 @@ const UpdateSkill = () => {
   return (
     
     <div className='update-container'>
-      <header className="update-skill-dash-header">
+      {/* <header className="update-skill-dash-header">
         <FiArrowLeftCircle className="employeeSwitch-back-button" onClick={() => navigate(-1)} title="Go back"/>
         <h4 className='employeeSwitch-title'>Employee Details</h4>
-      </header>
+      </header> */}
   
       <div className='add-skill-container'>
         <h2 className='update-skill-dept-name'>Update Skills for Department: {departmentName || 'Unknown'}</h2>

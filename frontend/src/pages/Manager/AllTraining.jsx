@@ -10,6 +10,7 @@ import GeneralSearchBar from '../../components/GenralSearchBar';
 import TableCo from '../../components/TableCo';
 import {fetchAllTraining, searchTraining, deleteTraining, fetchEmployeeDataAPI,} from './TrainingAPI';
 import { useSelector } from 'react-redux';
+import dayjs from 'dayjs';
 
 const Tickit = ({ text, icon, onClick, count }) => (
   <button className="custom-button-all-training-ticket" onClick={onClick}>
@@ -49,8 +50,17 @@ const AllTraining = () => {
     console.log("Fetched access: ", access);
     try {
       const data = await fetchAllTraining();
-      setTrainingData(data);
-      setFilteredData(data);
+      
+      const updatedData = data.map(data => ({
+        ...data ,
+        startTrainingDate: dayjs(data.startTrainingDate).format("DD-MM-YYYY"),
+        endTrainingDate: dayjs(data.endTrainingDate).format("DD-MM-YYYY"),
+        "Training Status" : getTrainingStatusLabel(data.startTrainingDate, data.endTrainingDate)
+
+      }))
+      console.log("Data : ",updatedData);
+      setTrainingData(updatedData);
+      setFilteredData(updatedData);
       setTrainingList(
         Array.from(new Set(data.map((item) => ({ id: item.trainingId, label: item.trainingTitle }))))
       );
@@ -68,7 +78,14 @@ const AllTraining = () => {
     setSearch(searchTerm);
     try {
       const data = await searchTraining(searchTerm);
-      setFilteredData(data);
+      const updatedData = data.map(data => ({
+        ...data ,
+        startTrainingDate: dayjs(data.startTrainingDate).format("DD-MM-YYYY"),
+        endTrainingDate: dayjs(data.endTrainingDate).format("DD-MM-YYYY"),
+        "Training Status" : getTrainingStatusLabel(data.startTrainingDate, data.endTrainingDate)
+
+      }))
+      setFilteredData(updatedData);
     } catch (error) {
       console.error('Error searching training data:', error);
       toast.error('Failed to search training data!');
@@ -143,14 +160,22 @@ const AllTraining = () => {
     setIsEditing(true); 
   };
 
+  useEffect(()=>{
+    console.log("Filtered training : ",filteredData)
+  },[])
+
   const handleTrainingAdded = async () => {
     setIsAdding(false);
     setIsEditing(false);
     try {
       const response = await fetchAllTraining();
+      const updatedData = response.map(data => ({
+        ...data ,
+        "Training Status" : getTrainingStatusLabel(data.startTrainingDate, data.endTrainingDate)
 
-      setTrainingData(response); 
-      setFilteredData(response); 
+      }))
+      setTrainingData(updatedData); 
+      setFilteredData(updatedData); 
       fetchTrainingData();
       modifyTable(filteredData);
       console.log("Filetered data:", filteredData);
@@ -194,6 +219,20 @@ const AllTraining = () => {
       return <span className="status-bubble upcoming">Upcoming</span>;
     }
   };  
+    
+  const getTrainingStatusLabel = (startDate, endDate) => {
+    const today = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+  
+    if (today >= start && today <= end) {
+      return "Ongoing"
+    } else if (today > end) {
+      return "Completed"
+    } else {
+      return "Upcoming"
+    }
+  }; 
 
   const handleEmployeeViewDetails = (row) => {
     console.log(row)
@@ -248,17 +287,18 @@ const AllTraining = () => {
       label: 'Start Date',
       id: 'startTrainingDate',
       align: 'center',
-      render: (row) => new Date(row.startTrainingDate).toLocaleDateString(),
+      width: '110px',
     },
     {
       label: 'End Date',
       id: 'endTrainingDate',
       align: 'center',
-      render: (row) => new Date(row.endTrainingDate).toLocaleDateString(),
+      width: '110px',
     },
     {label: "Number of days", id: 'numberOfDays', align: 'center'},
     {label: "Evaluation type", id: 'evaluationType', align: 'center'},
     {
+      id : "Training Status",
       label: 'Training Status',
       align: 'center',
       render: (row) => getTrainingStatus(row.startTrainingDate, row.endTrainingDate),
@@ -333,10 +373,10 @@ const AllTraining = () => {
 
   return (
     <div className="all-training-training-content">
-      <header className="all-training-dash-header">
+      {/* <header className="all-training-dash-header">
         <FiArrowLeftCircle className="employeeSwitch-back-button" onClick={() => navigate(-1)} title="Go back"/>
         <h4 className='employeeSwitch-title'>Employee Details</h4>
-      </header>
+      </header> */}
       <div  className='tickit-container'>
         <Tickit text="Employees for My Department Training" icon={<FiAward />} onClick={() => fetchEmployeeList([1, 3])} count={employeeCountOne} />
         <Tickit text="My Department Employees for Training" icon={<FiUser />} onClick={() => fetchEmployeeList([2, 3])} count={employeeCountTwo} />

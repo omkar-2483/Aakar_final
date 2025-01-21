@@ -47,7 +47,11 @@ const EmployeeTrainingDetails = () => {
   const fetchAllSession = async () => {
     try {
       const sessions = await fetchAllSessions(trainingId);
-      setSessionData(sessions);
+      const updatedData = sessions.map(data => ({
+        ...data ,
+        sessionDate: dayjs(data.sessionDate).format("DD-MM-YYYY"),
+      }));
+      setSessionData(updatedData);
     } catch (error) {
       console.error("Error fetching session data:", error);
       setError("Failed to fetch session data.");
@@ -84,14 +88,14 @@ if (error) {
 
   const sessionColumns = [
     { id: 'sessionName', label: 'Session Name' },
-    { id: 'sessionDate', label: 'Date', render: (row) => new Date(row.sessionDate).toLocaleDateString('en-US') },
+    { id: 'sessionDate', label: 'Date'},
     { id: 'sessionStartTime', label: 'Start Time' },
     { id: 'sessionEndTime', label: 'End Time' },
     { id: 'sessionDescription', label: 'Session Description' },
     {
       id: 'attendanceStatus',
       label: 'Attendance Status',
-      render: (row) => attendanceStatuses[row.sessionId] === 1 ? 'Present' : 'Absent',
+      render: (row) => attendanceStatuses[row.sessionId] === 1 ? 'Present' : attendanceStatuses[row.sessionId] === 0 ? 'Absent' : '-',
     },
   ];
 
@@ -107,16 +111,16 @@ if (error) {
           <h4 className='employeeSwitch-title'>All Trainings</h4>
         </header>
         <section className="training-details-section">
-          <h3>Training Details</h3>
+          <h3 className='employee-training-details-title'>Training Details</h3>
           <div className="training-details-form">
             <Textfield label="Training Name" value={trainingTitle || ''} readOnly />
             <Textfield label="Trainer Name" value={trainerName || ''} readOnly />
-            <Textfield label="Start Date" value={dayjs(startTrainingDate).format("YYYY-MM-DD") || ''} readOnly />
-            <Textfield label="End Date" value={dayjs(endTrainingDate).format("YYYY-MM-DD") || ''} readOnly />
+            <Textfield label="Start Date" value={startTrainingDate || ''} readOnly />
+            <Textfield label="End Date" value={endTrainingDate || ''} readOnly />
           </div>
         </section>
         <section className="training-details-session-details-section">
-          <h3 >Session Details</h3>
+          <h3 className='employee-training-details-title'>Session Details</h3>
           <TableComponent
             rows={sessionData}
             columns={sessionColumns}

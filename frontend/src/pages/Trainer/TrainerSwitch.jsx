@@ -14,13 +14,26 @@ import dayjs from 'dayjs';
 const TrainerSwitch = () => {
   const [trainings, setTrainings] = useState([]);
   const [filteredTrainings, setFilteredTrainings] = useState([]);
-  const [totalEmployees, setTotalEmployees] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [employeesData, setEmployeesData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const employeeId = useSelector((state) => state.auth.user?.employeeId);
 
+
+  const getTrainingStatusLabel = (startDate, endDate) => {
+    const today = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+  
+    if (today >= start && today <= end) {
+      return "Ongoing"
+    } else if (today > end) {
+      return "Completed"
+    } else {
+      return "Upcoming"
+    }
+  };
   useEffect(() => {
     if (employeeId) {
       loadTrainings();
@@ -32,8 +45,15 @@ const TrainerSwitch = () => {
 
   const loadTrainings = async () => {
       const data = await fetchTrainings(employeeId);
-      setTrainings(data);
-      setFilteredTrainings(data);
+      const updatedData = data.map(data => ({
+        ...data ,
+        startTrainingDate: dayjs(data.startTrainingDate).format("DD-MM-YYYY"),
+        endTrainingDate: dayjs(data.endTrainingDate).format("DD-MM-YYYY"),
+        "trainingStatus" : getTrainingStatusLabel(data.startTrainingDate, data.endTrainingDate)
+
+      }))
+      setTrainings(updatedData);
+      setFilteredTrainings(updatedData);
   };
 
   const handleViewEmployees = async () => {
@@ -46,8 +66,8 @@ const TrainerSwitch = () => {
           trainingId: training.trainingId,
           trainingTitle: training.trainingTitle,
           trainerName: training.trainerName,
-          startTrainingDate: training.startTrainingDate,
-          endTrainingDate: training.endTrainingDate,
+          startTrainingDate: dayjs(training.startTrainingDate).format("DD-MM-YYYY"),
+          endTrainingDate: dayjs(training.endTrainingDate).format("DD-MM-YYYY"),
         }));
         allEmployees.push(...employeesWithDetails);
       }
@@ -118,22 +138,39 @@ const TrainerSwitch = () => {
     });
   };
 
+  const renderSkillsBubbles = (skills) => {
+    console.log("Rendered skills: ", skills);
+    if (!skills || skills.trim() === '') {
+      return <span>No Skills</span>;  
+    }
+   
+    const skillList = skills.split(', ');
+    return (
+      <div className="skills-bubbles-container">
+        {skillList.map((skill, index) => (
+          <span key={index} className="skill-bubble">{skill}</span>
+        ))}
+      </div>
+    );
+  };
+
   const columns = [
     { id: 'trainingTitle', label: 'Training Title', align: 'center' },
-    { id: 'skillNames', label: 'Skills', align: 'center' },
-    { id: 'startTrainingDate', label: 'Start Date', align: 'center', render: (row) => new Date(row.startTrainingDate).toLocaleDateString() },
-    { id: 'endTrainingDate', label: 'End Date', align: 'center', render: (row) => new Date(row.endTrainingDate).toLocaleDateString() },
+    { id: 'skillNames', label: 'Skills', align: 'center', render: (row) => renderSkillsBubbles(row.skillNames) },
+    { id: 'startTrainingDate', label: 'Start Date', align: 'center'},
+    { id: 'endTrainingDate', label: 'End Date', align: 'center'},
     { id: 'trainingStatus', label: 'Training Status', align: 'center', render: (row) => getTrainingStatus(row.startTrainingDate, row.endTrainingDate) },
     {
       id: 'actions',
-      label: 'View Employees',
+      label: 'View Details',
       align: 'center',
+      width: '20px',
       render: (row) => (
         <FiEdit
           onClick={() => handleViewDetails(row)}
           className="action-icon"
           size={18}
-          style={{ color: '#0061A1', fontWeight: '900' }}
+          style={{ color: '#0061A1', fontWeight: '900', align: 'right', marginLeft: '70px' }}
         />
       ),
     },
@@ -163,14 +200,14 @@ const TrainerSwitch = () => {
   return (
     <div>
       <div className="trainerSwitch-training-content">
-        <header className="trainerSwitch-dash-header">
+        {/* <header className="trainerSwitch-dash-header">
           <FiArrowLeftCircle
             className="employeeSwitch-back-button"
             onClick={() => navigate(`/Overall-Switch`)}
             title="Go back"
           />
           <h4 className="employeeSwitch-title">Back to main page</h4>
-        </header>
+        </header> */}
 
         <div className="trainerSwitch-tickets">
           <div className="ticket">
@@ -179,7 +216,7 @@ const TrainerSwitch = () => {
           </div>
           <div className="ticket" onClick={handleViewEmployees}>
             <h3>Total Employees</h3>
-            <p>{totalEmployees}</p>
+            <p>{employeesData.length}</p>
           </div>
         </div>
         <div className="trainerSwitch-search-bar-container">

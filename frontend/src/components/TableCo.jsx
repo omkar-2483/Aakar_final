@@ -22,14 +22,13 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import downloadasexcel from '../assets/downlaodasexcel.svg';
 import downloadaspdf from '../assets/downlaodaspdf.svg';
-//import Searchbar from '../assets/Searchbar.jsx'
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import './Table/TableComponent.css';
 import { FiDownload } from 'react-icons/fi';
 
-const TableCo = ({ rows, collapseRows, columns, collapseCols, linkBasePath, defaultSortOrder, itemKey, itemLabel, navigateTo, searchLabel, setFilteredData, enableCollapsible = false, enableCheckbox = false, enableCollapseCheckbox = false, onRowSelectionChange }) => {
+const TableCo = ({ rows, collapseRows, columns, collapseCols, linkBasePath, defaultSortOrder, items, itemLabel, searchLabel, onFilter, enableCollapsible = false, enableCheckbox = false, enableCollapseCheckbox = false, onRowSelectionChange }) => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [order, setOrder] = useState(defaultSortOrder === 'newest' ? 'desc' : 'asc'); // Default order based on prop
@@ -142,6 +141,7 @@ const TableCo = ({ rows, collapseRows, columns, collapseCols, linkBasePath, defa
         handleClose();
     };
 
+
     const handleCheckboxChange = (index, row) => {
         setCheckedRows((prev) => {
             const updated = [...prev];
@@ -215,16 +215,25 @@ const TableCo = ({ rows, collapseRows, columns, collapseCols, linkBasePath, defa
    
     const handleSelectAll = () => {
         if (isAllSelected) {
+            // Deselect all rows
             setCheckedRows({});
+            onRowSelectionChange([]); // Pass an empty array since no rows are selected
         } else {
+            // Select all rows
             const allCheckedRows = {};
     
             sortedRows.forEach((row, index) => {
                 allCheckedRows[index] = row;
             });
+    
             setCheckedRows(allCheckedRows);
+    
+            // Pass selected rows as an array to the parent
+            const selectedRows = Object.values(allCheckedRows);
+            onRowSelectionChange(selectedRows);
         }
     };
+    
     
     const handleCollapseRowSelectAll = (rowIndex, checked) => {
         setCheckedCollapseRows((prev) => {
@@ -263,12 +272,10 @@ const TableCo = ({ rows, collapseRows, columns, collapseCols, linkBasePath, defa
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
                 {/* <Searchbar
-                    items={sortedRows}
-                    itemKey={itemKey}
+                    items={items}
                     itemLabel={itemLabel}
-                    navigateTo={navigateTo}
                     searchLabel={searchLabel}
-                    //setFilteredData={setFilteredData}
+                    onFilter={onFilter}
                 /> */}
 
                 <div
@@ -347,8 +354,9 @@ const TableCo = ({ rows, collapseRows, columns, collapseCols, linkBasePath, defa
                                         align={column.align}
                                         sortDirection={orderBy === column.id ? order : false}
                                         style={{
-                                            color: '#0061A1', // Text color
-                                            fontWeight: 'bold', // Makes it bold
+                                            color: '#0061A1', 
+                                            fontWeight: 'bold', 
+                                            align: column.align || 'center',
                                         }}
                                     >
                                         <TableSortLabel
@@ -418,7 +426,7 @@ const TableCo = ({ rows, collapseRows, columns, collapseCols, linkBasePath, defa
                                                         />
                                                     </TableCell>
                                                 )}
-                                                <TableCell align="left">
+                                                <TableCell align="center">
                                                     {page * rowsPerPage + index + 1}
                                                 </TableCell>
                                                 {columns.map((column) => (

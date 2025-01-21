@@ -134,7 +134,7 @@ const ShowTrainingDept = () => {
       ) : (
         tableData.length > 0 && (
         <div className="show-training-employee-table">
-          <table className='tableComponent'>
+          <table className='show-training-tableComponent'>
             <thead>
               <tr>
                 <th>Department</th>

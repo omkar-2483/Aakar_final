@@ -25,7 +25,7 @@ const TrainerTrainingDetails = () => {
 
   const [newSession, setNewSession] = useState({
     sessionName: '',
-    date: '',
+    date: null,
     startTime: null,
     endTime: null,
     sessionDescription: '',
@@ -45,15 +45,18 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
     }
 
     const loadSessions = async () => {
-        const data = await fetchAllSessions(trainingId);
-        setSessionData(data);
-    };
+      const data = await fetchAllSessions(trainingId);
+      const updatedData = data.map(data => ({
+        ...data ,
+        sessionDate: dayjs(data.sessionDate).format("DD-MM-YYYY"),  
+      }))
+      setSessionData(updatedData);
+  };
 
     loadSessions();
   }, [trainingId, refreshTrigger, navigate]);
 
   const handleAttendanceClick = (session) => {
-    toast.success("Session added successfully!");
     console.log("Navigating to attendance...");
     navigate('/TrainerViewAttendance', { state: { trainingId, sessionId: session.sessionId, session } });
   };
@@ -64,10 +67,10 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
   };
 
   const handleDateChange = (name, date) => {
-    const startDate = dayjs(startTrainingDate).format("YYYY-MM-DD");
-    const endDate = dayjs(endTrainingDate).format("YYYY-MM-DD");
-    const selectedDate = dayjs(date).format("YYYY-MM-DD");
-    const today = dayjs(new Date()).format("YYYY-MM-DD");
+    const startDate = startTrainingDate;
+    const endDate = endTrainingDate;
+    const selectedDate = dayjs(date).format("DD-MM-YYYY");
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
 
     console.log("Start date:", startDate);
     console.log("End date:", endDate);
@@ -113,7 +116,7 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
       sessionEndTime: formatTime(newSession.endTime),
       sessionDate: dayjs(newSession.date).format("YYYY-MM-DD"),
     };
-  
+    console.log("MY data: ", formattedSession);
     try {
       const response = await saveSession(formattedSession, editingSession?.sessionId);
   
@@ -142,7 +145,7 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
       // Reset form and states
       setNewSession({
         sessionName: '',
-        date: '',
+        date: null,
         startTime: null,
         endTime: null,
         sessionDescription: '',
@@ -178,23 +181,22 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
   };
 
   const sessionColumns = [
-    { id: 'sessionName', label: 'Session Name' },
-    { id: 'sessionDate', label: 'Date', render: (row) => dayjs(row.sessionDate).format("YYYY-MM-DD") },
-    { id: 'sessionStartTime', label: 'Start Time' },
-    { id: 'sessionEndTime', label: 'End Time' },
-    { id: 'sessionDescription', label: 'Session Description' },
+    { id: 'sessionName', label: 'Session Name', align: 'center' },
+    { id: 'sessionDate', label: 'Date', align: 'center'},
+    { id: 'sessionStartTime', label: 'Start Time', align: 'center' },
+    { id: 'sessionEndTime', label: 'End Time', align: 'center' },
+    { id: 'sessionDescription', label: 'Session Description', align: 'center' },
     {
       id: 'attendance',
       label: 'Actions',
       render: (row) => {
-        const today = dayjs(new Date()).format("YYYY-MM-DD");
-        const sessionDate = dayjs(row.sessionDate).format("YYYY-MM-DD");
-        const isTrainingEditable = dayjs(new Date()).format("YYYY-MM-DD") <= dayjs(endTrainingDate).format("YYYY-MM-DD");
+        const today = dayjs(new Date()).format("DD-MM-YYYY");
+        const sessionDate = row.sessionDate;
+        const isTrainingEditable = dayjs(new Date()).format("DD-MM-YYYY") <= endTrainingDate;
         const isSessionFutureOrToday = sessionDate >= today; 
         
         return (
-          <>
-            {/* Edit icon: Visible only if the session is future or today */}
+          <div className='trainer-training-details-actions'>
             {isTrainingEditable && isSessionFutureOrToday ? (
               <FiPenTool
                 onClick={() => handleEditSession(row)}
@@ -204,15 +206,15 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
               />
             ) : null}
             
-            {/* Attendance icon: Visible for all sessions */}
+            {!isSessionFutureOrToday || today === sessionDate ? (
             <FiEdit2
               onClick={() => handleAttendanceClick(row)}
               className="action-icon"
               size={18}
               style={{ color: '#0061A1', fontWeight: '900' }}
             />
+            ) : null}
   
-            {/* Delete icon: Visible only if the session is future or today */}
             {isTrainingEditable && isSessionFutureOrToday ? (
               <FiTrash 
                 onClick={() => handleDeleteSession(row.sessionId)} 
@@ -221,7 +223,7 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
                 style={{ color: '#0061A1', fontWeight: '900' }} 
               />
             ) : null}
-          </>
+          </div>
         );
       },
     },
@@ -243,8 +245,8 @@ return (
         <div className="training-details-form">
           <Textfield label="Training Name" value={trainingTitle || ''} readOnly />
           <Textfield label="Skills" value={skillNames || ''} readOnly />
-          <Textfield label="Start Date" value={dayjs(startTrainingDate).format("YYYY-MM-DD") || ''} readOnly />
-          <Textfield label="End Date" value={dayjs(endTrainingDate).format("YYYY-MM-DD") || ''} readOnly />
+          <Textfield label="Start Date" value={startTrainingDate || ''} readOnly />
+          <Textfield label="End Date" value={endTrainingDate || ''} readOnly />
         </div>
       </section>
       {active === 0 && (
@@ -265,8 +267,8 @@ return (
           />
           <CustomDatePicker
               label="Date"
-              value={newSession.date || null}
-              onChange={(date) => handleDateChange('date', date)}
+              selected={dayjs(newSession.date).toDate()}
+              onChange={(newDate) => handleDateChange('date', newDate)}
           />
           <CustomTimePicker
               label="Start Time"
