@@ -4,8 +4,8 @@ import ApiError from '../utils/ApiError.js'
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'Ashutosh@2003',
-  database: 'commondb1',
+  password: '',
+  database: 'aakarerp',
 })
 
 connection.connect((err) => {
