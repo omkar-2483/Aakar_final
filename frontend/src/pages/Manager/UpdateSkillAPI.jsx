@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
-
+import { API_BASE_URL } from '../../App';
 
 export const departmentExpectedSkill = async () => {
     try{
-        const response = await axios.get(`http://localhost:3000/expected-department-skill`);
+        const response = await axios.get(`${ API_BASE_URL }/expected-department-skill`);
         console.log("API Response:", response);
         return response;
     } catch (error){
@@ -15,7 +15,7 @@ export const departmentExpectedSkill = async () => {
 
 export const skillTrainingByDepartment = async () => {
     try {
-        const response = await axios.get(`http://localhost:3000/departments`);
+        const response = await axios.get(`${ API_BASE_URL }/departments`);
         return response.data;
     } catch (error){
         toast.error('Error fetching departments');
@@ -26,7 +26,7 @@ export const skillTrainingByDepartment = async () => {
 // Deactivate a skill
 export const deactivateSkill = async (skillId) => {
     try {
-      const response = await axios.put(`http://localhost:3000/skills/${skillId}/deactivate`);
+      const response = await axios.put(`${ API_BASE_URL }/skills/${skillId}/deactivate`);
       return response.data;
     } catch (error) {
       toast.error('Failed to deactivate skill.');
@@ -37,7 +37,7 @@ export const deactivateSkill = async (skillId) => {
   export const updateSkill = async (skillData) => {
     try {
       console.log("asds ajsd ajsfdjdk adsjhfl",skillData);
-      const response = await axios.put(`http://localhost:3000/update-departmentSkill-skill`, skillData);
+      const response = await axios.put(`${ API_BASE_URL }/update-departmentSkill-skill`, skillData);
       return response;
     } catch (error) {
       toast.error('Failed to update skill.');
@@ -48,7 +48,7 @@ export const deactivateSkill = async (skillId) => {
   // Add a new skill
   export const addSkill = async (skillData) => {
     try {
-      const response = await axios.post(`http://localhost:3000/insert-into-departmentSkill`, skillData);
+      const response = await axios.post(`${ API_BASE_URL }/insert-into-departmentSkill`, skillData);
       return response.data;
     } catch (error) {
       toast.error('Failed to add skill.');

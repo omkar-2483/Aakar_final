@@ -73,8 +73,8 @@ const EmployeeTrainingEnrolled = () => {
   };
 
   const columns = [
-    { id: 'employeeName', label: 'Employee Name' },
-    { id: 'departmentName', label: 'Department' },
+    { id: 'employeeName', label: 'Employee Name', align: 'center' },
+    { id: 'departmentName', label: 'Department', align: 'center' },
     ...(active === 1 ? [{
       id: 'trainerFeedback',
       label: 'Trainer Feedback',

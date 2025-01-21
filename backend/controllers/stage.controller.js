@@ -22,7 +22,7 @@ export const getStageList = asyncHandler(async (req, res) => {
 // Get all stages
 export const getAllStages = asyncHandler(async (req, res) => {
   const query =
-    'SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy FROM stage s INNER JOIN employee eo ON s.owner = eo.employeeId INNER JOIN employee cb ON s.createdBy = cb.employeeId;'
+    'SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy, eo.employeeName AS owner,cb.customEmployeeId AS createdById  FROM stage s INNER JOIN employee eo ON s.owner = eo.employeeId INNER JOIN employee cb ON s.createdBy = cb.employeeId;'
 
   db.query(query, (err, data) => {
     if (err) {
@@ -45,7 +45,7 @@ export const getAllStages = asyncHandler(async (req, res) => {
 
 export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
   const pNo = req.params.id
-  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+  const query = `SELECT s.*, eo.customEmployeeId AS ownerId , cb.employeeName AS createdBy,eo.employeeName AS owner,cb.customEmployeeId AS createdById 
      FROM stage s
      INNER JOIN employee eo ON s.owner = eo.employeeId
      INNER JOIN employee cb ON s.createdBy = cb.employeeId
@@ -121,7 +121,7 @@ export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
 
 export const getHistoryStagesByStageId = asyncHandler(async (req, res) => {
   const sId = req.params.id
-  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy,eo.customEmployeeId AS ownerId, cb.customEmployeeId AS createdByIds
                  FROM stage s
                  INNER JOIN employee eo ON s.owner = eo.employeeId
                  INNER JOIN employee cb ON s.createdBy = cb.employeeId
@@ -156,7 +156,7 @@ export const getHistoryStagesByStageId = asyncHandler(async (req, res) => {
 export const getSingleStageByStageId = asyncHandler(async (req, res) => {
   const stageId = req.params.id
   const query = `
-          SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+          SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy, eo.customEmployeeId AS ownerId, cb.customEmployeeId AS createdById
           FROM stage s
           INNER JOIN employee eo ON s.owner = eo.employeeId
           INNER JOIN employee cb ON s.createdBy = cb.employeeId
@@ -193,7 +193,7 @@ export const getStagesByProjectNumber = asyncHandler(async (req, res) => {
   // console.log(req.params)
 
   const projectNumber = req.params.projectNumber
-  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy
+  const query = `SELECT s.*, eo.employeeName AS owner, cb.employeeName AS createdBy,eo.customEmployeeId AS ownerId, cb.customEmployeeId AS createdById
                  FROM stage s
                  INNER JOIN employee eo ON s.owner = eo.employeeId
                  INNER JOIN employee cb ON s.createdBy = cb.employeeId

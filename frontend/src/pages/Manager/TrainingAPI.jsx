@@ -30,11 +30,9 @@ export const fetchTrainersBySkills = async (skillIds) => {
 export const addTraining = async (trainingData) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/add-training`, trainingData);
-    toast.success('Training added successfully!');
     return response.data;
   } catch (error) {
     console.error('Error saving new training:', error);
-    toast.error('Failed to save new training.');
     return null;
   }
 };
@@ -150,6 +148,7 @@ export const fetchSessionAttendance = async (sessionId) => {
   export const fetchEmployeesEnrolled = async (trainingId) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/ManagerPOV/employeesEnrolled/${trainingId}`)
+      console.log("Response Data : trainin planning : ",response);
       return response.data;
     } catch (error) {
       console.error('Error fetching employee data:', error);

@@ -29,7 +29,7 @@ const SendConformEmpToTraining = () => {
     const location = useLocation();
     const { skill } = location.state || {}; 
     const departmentId = useSelector((state) => state.auth.user?.departmentId); 
-    const employeeAccess = useSelector((state) => state.auth.user?.employeeAccess);
+    const employeeAccess = useSelector((state) => state.auth.user?.employeeAccess).split(",")[2];
 
     const Add = employeeAccess[13] === "1" ;
     const Read = employeeAccess[14] === "1" ;
@@ -194,7 +194,13 @@ const SendConformEmpToTraining = () => {
                 const empFromAssignedTrining = response.data
                 // setEligibleEmployees(response.data.filter(emp =>!PreSelectedEmp.includes(emp.employeeId)));
                 const emp_ids =TrainingPreselectedemp.filter(emp => emp.trainingId === selectedTrainingId).map(emp => emp.employeeId);
-                setEligibleEmployees(response.data);
+                const uniqueEmployees = response.data.filter(
+                    (item, index, array) =>
+                      index === array.findIndex(emp => emp.employeeId === item.employeeId)
+                  );
+                console.log("Uniques employees : ",uniqueEmployees)
+                setEligibleEmployees(uniqueEmployees);
+                //setEligibleEmployees(response.data);
                 setTrainingPreselectedempId(emp_ids);
                 console.log("Eligible employee data : ",emp_ids)
                 console.log("Eligible employee data : ",response.data)
@@ -321,7 +327,7 @@ const SendConformEmpToTraining = () => {
     return (
         <div>
             <header className="send-confirm-dash-header">
-                <FiArrowLeftCircle className="employeeSwitch-back-button" onClick={() => navigate(-1)} title="Go back"/>
+                <FiArrowLeftCircle className="employeeSwitch-back-button" onClick={() => navigate("/SendAndGiveTraining")} title="Go back"/>
                 <h4 className='employeeSwitch-title'>Back</h4>
             </header>
 
@@ -475,13 +481,20 @@ const SendConformEmpToTraining = () => {
                                                                     </tr>
                                                                 ))}
 
-                                                                {
-                                                                    (Update || Add) && (
-                                                                        <button onClick={() => handelToSend(row.trainingId)}>
-                                                                            Send
-                                                                        </button>
-                                                                    )
-                                                                }
+                                                                
+                                                                {(Update || Add) && (
+                                                                    <tr>
+                                                                        <td colSpan={columns.length} style={{ textAlign: 'right' }}>
+                                                                            <button
+                                                                                className="send-conform-send-button"
+                                                                                onClick={() => handelToSend(row.trainingId)}
+                                                                            >
+                                                                                Send
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                )}
+                                                                
                                                             </tbody>
                                                         </table>
                                                             ) : (

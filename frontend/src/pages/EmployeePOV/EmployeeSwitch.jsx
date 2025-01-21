@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FiEdit, FiArrowLeftCircle } from 'react-icons/fi';
 import TableComponent from '../../components/TableCo'; 
@@ -9,6 +8,7 @@ import './EmployeeSwitch.css';
 import GeneralSearchBar from '../../components/GenralSearchBar';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import dayjs from 'dayjs';
 
 const EmployeeSwitch = () => {
   const [trainings, setTrainings] = useState([]);
@@ -17,6 +17,21 @@ const EmployeeSwitch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const employeeId = useSelector((state) => state.auth.user?.employeeId);
+
+
+  const getTrainingStatusLabel = (startDate, endDate) => {
+    const today = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+  
+    if (today >= start && today <= end) {
+      return "Ongoing"
+    } else if (today > end) {
+      return "Completed"
+    } else {
+      return "Upcoming"
+    }
+  }; 
 
   useEffect(() => {
     console.log("hihihihihih")
@@ -27,8 +42,17 @@ const EmployeeSwitch = () => {
   const fetchTrainings = async () => {
     try {
       const data = await fetchEmployeeTrainings(employeeId);
-      setTrainings(data);
-      setFilteredTrainings(data);
+      const updatedData = data.map(data => ({
+        ...data ,
+        startTrainingDate: dayjs(data.startTrainingDate).format("DD-MM-YYYY"),
+        endTrainingDate: dayjs(data.endTrainingDate).format("DD-MM-YYYY"),
+        "trainingStatus" : getTrainingStatusLabel(data.startTrainingDate, data.endTrainingDate)
+
+      }))
+      console.log("Training status from employeeSwitch : ",updatedData)
+      
+      setTrainings(updatedData);
+      setFilteredTrainings(updatedData);
     } catch (error) {
       console.error("Error fetching trainings:", error);
       toast.error("Failed to fetch trainings.");
@@ -115,6 +139,7 @@ const EmployeeSwitch = () => {
   const handleSearch = (selectedValue) => {
     setSearchTerm(selectedValue);
     if (!selectedValue) {
+      
       setFilteredTrainings(trainings);
     } else {
       setFilteredTrainings(
@@ -123,13 +148,29 @@ const EmployeeSwitch = () => {
     }
   };
 
+  const renderSkillsBubbles = (skills) => {
+    console.log("Rendered skills: ", skills);
+    if (!skills || skills.trim() === '') {
+      return <span>No Skills</span>;  
+    }
+   
+    const skillList = skills.split(', ');
+    return (
+      <div className="skills-bubbles-container">
+        {skillList.map((skill, index) => (
+          <span key={index} className="skill-bubble">{skill}</span>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="employeeSwitch-training-content">
-        <header className="employeeSwitch-dash-header">
+        {/* <header className="employeeSwitch-dash-header">
           <FiArrowLeftCircle className="employeeSwitch-back-button" onClick={() => navigate(-1)} title="Go back"/>
           <h4 className='employeeSwitch-title'>Back to main page</h4>
-        </header>
+        </header> */}
 
         {/* Skill Matrix Table */}
         <div className="employeeSwitch-table-container">
@@ -163,21 +204,17 @@ const EmployeeSwitch = () => {
                 id: 'skillNames',
                 label: 'Skills',
                 align: 'center',
-                render: (row) => row.skillNames || 'No skills',
+                render: (row) => renderSkillsBubbles(row.skillNames),
               },
               {
                 id: 'startTrainingDate',
                 label: 'Start Date',
                 align: 'center',
-                render: (row) =>
-                  new Date(row.startTrainingDate).toLocaleDateString(),
               },
               {
                 id: 'endTrainingDate',
                 label: 'End Date',
                 align: 'center',
-                render: (row) =>
-                  new Date(row.endTrainingDate).toLocaleDateString(),
               },
               { id: 'trainingStatus', label: 'Training Status', align: 'center', render: (row) => getTrainingStatus(row.startTrainingDate, row.endTrainingDate) },
                   {
@@ -185,7 +222,7 @@ const EmployeeSwitch = () => {
                     label: 'View Details',
                     align: 'center',
                     render: (row) => (
-                      <FiEdit onClick={() => handleViewDetails(row)} className="action-icon" size={18} style={{color: '#0061A1', fontWeight: '900'}}/>
+                      <FiEdit onClick={() => handleViewDetails(row)} className="action-icon" size={18} style={{color: '#0061A1', fontWeight: '900', marginLeft: '40px'}}/>
                     ),
                   },
             ]}

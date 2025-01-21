@@ -104,3 +104,7 @@ tbody tr:hover {
 #loaderLine {
   padding: 0;
 }
+
+.MuiTableBody-root tr a p {
+  margin: 12px 0px;
+}

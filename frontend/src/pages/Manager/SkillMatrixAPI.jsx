@@ -4,8 +4,7 @@ import { API_BASE_URL } from '../../App';
 // API call to fetch department skills based on department ID
 export const fetchDepartmentSkills = async (departmentId) => {
   try {
-    console.log("fshlfgusygr",departmentId)
-    const response = await axios.get(`http://localhost:3000/get-skillName-skillId/${departmentId}`);
+    const response = await axios.get(`${ API_BASE_URL }/get-skillName-skillId/${departmentId}`);
     console.log("fetched skkill : ",response);
     return response.data.map((da) => ({ id: da.skillId, label: da.skillName }));
   } catch (error) {
@@ -17,7 +16,7 @@ export const fetchDepartmentSkills = async (departmentId) => {
 // API call to fetch assigned employee data
 export const fetchAssignedEmployeeData = async () => {
   try {
-    const response = await axios.get(`http://localhost:3000/get-assign-data`);
+    const response = await axios.get(`${ API_BASE_URL }/get-assign-data`);
     return response.data;
   } catch (error) {
     console.error('Error fetching employee data:', error);
@@ -46,6 +45,7 @@ export const fetchDataBySkillsAndDepartment = async (selectedSkills, departmentI
       skillIds: selectedSkills.map(skill => skill.id),
       departmentId
     });
+    console.log("from API code: ", response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching data by skills and department:', error);

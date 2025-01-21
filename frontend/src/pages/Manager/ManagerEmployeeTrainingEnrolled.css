@@ -4,7 +4,7 @@
   padding: 20px;
 }
 
-.employee-training-enrolled-title {
+.manager-employee-training-enrolled-title {
   margin-top: 50px !important;
   font-size: 24px;
   margin-bottom: 20px;
@@ -12,7 +12,6 @@
   text-align: center;
   width: 100%;
   margin-left: 0px !important;
-  font-size: 20px;
   font-weight: bold;
   padding: 5px;
 }

@@ -10,7 +10,7 @@ export const fetchTrainings = async (employeeId) => {
       id: training.trainingId,
     }));
   } catch (error) {
-    toast.error('Error fetching trainings');
+    //toast.error('Error fetching trainings');
     if (error.response && error.response.status === 404) {
       toast.error('No trainings found for this trainer.');
     } else {
@@ -99,7 +99,7 @@ export const viewAttendance = async (sessionId) => {
     return response;
   }catch (error) {
     console.error('Error fetching attendance data:', error);
-    toast.error('Error fetching attendance data:');
+    //toast.error('Error fetching attendance data:');
     throw Error
   }
 }

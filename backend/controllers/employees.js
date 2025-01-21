@@ -127,7 +127,7 @@ router.get('/employee/:employeeId', (req, res) => {
   JOIN employeeDesignation ed ON ed.departmentId = d.departmentId
   JOIN employeeSkill es ON es.skillId = s.skillId AND es.employeeId = ?  -- Employee ID
   WHERE
-    ed.employeeId = ?
+    ed.employeeId = ? AND s.skillActivityStatus = 1 AND ds.departmentSkillType IN (2, 3)
   ORDER BY
     d.departmentId, s.skillId;
   
