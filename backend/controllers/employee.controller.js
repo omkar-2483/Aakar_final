@@ -479,6 +479,10 @@ export const editEmployeeWithRelations = asyncHandler(async (req, res) => {
     const { id } = req.params; // employeeId from URL
     const { employee, jobProfiles } = req.body;
 
+
+    console.log(employee)
+
+
     console.log(id);
 
     // Validate required fields in employee object

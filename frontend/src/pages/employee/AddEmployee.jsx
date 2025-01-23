@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { addEmployee } from '../../features/employeeSlice.js'; // Redux action
+import { addEmployee } from '../..//features/employeeSlice.js'; // Redux action
 import AddEmployeeForm from './AddEmployeeForm.jsx';
 import AddEmployeeDepartment from './AddEmployeeDepartment.jsx';
 import AccessTable from './AccessTable.jsx';
