@@ -121,7 +121,8 @@ const fetchTickets = async (user, setTickets, setDepartmentTickets, setTicketSum
 };
 
 function App() {
-  const { AccessLevelValue } = useParams();
+  const { accessLevel} = useParams();
+  const AccessLevelValue = parseInt(accessLevel, 10);
   const { currentRole, user, updateCurrentRole } = useContext(UserContext); // Make sure to use user from context
   const [tickets, setTickets] = useState([]);
   const [departmentTickets, setDepartmentTickets] = useState([]);
@@ -240,8 +241,15 @@ function App() {
       {console.log("rendering dashboard")}
 
       <div className="topline">
-        <BackButton />
-        <div className="dropdown">
+        <BackButton title={
+          AccessLevelValue === 1 ? "My Tickets" :
+            AccessLevelValue === 2 ? "Department Created Tickets" :
+              AccessLevelValue === 3 ? "Department Assigned Tickets" :
+                AccessLevelValue === 4 ? "All Tickets" :
+                  AccessLevelValue === 5 ? "Assigned Tickets" : ""
+        } />
+        
+        {(AccessLevelValue === 2 || AccessLevelValue === 3) && <div className="dropdown">
           <button
             className="dropdown-toggle"
             type="button"
@@ -264,6 +272,7 @@ function App() {
             ))}
           </ul>
         </div>
+  }
 
       </div>
 

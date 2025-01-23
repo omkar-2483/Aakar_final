@@ -342,7 +342,7 @@ const App = () => {
               }
             />
             <Route
-              path="/dashboard/:AccessLevelValue"
+              path="/dashboard/:accessLevel"
               element={
                 <PrivateRoute>
                   <Dashboard2 />

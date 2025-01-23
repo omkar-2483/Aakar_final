@@ -8,6 +8,7 @@ import sendMail from './mailservice.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import e from 'express';
 
 // Replicate __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -140,10 +141,18 @@ router.get('/tickets/summary', async (req, res) => {
 router.get('/tickets/summary2', async (req, res) => {
   try {
 
-    const { employee_id, department, assignee, accessLevel } = req.query;
+    const { employee_id, department, assignee } = req.query;
+    const accessLevel = parseInt(req.query.accessLevel, 10); // Convert to integer during assignment
+
+
+    console.log(employee_id);
+    console.log(department);
+    console.log(assignee);
+    console.log(accessLevel);
+
 
     // Define SQL conditions for each access level
-    if (accessLevel === '2') {
+    if (accessLevel === 2) {
       let params = [];
 
       const query1 = `SELECT COUNT(DISTINCT t.id) AS count
@@ -182,7 +191,7 @@ router.get('/tickets/summary2', async (req, res) => {
         priorityCounts: `select t.priority, COUNT(DISTINCT t.id) AS count ${query2} GROUP BY t.priority`,
       };
 
-      if (accessLevel === '2' && department) params.push(department);
+      if (accessLevel === 2 && department) params.push(department);
 
       const [[overdue]] = await db.query(queries.overdue, params);
       const [[dueToday]] = await db.query(queries.dueToday, params);
@@ -193,9 +202,6 @@ router.get('/tickets/summary2', async (req, res) => {
       const [statusCounts] = await db.query(queries.statusCounts, params);
       const [categoryCounts] = await db.query(queries.categoryCounts, params);
       const [priorityCounts] = await db.query(queries.priorityCounts, params);
-
-      console.log(overdue.count);
-      console.log(dueToday.count);
 
       const response = {
         summary: {
@@ -235,11 +241,10 @@ router.get('/tickets/summary2', async (req, res) => {
       let params = [];
 
       // Add parameters based on the access level
-      if (accessLevel === '1' && employee_id) params.push(employee_id);
-      if (accessLevel === '3' && department) params.push(department);
-      if (accessLevel === '5' && assignee) params.push(assignee);
-      conditions.push('1 = ?');
-      params.push(1);
+      if (accessLevel === 1 && employee_id) params.push(employee_id);
+      if (accessLevel === 3 && department) params.push(department);
+      if (accessLevel === 5 && assignee) params.push(assignee);
+      
 
       // Build the WHERE clause
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -394,8 +399,10 @@ router.get('/filteredTickets', async (req, res) => {
 router.get('/filteredTickets2', async (req, res) => {
   console.log("called filtered ticket2");
   try {
-    const { employee_id, department, assignee, assigneeDepartment, ticketsType, accessLevel } = req.query;
-    if (accessLevel === '2') {
+    const { employee_id, department, assignee, assigneeDepartment, ticketsType } = req.query;
+    const accessLevel = parseInt(req.query.accessLevel, 10); // Parse accessLevel as an integer
+
+    if (accessLevel === 2) {
       let params = [];
 
       const query1 = `SELECT t.*
@@ -419,7 +426,7 @@ router.get('/filteredTickets2', async (req, res) => {
         allTickets: `${query1} 1 = 1`,
       };
 
-      if (accessLevel === '2' && department) params.push(department);
+      if (accessLevel === 2 && department) params.push(department);
 
       let response = [];
 
@@ -463,9 +470,9 @@ router.get('/filteredTickets2', async (req, res) => {
       let params = [];
 
       // Add parameters based on the access level
-      if (accessLevel === '1' && employee_id) params.push(employee_id);
-      if (accessLevel === '3' && department) params.push(department);
-      if (accessLevel === '5' && assignee) params.push(assignee);
+      if (accessLevel === 1 && employee_id) params.push(employee_id);
+      if (accessLevel === 3 && department) params.push(department);
+      if (accessLevel === 5 && assignee) params.push(assignee);
       conditions.push('1 = ?');
       params.push(1);
 
@@ -540,7 +547,6 @@ router.get('/tickets', async (req, res) => {
       query += ' WHERE department = ?';
       params.push(department);
     }
-
 
 
     query += ' ORDER BY ticket_created_at DESC';

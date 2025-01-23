@@ -25,8 +25,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 function FilteredTicketPage() {
   const location = useLocation()
   const type = location.state?.ticketsType || '' // Only receive ticketsType from route location state
-  const AccessLevelValue = location.state?.AccessLevelValue || '4'
-
+  const AccessLevelValue = location.state?.AccessLevelValue || 4
   const [tickets, setTickets] = useState([]) // Local state for all fetched tickets
   const [ticketsType, setTicketsType] = useState(type)
   const [filteredTickets, setFilteredTickets] = useState([])
