@@ -210,7 +210,7 @@ function FilteredTicketPage() {
     if (currentRole && user) {
       fetchTickets(AccessLevelValue, department) // Fetch tickets on component mount or role/user change
     }
-  }, [currentRole, user])
+  }, [currentRole, user, ticketsType, department])
 
   useEffect(() => {
     // Log the tickets state whenever it changes for debugging
