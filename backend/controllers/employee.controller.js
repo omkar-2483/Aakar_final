@@ -334,24 +334,24 @@ export const addEmployee = asyncHandler(async (req, res) => {
     for (const profile of employee.jobProfiles) {
         let {designationId, designationName, departmentId, managerId} = profile;
 
+        console.log(designationId, designationName, departmentId, managerId)
+
         if (!departmentId) {
             return res.status(400).json({message: 'Department ID is required.'});
         }
 
         // Insert designation if designationId is 0
         if (designationId === 0) {
-            const insertQuery = `INSERT INTO designation (designationName) VALUES (?);;
+            const insertQuery = `INSERT INTO designation (designationName) VALUES (?);`;
+
             const [designationInsertResult] = await connection
                 .promise()
                 .query(insertQuery, [designationName]);
-            designationId = designationInsertResult.insertId`;
+            designationId = designationInsertResult.insertId;
         }
 
         // Insert job profile for the employee
-        const insertJobProfileQuery = `
-            INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId) 
-            VALUES (?, ?, ?, ?)
-        `;
+        const insertJobProfileQuery = `INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId) VALUES (?, ?, ?, ?)`;
         await connection.promise().query(insertJobProfileQuery, [
             employeeId,
             designationId,
@@ -538,21 +538,21 @@ export const editEmployeeWithRelations = asyncHandler(async (req, res) => {
         }
 
         // Handle jobProfiles only if not empty
-        if (jobProfiles && jobProfiles.length > 0) {
-            // Delete existing job profiles for the employee
-            const deleteProfilesQuery = `DELETE FROM employeedesignation WHERE employeeId = ?`;
-            await connection.promise().query(deleteProfilesQuery, [id]);
-
-            // Insert new job profiles into employeedesignation table
-            const insertProfilesQuery =
-                `INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId) 
-                VALUES (?, ?, ?, ?)`;
-
-            for (const profile of jobProfiles) {
-                const profileValues = [id, profile.designationId, profile.departmentId, profile.managerId];
-                await connection.promise().query(insertProfilesQuery, profileValues);
-            }
-        }
+        // if (jobProfiles && jobProfiles.length > 0) {
+        //     // Delete existing job profiles for the employee
+        //     const deleteProfilesQuery = `DELETE FROM employeedesignation WHERE employeeId = ?`;
+        //     await connection.promise().query(deleteProfilesQuery, [id]);
+        //
+        //     // Insert new job profiles into employeedesignation table
+        //     const insertProfilesQuery =
+        //         `INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId)
+        //         VALUES (?, ?, ?, ?)`;
+        //
+        //     for (const profile of jobProfiles) {
+        //         const profileValues = [id, profile.designationId, profile.departmentId, profile.managerId];
+        //         await connection.promise().query(insertProfilesQuery, profileValues);
+        //     }
+        // }
 
         res.status(200).json({ message: 'Employee updated successfully.' });
     } catch (error) {

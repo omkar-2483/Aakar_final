@@ -109,7 +109,7 @@ router.get('/get-assign-data', (req, res) => {
 // Endpoint to handle bulk updates and deletions
 router.post('/update-bulk', (req, res) => {
     const { newSelectedEmp, removeEmp, grades } = req.body;
-    console.log(newSelectedEmp, removeEmp, grades)
+    // console.log(newSelectedEmp, removeEmp, grades)
   
     if (!Array.isArray(newSelectedEmp) || !Array.isArray(removeEmp) || !Array.isArray(grades)) {
       return res.status(400).json({ message: 'Invalid input data' });

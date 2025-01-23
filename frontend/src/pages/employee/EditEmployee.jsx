@@ -30,6 +30,16 @@ const EditEmployee = () => {
         employeePassword: '',
     });
 
+    const dummy = [
+        {
+            "designationName": "test2",
+            "designationId": 7,
+            "departmentName": "ABCD",
+            "departmentId": 10,
+            "managerName": "Rushikesh Ghodke"
+        }
+    ]
+
     const [employeeDesignations, setEmployeeDesignations] = useState([]);
     const [access, setAccess] = useState('');
 
@@ -38,6 +48,10 @@ const EditEmployee = () => {
 
         if (employeeData) {
             const { employee, jobProfiles } = employeeData;
+
+            console.log("employee:", employee);
+            console.log("jobProfiles:", jobProfiles);
+
             setEmployeeInputValues({
                 ...employee,
                 employeeEndDate: employee.employeeEndDate || null,
@@ -49,6 +63,14 @@ const EditEmployee = () => {
             toast.error('Employee details not found in Redux store.');
         }
     }, [employees, id]);
+
+    useEffect(() => {
+        console.log("Updated employeeInputValues:", employeeInputValues);
+        console.log("Updated jobProfiles:", employeeDesignations);
+    }, [employeeInputValues]);
+
+
+
 
     const notify = () =>
         toast.success('Employee Updated Successfully!', {
@@ -124,7 +146,7 @@ const EditEmployee = () => {
                 />
 
                 <AddEmployeeDepartment
-                    initialEmployeeDesignations={employeeDesignations}
+                    initialEmployeeDesignations={dummy}
                     setEmployeeDesignations={setEmployeeDesignations}
                 />
 

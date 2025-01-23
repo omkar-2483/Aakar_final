@@ -1,8 +1,10 @@
 import express from "express";
-import {getAllDesignations} from "../controllers/designation.controller.js";
+import {addDesignation, getAllDesignations, updateDesignation} from "../controllers/designation.controller.js";
 
 const router = express.Router()
 
-router.get('/getAllDesignations', getAllDesignations );
+router.post('/addDesignation', addDesignation);
+router.put('/:id/edit', updateDesignation);
+router.get('/getAllDesignations', getAllDesignations);
 
 export default router;

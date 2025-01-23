@@ -172,7 +172,7 @@ router.get(`/GetDeptGiveTrainData/:dept_id`,(req,res) =>{
         console.error('Error in fetching Department Giving Training', err);
         return res.status(500).json({ error: 'Error fetching data' });
       }
-      console.log("Fetching department giving training", result);
+      // console.log("Fetching department giving training", result);
       res.json(result);
     });
 });
@@ -194,7 +194,7 @@ router.get(`/GetDeptGiveTrainData/:dept_id/:skill_id?`, (req, res) => {
       console.error('Error in fetching Department Giving Training by Skill', err);
       return res.status(500).json({ error: 'Error fetching data' });
     }
-    console.log("Fetching department giving training by skill", result);
+    // console.log("Fetching department giving training by skill", result);
     res.json(result);
   });
   } 
@@ -215,7 +215,7 @@ WHERE ds.departmentId = ?
         return res.status(500).json({ error: 'Error fetching data' });
     }
     res.json(result);
-    console.log('DepartmentId',result);
+    // console.log('DepartmentId',result);
   })
 })
 
@@ -233,7 +233,7 @@ router.post('/send-multiple-emps-to-trainings', (req, res) => {
       console.error('Error inserting employees into trainings:', err);
       return res.status(500).json({ error: 'Database insertion failed' });
     }
-    console.log('Inserted employees into trainings:', results);
+    // console.log('Inserted employees into trainings:', results);
     res.status(200).json({ message: 'Employees added to trainings successfully' });
   });
 });
@@ -250,7 +250,7 @@ router.get('/get-distinct-department-employess-skill-to-train/:departmentId',(re
 
   connection.query(query,[a],(err,result) =>{
     if(err){
-      console.log("Fetching data from data base for seperating departments",err);
+      // console.log("Fetching data from data base for seperating departments",err);
       return res.status(500).json({ error: 'Database insertion failed' });
     }
     const response = {};
@@ -267,7 +267,7 @@ router.get('/get-distinct-department-employess-skill-to-train/:departmentId',(re
         
         //grade: row.grade
       })
-      console.log("hi", response)
+      // console.log("hi", response)
     })
     return res.json(response)
     
@@ -288,7 +288,7 @@ router.get(`/get-department-needed-trainings/:departmentId`, (req, res) => {
 
 connection.query(query,[departmentId],(err,result) =>{
   if(err){
-    console.log("Fetching data from data base for seperating departments",err);
+    // console.log("Fetching data from data base for seperating departments",err);
     return res.status(500).json({ error: 'Database insertion failed' });
   }
   return res.json(result)

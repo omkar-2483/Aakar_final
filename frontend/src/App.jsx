@@ -60,6 +60,9 @@ import AddSubStage from './components/Project/AddSubstages/AddSubStage.jsx'
 import MyStage from './components/Project/MyStage/MyStage.jsx'
 import AllProjects from './components/Project/AllProjects/AllProjects.jsx'
 import DesignationDashboard from './pages/designation/DesignationDashboard.jsx'
+import AddDesignation from "./pages/designation/AddDesignation.jsx";
+import DesignationProfile from "./pages/designation/DesignationProfile.jsx";
+import EditDesignation from "./pages/designation/EditDesignation.jsx";
 
 export const API_BASE_URL = `http://localhost:3000`
 const App = () => {
@@ -168,6 +171,30 @@ const App = () => {
                 </PrivateRoute>
               }
             />
+              <Route
+                  path="/designations/addDesignation"
+                  element={
+                      <PrivateRoute>
+                          <AddDesignation />
+                      </PrivateRoute>
+                  }
+              />
+              <Route
+                  path="/designation/:id"
+                  element={
+                      <PrivateRoute>
+                          <DesignationProfile />
+                      </PrivateRoute>
+                  }
+              />
+              <Route
+                  path="/designation/:id/edit"
+                  element={
+                      <PrivateRoute>
+                          <EditDesignation />
+                      </PrivateRoute>
+                  }
+              />
             <Route
               path="/ManagerSwitch"
               element={

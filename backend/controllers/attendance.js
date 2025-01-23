@@ -15,7 +15,7 @@ router.get('/api/sessions/attendance/:sessionId', (req, res) => {
   
     connection.query(sql, [sessionId, sessionId], (err, results) => {
       if (err) {
-        console.error('Error fetching attendance:', err.message);
+        // console.error('Error fetching attendance:', err.message);
         return res.status(500).json({ error: 'Server error' });
       }
       if (results.length === 0) {
@@ -62,7 +62,7 @@ router.get('/api/sessions/attendance/:sessionId', (req, res) => {
   
     connection.query(sqlQuery, (err, result) => {
       if (err) {
-        console.error('Error inserting attendance:', err);
+        // console.error('Error inserting attendance:', err);
         return res.status(500).send('Error saving attendance.');
       }
       res.send('Attendance saved successfully.');
@@ -81,7 +81,7 @@ router.get('/viewAttendance/:sessionId', (req, res) => {
   
     connection.query(query, [sessionId], (err, results) => {
       if (err) {
-        console.error('Database query error:', err);
+        // console.error('Database query error:', err);
         return res.status(500).send('Database query error.');
       }
   
@@ -105,7 +105,7 @@ router.post('/saveFeedback', (req, res) => {
 
     connection.query(query, [trainerFeedback, employeeId, trainingId], (err, result) => {
       if (err) {
-        console.error('Error executing query for employeeId:', employeeId, err);
+        // console.error('Error executing query for employeeId:', employeeId, err);
         return res.status(500).json({ message: 'Error saving feedback' });
       }
     });
