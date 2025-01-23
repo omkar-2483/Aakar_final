@@ -49,6 +49,8 @@ import ManageIssueTypes from './ticketComponents/ManageIssueTypes/ManageIssueTyp
 import ManageBasicSolutions from './ticketComponents/ManageBasicSolutions/ManageBasicSolutions.jsx'
 import ManageTicketTitles from './ticketComponents/ManageTicketTitles/ManageTicketTitles.jsx'
 import ManageSendMailTo from './ticketComponents/ManageSendMailTo/ManageSendMailTo.jsx'
+import Dashboard2 from './ticketComponents/Dashboard2/Dashboard2.jsx'
+import FilteredTicketPage2 from './ticketComponents/FilteredTicketPage2/FilteredTicketPage2.jsx'
 
 //Project
 import AddProject from './components/Project/AddProject/AddProject.jsx'
@@ -340,6 +342,14 @@ const App = () => {
               }
             />
             <Route
+              path="/dashboard/:AccessLevelValue"
+              element={
+                <PrivateRoute>
+                  <Dashboard2 />
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="/ticketPage/:id"
               element={
                 <PrivateRoute>
@@ -352,6 +362,14 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <FilteredTicketPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/FilteredTicketPage2"
+              element={
+                <PrivateRoute>
+                  <FilteredTicketPage2 />
                 </PrivateRoute>
               }
             />

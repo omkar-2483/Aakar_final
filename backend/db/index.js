@@ -2,12 +2,12 @@ import mysql from 'mysql2'
 import ApiError from '../utils/ApiError.js'
 
 const connection = mysql.createConnection({
-  host: 'localhost',
+  host: '127.0.0.1',
   user: 'root',
-  password: '',
-  database: 'aakarerp',
+  password: 'Ashutosh@2003',
+  database: 'commondb1',
 })
-
+ 
 connection.connect((err) => {
   if (err) {
     console.log(new ApiError(500, 'Database connection failed.'))

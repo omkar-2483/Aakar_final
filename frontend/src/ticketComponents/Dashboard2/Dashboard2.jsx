@@ -2,31 +2,14 @@ import React, { useMemo, useState, useContext, useEffect } from 'react';
 import { Box, Typography, Paper, Grid, LinearProgress } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import DonutChart from '../DonutChart/DonutChart';
-import './Dashboard.css';
+import './Dashboard2.css';
 import BackButton from '../Backbutton/Backbutton';
 import UserContext from '../context/UserContext';
 import axios from "axios";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { CiCirclePlus } from "react-icons/ci";
+import { use } from 'react';
 
-const NavigationHeader = ({ title, subtitle, user, selectedRole }) => (
-  <Box display="flex" alignItems="center" padding={{ xs: '8px', sm: '16px' }} flexDirection={{ xs: 'column', sm: 'row' }} gap={2}>
-    {selectedRole?.designation==="Admin" && <NavLink to="/adminFunctionalities" style={{ textDecoration: 'none', color: '#1A73E8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <div className="create-ticket-card">
-        <div className="create-ticket-body">Admin Functionalities</div>
-      </div>
-    </NavLink>}
-
-    <NavLink to="/createTicket" style={{ textDecoration: 'none', color: '#1A73E8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <div className="create-ticket-card">
-        <CiCirclePlus className="create-ticket-icon" />
-        <div className="create-ticket-body">Create Ticket</div>
-      </div>
-    </NavLink>
-
-
-  </Box>
-);
 
 const SummaryBoxes = ({ summaryData, onCardClick }) => (
   <Grid container spacing={2} justifyContent="center" padding={{ xs: '8px', sm: '16px' }}>
@@ -108,76 +91,71 @@ const CategoryWiseTickets = ({ categories }) => (
 
 
 // Updated fetchTickets function to pass the correct user info and params based on currentRole
-const fetchTickets = async (role, user, setTickets, setDepartmentTickets, setTicketSummary) => {
+const fetchTickets = async (user, setTickets, setDepartmentTickets, setTicketSummary, department, AccessLevelValue) => {
+  console.log(AccessLevelValue);
   try {
     // let endpoint = "http://localhost:3000/tickets/tickets";
+
     let params = {};
 
-    if (role?.designation === "Executive") {
+    if (AccessLevelValue === 1) {
       params = { employee_id: user.id };
-    } else if (role?.designation === "HOD") {
-      params = { department: role.department };
-    } else if (role?.designation === "Admin") {
-      // No additional params needed for admin
-    } else if (role?.designation === "Assignee") {
-      params = { assignee: user.name, assigneeDepartment: role.department };
+    } else if (AccessLevelValue === 2) {
+      params = { department: department };
+    } else if (AccessLevelValue === 3) {
+      params = { department: department };
+    } else if (5) {
+      params = { assignee: user.name };
     }
+    params.accessLevel = AccessLevelValue;
 
 
-    let endpoint = "http://localhost:3000/tickets/tickets/summary";
+    let endpoint = `http://localhost:3000/tickets/tickets/summary2`;
 
     const response = await axios.get(endpoint, { params });
     setTicketSummary(response.data);
-    
+
   } catch (error) {
     console.error("Error fetching tickets:", error);
   }
 };
 
 function App() {
+  const { AccessLevelValue } = useParams();
   const { currentRole, user, updateCurrentRole } = useContext(UserContext); // Make sure to use user from context
   const [tickets, setTickets] = useState([]);
   const [departmentTickets, setDepartmentTickets] = useState([]);
   const [ticketSummary, setTicketSummary] = useState({});
-  const [selectedRole, setSelectedRole] = useState(() => {
+  const [department, setDepartment] = useState(() => {
     // Default to "Executive" role if it exists in the user's roles
-    return currentRole || null;
+    return currentRole?.department || null;
   });
 
   const navigate = useNavigate(); // Initialize useNavigate
 
+  const handleDepartmentSelection = (department, setDepartment) => {
+    setDepartment(department);
 
-  const handleRoleSelection = (role,updateCurrentRole) => {
-    updateCurrentRole(role);
-    setSelectedRole(role); // Set selected role
-    
-    
   };
   useEffect(() => {
-    
-    setSelectedRole(currentRole);
-    // const interval = setInterval(() => {
-    //   if (currentRole) {
-    //     setSelectedRole(currentRole);
-    //   }
-    // }, 10000);
+    setDepartment(currentRole?.department);
 
-    return () => {}; // Clean up on component unmount
   }, [currentRole]);
 
+
   useEffect(() => {
-    if (selectedRole && user) {
-      fetchTickets(selectedRole, user, setTickets, setDepartmentTickets, setTicketSummary); // Fetch tickets based on current role and user
+    if (user) {
+      fetchTickets(user, setTickets, setDepartmentTickets, setTicketSummary, department, AccessLevelValue); // Fetch tickets based on current role and user
     }
 
     const interval = setInterval(() => {
-      if (selectedRole && user) {
-        fetchTickets(selectedRole, user, setTickets, setDepartmentTickets, setTicketSummary); // Poll every 2 seconds
+      if (user) {
+        fetchTickets(user, setTickets, setDepartmentTickets, setTicketSummary, department, AccessLevelValue); // Poll every 2 seconds
       }
     }, 10000);
 
     return () => clearInterval(interval); // Clean up on component unmount
-  }, [selectedRole, user, currentRole]);
+  }, [user, department, currentRole, AccessLevelValue]);
 
   // Function to handle card clicks and navigate with filtered tickets
   const handleCardClick = (label) => {
@@ -198,12 +176,7 @@ function App() {
         type = 'On hold';
         break;
       case 'Unassigned':
-        if (selectedRole?.designation === "Assignee") {
-          type = 'Unassigned';
-        } else {
-          type = 'Unassigned';
-        }
-
+        type = 'Unassigned';
         break;
       case 'All tickets':
         type = 'All tickets';
@@ -212,12 +185,12 @@ function App() {
         break;
     }
 
-    navigate('/FilteredTicketPage', { state: { ticketsType: type } });
+    navigate('/FilteredTicketPage2', { state: { ticketsType: type, AccessLevelValue: AccessLevelValue, department: department } });
   };
 
   // Calculate summary data
   const summaryData = useMemo(() => {
-    
+
     return [
       { label: 'Overdue', value: ticketSummary?.summary?.overdue ?? 0 },
       { label: 'Due today', value: ticketSummary?.summary?.dueToday ?? 0 },
@@ -230,7 +203,7 @@ function App() {
 
   // Calculate status data
   const statusData = useMemo(() => {
-    
+
     const total = ticketSummary?.summary?.allTickets ?? 0;
 
     // Provide a fallback to an empty array if `statusData` is undefined or null
@@ -258,18 +231,16 @@ function App() {
       };
     });
 
-  }, [tickets,ticketSummary]);
+  }, [tickets, ticketSummary]);
 
-  
-  
 
   return (
-    
+
     <Box p={{ xs: '8px', sm: '16px' }}>
-    {console.log("rendering dashboard")}
-      
+      {console.log("rendering dashboard")}
+
       <div className="topline">
-        <NavigationHeader title={'back'} subtitle={'back'} user={user} selectedRole={selectedRole} />
+        <BackButton />
         <div className="dropdown">
           <button
             className="dropdown-toggle"
@@ -277,7 +248,7 @@ function App() {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            {(selectedRole?.designation ?? "Select") + " " + (selectedRole?.department ?? "Role")}
+            {(department ?? "Select Departmet")}
 
           </button>
           <ul className="dropdown-menu">
@@ -285,9 +256,9 @@ function App() {
               <li key={index}>
                 <button
                   className="dropdown-item"
-                  onClick={() => handleRoleSelection(role,updateCurrentRole)}
+                  onClick={() => handleDepartmentSelection(role.department, setDepartment)}
                 >
-                  {role.designation + "-" + role.department}
+                  {role.department}
                 </button>
               </li>
             ))}
@@ -300,10 +271,7 @@ function App() {
 
       <Grid container spacing={2}>
         <Grid item xs={12} md={4}>
-        <DonutChart  priorityCount={ticketSummary.priority} />
-          {/* <Paper elevation={3} style={{ padding: '16px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-           
-          </Paper> */}
+          <DonutChart priorityCount={ticketSummary.priority} />
         </Grid>
         <Grid item xs={12} md={4}>
           <Paper elevation={3} style={{ padding: '16px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -322,4 +290,4 @@ function App() {
 
 export default App;
 
-{/* <SummaryBoxes summaryData={summaryData} onCardClick={handleCardClick} />  */ }
+
