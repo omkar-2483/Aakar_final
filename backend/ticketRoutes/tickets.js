@@ -8,6 +8,7 @@ import sendMail from './mailservice.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import e from 'express';
 
 // Replicate __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -51,7 +52,7 @@ const upload = multer({ storage });
 router.get('/tickets/summary', async (req, res) => {
   try {
     const { employee_id, department, assignee, assigneeDepartment } = req.query;
-    
+
 
     let conditions = [];
     let params = [];
@@ -74,15 +75,15 @@ router.get('/tickets/summary', async (req, res) => {
     // Build the WHERE clause
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const assigneeWhere = assignee ? `WHERE department = ?` : '';
-    
+
 
     // Queries for different counts
     const queries = {
-      overdue: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND ticket_created_at < NOW() AND status != 'close'`,
+      overdue: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND ticket_created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) AND status != 'close'`,
       dueToday: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND DATE(ticket_created_at) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
       open: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND status = 'open'`,
       onHold: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND status = 'hold'`,
-      unassigned: assignee ? `SELECT COUNT(*) AS count FROM ticket ${assigneeWhere} AND (assignee IS NULL OR assignee = '')` : `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND (assignee IS NULL OR assignee = '')` ,
+      unassigned: assignee ? `SELECT COUNT(*) AS count FROM ticket ${assigneeWhere} AND (assignee IS NULL OR assignee = '')` : `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND (assignee IS NULL OR assignee = '')`,
       allTickets: `SELECT COUNT(*) AS count FROM ticket ${whereClause}`,
       statusCounts: `SELECT status, COUNT(*) AS count FROM ticket ${whereClause} GROUP BY status`,
       categoryCounts: `SELECT issue_type, COUNT(*) AS count FROM ticket ${whereClause} GROUP BY issue_type`,
@@ -100,9 +101,6 @@ router.get('/tickets/summary', async (req, res) => {
     const [categoryCounts] = await db.query(queries.categoryCounts, params);
     const [priorityCounts] = await db.query(queries.priorityCounts, params);
 
-    
-
-
     // Construct response
     const response = {
       summary: {
@@ -114,24 +112,195 @@ router.get('/tickets/summary', async (req, res) => {
         allTickets: allTickets.count
       },
       statusData: statusCounts.map(row => ({
-        label: row.status 
-            ? row.status.charAt(0).toUpperCase() + row.status.slice(1)
-            : 'Unknown', // Default label for undefined/null statuses
+        label: row.status
+          ? row.status.charAt(0).toUpperCase() + row.status.slice(1)
+          : 'Unknown', // Default label for undefined/null statuses
         count: row.count || 0 // Default count as 0 if undefined
-    })),
-    categories: categoryCounts.map(row => ({
+      })),
+      categories: categoryCounts.map(row => ({
         label: row.issue_type || 'Unknown', // Default label for undefined/null issue types
         count: row.count || 0 // Default count as 0 if undefined
-    })),
-    priority: priorityCounts.map(row => ({
-      label: row.priority || 'Unknown', // Default label for undefined/null issue types
-      count: row.count || 0 // Default count as 0 if undefined
-  }))
+      })),
+      priority: priorityCounts.map(row => ({
+        label: row.priority || 'Unknown', // Default label for undefined/null issue types
+        count: row.count || 0 // Default count as 0 if undefined
+      }))
     };
 
-    
+
 
     res.json(response);
+  } catch (err) {
+    console.error('Error fetching ticket summary:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+
+// GET ticket summary counts
+router.get('/tickets/summary2', async (req, res) => {
+  try {
+
+    const { employee_id, department, assignee } = req.query;
+    const accessLevel = parseInt(req.query.accessLevel, 10); // Convert to integer during assignment
+
+
+    console.log(employee_id);
+    console.log(department);
+    console.log(assignee);
+    console.log(accessLevel);
+
+
+    // Define SQL conditions for each access level
+    if (accessLevel === 2) {
+      let params = [];
+
+      const query1 = `SELECT COUNT(DISTINCT t.id) AS count
+    FROM 
+        ticket t
+    JOIN 
+        employee e ON t.employee_id = e.employeeId
+    JOIN 
+        employeeDesignation ed ON e.employeeId = ed.employeeId
+    JOIN 
+        department d ON ed.departmentId = d.departmentId
+    WHERE 
+        d.departmentName = ? AND `;
+
+      const query2 = ` 
+    FROM 
+        ticket t
+    JOIN 
+        employee e ON t.employee_id = e.employeeId
+    JOIN 
+        employeeDesignation ed ON e.employeeId = ed.employeeId
+    JOIN 
+        department d ON ed.departmentId = d.departmentId
+    WHERE 
+        d.departmentName = ? `
+
+      const queries = {
+        overdue: `${query1} t.ticket_created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) AND t.status != 'close'`,
+        dueToday: `${query1} DATE(t.ticket_created_at) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
+        open: `${query1} t.status = 'open'`,
+        onHold: `${query1} t.status = 'hold'`,
+        unassigned: `${query1} (t.assignee IS NULL OR t.assignee = '')`,
+        allTickets: `${query1} 1 = 1`,
+        statusCounts: `select t.status, COUNT(DISTINCT t.id) AS count ${query2} GROUP BY t.status`,
+        categoryCounts: `select t.issue_type, COUNT(DISTINCT t.id) AS count ${query2} GROUP BY t.issue_type`,
+        priorityCounts: `select t.priority, COUNT(DISTINCT t.id) AS count ${query2} GROUP BY t.priority`,
+      };
+
+      if (accessLevel === 2 && department) params.push(department);
+
+      const [[overdue]] = await db.query(queries.overdue, params);
+      const [[dueToday]] = await db.query(queries.dueToday, params);
+      const [[open]] = await db.query(queries.open, params);
+      const [[onHold]] = await db.query(queries.onHold, params);
+      const [[unassigned]] = await db.query(queries.unassigned, params);
+      const [[allTickets]] = await db.query(queries.allTickets, params);
+      const [statusCounts] = await db.query(queries.statusCounts, params);
+      const [categoryCounts] = await db.query(queries.categoryCounts, params);
+      const [priorityCounts] = await db.query(queries.priorityCounts, params);
+
+      const response = {
+        summary: {
+          overdue: overdue.count,
+          dueToday: dueToday.count,
+          open: open.count,
+          onHold: onHold.count,
+          unassigned: unassigned.count,
+          allTickets: allTickets.count,
+        },
+        statusData: statusCounts.map(row => ({
+          label: row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : 'Unknown',
+          count: row.count || 0,
+        })),
+        categories: categoryCounts.map(row => ({
+          label: row.issue_type || 'Unknown',
+          count: row.count || 0,
+        })),
+        priority: priorityCounts.map(row => ({
+          label: row.priority || 'Unknown',
+          count: row.count || 0,
+        })),
+      };
+
+
+      res.json(response);
+
+    } else {
+      const accessConditions = {
+        1: 'employee_id = ?', // VIEW_SELF_CREATED_TICKETS
+        3: 'department = ?',
+        4: '1 = 1', // VIEW_ALL_TICKETS (no specific condition)
+        5: 'assignee = ?', // VIEW_ASSIGNED_TICKETS
+      };
+
+      let conditions = [accessConditions[accessLevel]]; // Start with the condition for the access level
+      let params = [];
+
+      // Add parameters based on the access level
+      if (accessLevel === 1 && employee_id) params.push(employee_id);
+      if (accessLevel === 3 && department) params.push(department);
+      if (accessLevel === 5 && assignee) params.push(assignee);
+      
+
+      // Build the WHERE clause
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      // Queries for different counts
+      const queries = {
+        overdue: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND ticket_created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) AND status != 'close'`,
+        dueToday: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND DATE(ticket_created_at) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
+        open: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND status = 'open'`,
+        onHold: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND status = 'hold'`,
+        unassigned: `SELECT COUNT(*) AS count FROM ticket ${whereClause} AND (assignee IS NULL OR assignee = '')`,
+        allTickets: `SELECT COUNT(*) AS count FROM ticket ${whereClause}`,
+        statusCounts: `SELECT status, COUNT(*) AS count FROM ticket ${whereClause} GROUP BY status`,
+        categoryCounts: `SELECT issue_type, COUNT(*) AS count FROM ticket ${whereClause} GROUP BY issue_type`,
+        priorityCounts: `SELECT priority, COUNT(*) AS count FROM ticket ${whereClause} GROUP BY priority`,
+      };
+
+      // Execute all queries in parallel
+      const [[overdue]] = await db.query(queries.overdue, params);
+      const [[dueToday]] = await db.query(queries.dueToday, params);
+      const [[open]] = await db.query(queries.open, params);
+      const [[onHold]] = await db.query(queries.onHold, params);
+      const [[unassigned]] = await db.query(queries.unassigned, params);
+      const [[allTickets]] = await db.query(queries.allTickets, params);
+      const [statusCounts] = await db.query(queries.statusCounts, params);
+      const [categoryCounts] = await db.query(queries.categoryCounts, params);
+      const [priorityCounts] = await db.query(queries.priorityCounts, params);
+
+      // Construct response
+      const response = {
+        summary: {
+          overdue: overdue.count,
+          dueToday: dueToday.count,
+          open: open.count,
+          onHold: onHold.count,
+          unassigned: unassigned.count,
+          allTickets: allTickets.count,
+        },
+        statusData: statusCounts.map(row => ({
+          label: row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : 'Unknown',
+          count: row.count || 0,
+        })),
+        categories: categoryCounts.map(row => ({
+          label: row.issue_type || 'Unknown',
+          count: row.count || 0,
+        })),
+        priority: priorityCounts.map(row => ({
+          label: row.priority || 'Unknown',
+          count: row.count || 0,
+        })),
+      };
+
+      res.json(response);
+    }
+
+
   } catch (err) {
     console.error('Error fetching ticket summary:', err);
     res.status(500).send('Server error');
@@ -172,11 +341,11 @@ router.get('/filteredTickets', async (req, res) => {
     // Build the WHERE clause
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const assigneeWhere = assignee ? `WHERE department = ?` : '';
-    
+
 
     // Queries for different counts
     const queries = {
-      overdue: `SELECT * FROM ticket ${whereClause} AND ticket_created_at < NOW() AND status != 'close'`,
+      overdue: `SELECT * FROM ticket ${whereClause} AND ticket_created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) AND status != 'close'`,
       dueToday: `SELECT * FROM ticket ${whereClause} AND DATEDIFF(CURDATE(), DATE(ticket_created_at)) = 7`,
       open: `SELECT * FROM ticket ${whereClause} AND status = 'open'`,
       onHold: `SELECT * FROM ticket ${whereClause} AND status = 'hold'`,
@@ -188,47 +357,35 @@ router.get('/filteredTickets', async (req, res) => {
       categoryCounts: `SELECT issue_type, * FROM ticket ${whereClause} GROUP BY issue_type`,
       priorityCounts: `SELECT priority, * FROM ticket ${whereClause} GROUP BY priority`,
     };
-    
+
 
     let response = [];
-    
+
     switch (ticketsType) {
       case 'Overdue':
-         [response] = await db.query(queries.overdue, params);
-        
-        
+        [response] = await db.query(queries.overdue, params);
         break;
       case 'Due today':
-         [response] = await db.query(queries.dueToday, params);
-         
-        
+        [response] = await db.query(queries.dueToday, params);
         break;
       case 'Open':
-         [response] = await db.query(queries.open, params);
-         
-        
+        [response] = await db.query(queries.open, params);
         break;
       case 'On hold':
-         [response] = await db.query(queries.onHold, params);
+        [response] = await db.query(queries.onHold, params);
         break;
       case 'Unassigned':
-         [response] = assignee ? await db.query(queries.unassigned, [assigneeDepartment]) : await db.query(queries.unassigned, params);
-         
-        
+        [response] = assignee ? await db.query(queries.unassigned, [assigneeDepartment]) : await db.query(queries.unassigned, params);
         break;
       case 'All tickets':
-         [response] = await db.query(queries.allTickets, params);
-         
-        
+        [response] = await db.query(queries.allTickets, params);
         break;
       default:
         break;
     }
     // Construct response
-  
-    console.log(response);
-    
 
+    console.log(response);
     res.json(response);
   } catch (err) {
     console.error('Error fetching filtered ticket:', err);
@@ -238,13 +395,143 @@ router.get('/filteredTickets', async (req, res) => {
 
 
 
+//Filtered Tickets
+router.get('/filteredTickets2', async (req, res) => {
+  console.log("called filtered ticket2");
+  try {
+    const { employee_id, department, assignee, assigneeDepartment, ticketsType } = req.query;
+    const accessLevel = parseInt(req.query.accessLevel, 10); // Parse accessLevel as an integer
+
+    if (accessLevel === 2) {
+      let params = [];
+
+      const query1 = `SELECT t.*
+      FROM 
+          ticket t
+      JOIN 
+          employee e ON t.employee_id = e.employeeId
+      JOIN 
+          employeeDesignation ed ON e.employeeId = ed.employeeId
+      JOIN 
+          department d ON ed.departmentId = d.departmentId
+      WHERE 
+          d.departmentName = ? AND `;
+
+      const queries = {
+        overdue: `${query1} t.ticket_created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) AND t.status != 'close'`,
+        dueToday: `${query1} DATE(t.ticket_created_at) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
+        open: `${query1} t.status = 'open'`,
+        onHold: `${query1} t.status = 'hold'`,
+        unassigned: `${query1} (t.assignee IS NULL OR t.assignee = '')`,
+        allTickets: `${query1} 1 = 1`,
+      };
+
+      if (accessLevel === 2 && department) params.push(department);
+
+      let response = [];
+
+      switch (ticketsType) {
+        case 'Overdue':
+          [response] = await db.query(queries.overdue, params);
+          break;
+        case 'Due today':
+          [response] = await db.query(queries.dueToday, params);
+          break;
+        case 'Open':
+          [response] = await db.query(queries.open, params);
+          break;
+        case 'On hold':
+          [response] = await db.query(queries.onHold, params);
+          break;
+        case 'Unassigned':
+          [response] = assignee ? await db.query(queries.unassigned, [assigneeDepartment]) : await db.query(queries.unassigned, params);
+          break;
+        case 'All tickets':
+          [response] = await db.query(queries.allTickets, params);
+          break;
+        default:
+          break;
+      }
+      // Construct response
+
+      console.log(response);
+
+
+      res.json(response);
+    } else {
+      const accessConditions = {
+        1: 'employee_id = ?', // VIEW_SELF_CREATED_TICKETS
+        3: 'department = ?',
+        4: '1 = 1', // VIEW_ALL_TICKETS (no specific condition)
+        5: 'assignee = ?', // VIEW_ASSIGNED_TICKETS
+      };
+
+      let conditions = [accessConditions[accessLevel]]; // Start with the condition for the access level
+      let params = [];
+
+      // Add parameters based on the access level
+      if (accessLevel === 1 && employee_id) params.push(employee_id);
+      if (accessLevel === 3 && department) params.push(department);
+      if (accessLevel === 5 && assignee) params.push(assignee);
+      conditions.push('1 = ?');
+      params.push(1);
+
+      // Build the WHERE clause
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      // Queries for different counts
+      const queries = {
+        overdue: `SELECT * FROM ticket ${whereClause} AND ticket_created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) AND status != 'close'`,
+        dueToday: `SELECT * FROM ticket ${whereClause} AND DATE(ticket_created_at) = DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
+        open: `SELECT *  FROM ticket ${whereClause} AND status = 'open'`,
+        onHold: `SELECT *  FROM ticket ${whereClause} AND status = 'hold'`,
+        unassigned: `SELECT *  FROM ticket ${whereClause} AND (assignee IS NULL OR assignee = '')`,
+        allTickets: `SELECT *  FROM ticket ${whereClause}`,
+
+      };
+
+      let response = [];
+
+      switch (ticketsType) {
+        case 'Overdue':
+          [response] = await db.query(queries.overdue, params);
+          break;
+        case 'Due today':
+          [response] = await db.query(queries.dueToday, params);
+          break;
+        case 'Open':
+          [response] = await db.query(queries.open, params);
+          break;
+        case 'On hold':
+          [response] = await db.query(queries.onHold, params);
+          break;
+        case 'Unassigned':
+          [response] = assignee ? await db.query(queries.unassigned, [assigneeDepartment]) : await db.query(queries.unassigned, params);
+          break;
+        case 'All tickets':
+          [response] = await db.query(queries.allTickets, params);
+          break;
+        default:
+          break;
+      }
+      // Construct response
+
+      console.log(response);
+      res.json(response);
+    }
+
+  } catch (err) {
+    console.error('Error fetching filtered ticket:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+
 
 // GET all tickets with optional filtering by employee_id or department
 router.get('/tickets', async (req, res) => {
   try {
     const { employee_id, department, assignee } = req.query;
-
-
 
     let query = 'SELECT * FROM ticket';
     const params = [];
@@ -260,7 +547,6 @@ router.get('/tickets', async (req, res) => {
       query += ' WHERE department = ?';
       params.push(department);
     }
-
 
 
     query += ' ORDER BY ticket_created_at DESC';
@@ -403,7 +689,7 @@ router.post('/', upload.array('attachments', 10), async (req, res) => {
     const message = `A new ticket has been created with ID: ${ticketId}\n\nDetails:\nTitle: ${title}\nDescription: ${description}\nPriority: ${priority}\nStatus: ${status}`;
 
     for (const email of uniqueEmails) {
-        await sendMail(email, subject, message);
+      await sendMail(email, subject, message);
     }
 
   } catch (error) {
@@ -515,7 +801,7 @@ router.put('/tickets/:id/status', async (req, res) => {
           SET status = ?, last_status_updated_at = CURRENT_TIMESTAMP 
           WHERE id = ?
       `;
-    
+
     const [results] = await db.query(updateTicketQuery, [status, ticketId]);
     const [updatedTicket] = await db.query('SELECT * FROM ticket WHERE id = ?', [ticketId]);
 
@@ -523,7 +809,7 @@ router.put('/tickets/:id/status', async (req, res) => {
       res.status(404).json({ message: 'Ticket not found or no change in status' });
     } else {
       console.log(`Ticket ID: ${ticketId} status updated to: ${status}`);
-      
+
       res.status(200).json({
         message: 'Ticket status updated successfully',
         ticket: updatedTicket[0],  // Send the first (and only) ticket from the query result
@@ -567,7 +853,7 @@ router.put('/tickets/:id/status', async (req, res) => {
         Priority: ${updatedTicket[0].priority}
         Department: ${updatedTicket[0].department}
       `;
-  
+
       // Send emails to all recipients
       for (const email of uniqueEmails) {
         await sendMail(email, subject, message);
@@ -666,7 +952,7 @@ router.put('/tickets/:id/assignee', async (req, res) => {
       await sendMail(email, subject, message);
     }
 
-    
+
   } catch (err) {
     console.error('Error updating ticket assignee:', err);
     res.status(500).json({ error: 'Server error' });
