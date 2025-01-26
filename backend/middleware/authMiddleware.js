@@ -8,7 +8,7 @@ export const authMiddleware = asyncHandler(async (req, res, next) => {
     const token =
       req.cookies?.accessToken ||
       req.header('Authorization'?.replace('Bearer ', ''))
-
+// console.log(token)
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized Request' })
     }
@@ -17,14 +17,13 @@ export const authMiddleware = asyncHandler(async (req, res, next) => {
 
     const [user] = await connection
       .promise()
-      .query('SELECT * FROM employee WHERE employeeId = ?', [
-        decoded.employeeId,
+      .query('SELECT * FROM employee WHERE customEmployeeId = ?', [
+        decoded.customEmployeeId,
       ])
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid Access Token' })
     }
-
     req.user = user
     next()
   } catch (error) {

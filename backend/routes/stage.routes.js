@@ -10,6 +10,7 @@ import {
   getHistoryStagesByStageId,
   getActiveStagesByProjectNumber,
 } from '../controllers/stage.controller.js'
+import { authMiddleware } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
@@ -18,10 +19,10 @@ router.get('/stages', getAllStages) //tested
 router.get('/stage/:id', getSingleStageByStageId) //tested
 router.get('/stages/:projectNumber', getStagesByProjectNumber) //tetsed
 router.get('/historyStages/:id', getHistoryStagesByStageId) //tested
-router.get('/activeStages/:id', getActiveStagesByProjectNumber) //tested
+router.get('/activeStages/:id',authMiddleware, getActiveStagesByProjectNumber) //tested
 
-router.post('/stages', createStage) //tested
+router.post('/stages',authMiddleware, createStage) //tested
 router.delete('/stages/:id', deleteStage) //tested
-router.put('/stages/:id', updateStage) //tested
+router.put('/stages/:id',authMiddleware, updateStage) //tested
 
 export default router
