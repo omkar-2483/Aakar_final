@@ -51,12 +51,19 @@ const StageComponent = ({
   const handleChange = useCallback(
     (e, field) => {
       const updatedStages = [...stages]
-      console.log({ updatedStages: updatedStages })
+
       if (field === 'startDate' || field === 'endDate') {
         updatedStages[index][field] = e ? dayjs(e).format('YYYY-MM-DD') : ''
       } else {
         const { name, value } = e.target
-        updatedStages[index][name] = value
+
+        if (name === 'progress') {
+          // Ensure progress stays within bounds (0–100)
+          const numericValue = Math.min(100, Math.max(0, Number(value)))
+          updatedStages[index][name] = isNaN(numericValue) ? 0 : numericValue
+        } else {
+          updatedStages[index][name] = value
+        }
       }
 
       if (updatedStages[index].endDate < updatedStages[index].startDate) {
@@ -65,6 +72,7 @@ const StageComponent = ({
       }
 
       setStages(updatedStages)
+
       setIsChanged((prev) => {
         const updated = [...prev]
         updated[index] = true
@@ -298,7 +306,7 @@ const StageComponent = ({
           value={
             stage.progress < 0 ? 0 : stage.progress > 100 ? 100 : stage.progress
           }
-          onChange={handleChange}
+          onChange={(e) => handleChange(e, 'progress')}
           required
         />
         {action === 'update' && isChanged[index] && (
