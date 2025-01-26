@@ -126,7 +126,6 @@ export const getHistoricalProjects = asyncHandler(async (req, res) => {
 
 // Get project by ID
 export const getProjectById = asyncHandler(async (req, res) => {
-
   const projectNumber = req.params.id
   const query = 'SELECT * FROM project WHERE projectNumber = ?'
 
@@ -158,7 +157,7 @@ export const getProjectById = asyncHandler(async (req, res) => {
 
 // Create a new project
 export const createProject = asyncHandler(async (req, res) => {
-  console.log(req.user);
+  console.log(req.user)
   const projectQuery = `INSERT INTO project (
     projectNumber, companyName, dieName, dieNumber, projectStatus, startDate, endDate,
     projectType, projectPOLink, projectDesignDocLink, projectCreatedBy, progress
@@ -340,7 +339,8 @@ export const deleteProject = asyncHandler(async (req, res) => {
   const projectNumber = req.params.id
 
   const deleteStagesQuery = 'DELETE FROM stage WHERE projectNumber = ?'
-  const deleteProjectQuery = 'DELETE FROM project WHERE projectNumber = ? OR historyOf= ?'
+  const deleteProjectQuery =
+    'DELETE FROM project WHERE projectNumber = ? OR historyOf= ?'
 
   db.query(deleteStagesQuery, [projectNumber], (stageErr) => {
     if (stageErr) {
@@ -348,22 +348,26 @@ export const deleteProject = asyncHandler(async (req, res) => {
       return res.status(500).json({ error: 'Error deleting associated stages' })
     }
 
-    db.query(deleteProjectQuery, [projectNumber, projectNumber], (projectErr) => {
-      if (projectErr) {
-        console.error(projectErr)
-        return res.status(500).json({ error: 'Error deleting project' })
-      }
+    db.query(
+      deleteProjectQuery,
+      [projectNumber, projectNumber],
+      (projectErr) => {
+        if (projectErr) {
+          console.error(projectErr)
+          return res.status(500).json({ error: 'Error deleting project' })
+        }
 
-      res
-        .status(200)
-        .json(
-          new ApiResponse(
-            200,
-            projectNumber,
-            'Project and associated stages deleted successfully.'
+        res
+          .status(200)
+          .json(
+            new ApiResponse(
+              200,
+              projectNumber,
+              'Project and associated stages deleted successfully.'
+            )
           )
-        )
-    })
+      }
+    )
   })
 })
 
@@ -465,7 +469,10 @@ export const updateProject = asyncHandler(async (req, res) => {
           : project.projectDesignDocLink
 
         // Update the project with new values
-        const timestamp = new Date(req.body.timestamp).toISOString().replace('T', ' ').replace('Z', '');
+        const timestamp = new Date(req.body.timestamp)
+          .toISOString()
+          .replace('T', ' ')
+          .replace('Z', '')
         const updateValues = [
           req.body.companyName,
           req.body.dieName,
@@ -480,8 +487,7 @@ export const updateProject = asyncHandler(async (req, res) => {
           req.body.progress,
           timestamp,
           projectNumber, // The original projectNumber for updating the project
-        ];
-        
+        ]
 
         db.query(updateQuery, updateValues, (err, updateData) => {
           if (err) {

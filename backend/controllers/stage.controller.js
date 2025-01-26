@@ -44,7 +44,6 @@ export const getAllStages = asyncHandler(async (req, res) => {
 })
 
 export const getActiveStagesByProjectNumber = asyncHandler(async (req, res) => {
-  console.log(req.user)
   const pNo = req.params.id
   const query = `SELECT s.*, eo.customEmployeeId AS ownerId , cb.employeeName AS createdBy,eo.employeeName AS owner,cb.customEmployeeId AS createdById 
      FROM stage s
@@ -341,8 +340,11 @@ export const deleteStage = asyncHandler(async (req, res) => {
     // console.log(`Updated ${updateResult.affectedRows} subsequent stages`)
 
     // Delete the stage
-    const deleteStageQuery = 'DELETE FROM stage WHERE stageId = ? OR historyOf=?' 
-    const [deleteResult] = await db.promise().query(deleteStageQuery, [stageId, stageId])
+    const deleteStageQuery =
+      'DELETE FROM stage WHERE stageId = ? OR historyOf=?'
+    const [deleteResult] = await db
+      .promise()
+      .query(deleteStageQuery, [stageId, stageId])
 
     if (deleteResult.affectedRows === 0) {
       console.error(`Failed to delete stage with ID ${stageId}`)
@@ -452,7 +454,10 @@ export const updateStage = asyncHandler(async (req, res) => {
           }
 
           // console.log(req.body);
-          const timestamp = new Date(req.body.timestamp).toISOString().replace('T', ' ').replace('Z', '');
+          const timestamp = new Date(req.body.timestamp)
+            .toISOString()
+            .replace('T', ' ')
+            .replace('Z', '')
           const updateValues = [
             req.body.projectNumber,
             req.body.stageName,

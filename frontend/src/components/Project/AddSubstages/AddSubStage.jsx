@@ -99,7 +99,6 @@ const AddSubStage = () => {
       activeStages.length > 0
         ? activeStages[activeStages.length - 1].stageId
         : null,
-    createdBy: user.employeeId,
     stageId: null,
   })
 
@@ -135,7 +134,6 @@ const AddSubStage = () => {
         ...stageData,
         stageId: stageData.stageId || prevValues.stageId,
         owner: `${stageData.owner}(${stageData.ownerId})`,
-        createdBy: user.employeeId,
       }))
     }
   }, [stageData])
@@ -146,10 +144,14 @@ const AddSubStage = () => {
         activeSubStages.map((s) => ({
           ...s,
           owner: `${s.owner}(${s.ownerId})`,
-          createdBy: user.employeeId,
         }))
       )
-      setOriginalStages(activeSubStages.map((s) => ({ ...s })))
+      setOriginalStages(
+        activeSubStages.map((s) => ({
+          ...s,
+          owner: `${s.owner}(${s.ownerId})`,
+        }))
+      )
     }
   }, [activeSubStages])
 
