@@ -33,10 +33,11 @@ const EditEmployee = () => {
     const dummy = [
         {
             "designationName": "test2",
-            "designationId": 7,
+            "designationId": 18,
             "departmentName": "ABCD",
-            "departmentId": 10,
-            "managerName": "Rushikesh Ghodke"
+            "departmentId": 11,
+            "managerName": "Rushikesh Ghodke",
+            "managerId": 71
         }
     ]
 
@@ -49,8 +50,8 @@ const EditEmployee = () => {
         if (employeeData) {
             const { employee, jobProfiles } = employeeData;
 
-            console.log("employee:", employee);
-            console.log("jobProfiles:", jobProfiles);
+            // console.log("employee:", employee);
+            // console.log("jobProfiles:", jobProfiles);
 
             setEmployeeInputValues({
                 ...employee,
@@ -65,8 +66,8 @@ const EditEmployee = () => {
     }, [employees, id]);
 
     useEffect(() => {
-        console.log("Updated employeeInputValues:", employeeInputValues);
-        console.log("Updated jobProfiles:", employeeDesignations);
+        // console.log("Updated employeeInputValues:", employeeInputValues);
+        // console.log("Updated jobProfiles:", employeeDesignations);
     }, [employeeInputValues]);
 
 
@@ -104,7 +105,7 @@ const EditEmployee = () => {
         };
 
         // Dispatch Redux action
-        console.log(payload);
+        // console.log(payload);
         dispatch(updateEmployee({ employeeId: payload.employee.employeeId, payload }))
             .unwrap()
             .then(() => {
@@ -146,7 +147,7 @@ const EditEmployee = () => {
                 />
 
                 <AddEmployeeDepartment
-                    initialEmployeeDesignations={dummy}
+                    initialEmployeeDesignations={employeeDesignations}
                     setEmployeeDesignations={setEmployeeDesignations}
                 />
 

@@ -216,7 +216,9 @@ function DepartmentProfile() {
                     </div>
                     <div className="flex items-center gap-3">
                         <button
-                            className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded">
+                            className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
+                            onClick={() => navigate(`/department/${id}/edit`)}
+                        >
                             <FiEdit size={20} className="save-icon"/>
                             <span>Edit details</span>
                         </button>

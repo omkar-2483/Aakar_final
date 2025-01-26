@@ -3,31 +3,21 @@ import { FiPlusCircle } from 'react-icons/fi';
 import { MdOutlineDelete } from "react-icons/md";
 import { Autocomplete, TextField, FormControl } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
-import {fetchAllDepartments, fetchAllWorkingDepartments} from "../..//features/departmentSlice.js";
-import { fetchDesignations } from "../..//features/designationSlice.js";
-import { getAllEmployees } from "../..//features/employeeSlice.js";
+import {fetchAllDepartments, fetchAllWorkingDepartments} from "../..//features/departmentSlice.js"; // Import the fetchAllDepartments action
+import { fetchDesignations } from "../..//features/designationSlice.js"; // Import the fetchAllDesignations action
+import { getAllEmployees } from "../..//features/employeeSlice.js"; // Import the fetchAllEmployees action
 
 const AddEmployeeDepartment = ({ initialEmployeeDesignations, setEmployeeDesignations }) => {
     const [employeeDesignations, setLocalEmployeeDesignations] = useState(initialEmployeeDesignations || []);
 
-    // console.log("Designations Received:",initialEmployeeDesignations);
+    console.log(initialEmployeeDesignations);
 
     const dispatch = useDispatch();
 
     // Fetch data from Redux store
-    const { employees } = useSelector((state) => state.employee);
-    const { departments } = useSelector((state) => state.department);
+    const { employees } = useSelector((state) => state.employee);  // Replace with the correct slice for employees
+    const { departments } = useSelector((state) => state.department);  // Replace with the correct slice for departments
     const { designations, loading: designationsLoading, error: designationsError } = useSelector((state) => state.designation);  // Replace with the correct slice for designations
-
-    // useEffect(() => {
-    //     if(initialEmployeeDesignations.length >0) {
-    //         setLocalEmployeeDesignations(initialEmployeeDesignations);
-    //     }
-    // }, []);
-
-    // useEffect(() => {
-    //     console.log("Employee details Received:",employeeDesignations);
-    // }, [employeeDesignations]);
 
     // Dispatch actions on component mount
     useEffect(() => {
@@ -47,11 +37,11 @@ const AddEmployeeDepartment = ({ initialEmployeeDesignations, setEmployeeDesigna
         label: employee?.employee?.employeeName || '',
     }));
 
-    // console.log(departments)
+    console.log(departments)
     const deptData = departments.working.map((department) => ({
-        value: department.departmentId,
-        label: department.departmentName,
-    }
+            value: department.departmentId,
+            label: department.departmentName,
+        }
     ));
 
     const desgData = designations.map((designation) => ({

@@ -25,11 +25,19 @@ const DepartmentDashboard = () => {
     const { departments } = useSelector(state => state.department);
 
     // Populate rows from working departments
-    const rows = departments.working.map((department) => ({
-        deptId: department.departmentId,
-        deptName: department.departmentName,
-        deptStartDate: new Date(department.departmentStartDate).toLocaleDateString(), // This excludes the time
-    }));
+    const rows = departments.working.map((department) => {
+        const date = new Date(department.departmentStartDate);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const year = date.getFullYear();
+
+        return {
+            deptId: department.departmentId,
+            deptName: department.departmentName,
+            deptStartDate: `${day}/${month}/${year}`, // Format as DD-MM-YYYY
+        };
+    });
+
 
     const columns = [
         { id: 'deptName', label: 'Department Name', align: 'left' },

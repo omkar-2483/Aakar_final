@@ -71,9 +71,10 @@ export const deleteDepartment = createAsyncThunk(
 
 export const updateDepartment = createAsyncThunk(
     'department/updateDepartment',
-    async ({ departmentId, departmentData }, { rejectWithValue }) => {
+    async ({ departmentId, departmentName }, { rejectWithValue }) => {
         try {
-            const response = await axios.put(`${BASE_URL}/updateDepartment/${departmentId}`, departmentData);
+            console.log({deptId: departmentId, departmentName})
+            const response = await axios.put(`${BASE_URL}/updateDepartment/`, {deptId: departmentId, departmentName});
             return response.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || 'Failed to update department');
