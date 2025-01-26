@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeftCircle, FiEdit } from 'react-icons/fi';
 import { toast } from 'react-toastify';
@@ -11,20 +10,32 @@ import Modal from 'react-modal';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 
+
+const Tickit = ({ text, icon, onClick, count }) => (
+  <button className="custom-button-all-training-ticket" onClick={onClick}>
+    <span className="icon">{icon}</span>
+    <span className="text">{text}</span>
+    <span className="count">{count !== null ? count : 'Loading...'}</span>
+  </button>
+);
+
+
 const TrainerSwitch = () => {
   const [trainings, setTrainings] = useState([]);
   const [filteredTrainings, setFilteredTrainings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [employeesData, setEmployeesData] = useState([]);
+  const [employeecount, setemployeecount] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const employeeId = useSelector((state) => state.auth.user?.employeeId);
+  const trainerName = useSelector((state) => state.auth.user?.employeeName);
 
 
   const getTrainingStatusLabel = (startDate, endDate) => {
-    const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = dayjs(startDate).format("DD-MM-YYYY");
+    const end = dayjs(endDate).format("DD-MM-YYYY");
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
   
     if (today >= start && today <= end) {
       return "Ongoing"
@@ -56,28 +67,52 @@ const TrainerSwitch = () => {
       setFilteredTrainings(updatedData);
   };
 
-  const handleViewEmployees = async () => {
-    
+  const handleViewEmployees = async (setCount) => {
+    if (trainings.length === 0) {
+      console.error("No trainings available to fetch employees.");
+      return;
+    }
+  
+    try {
       const allEmployees = [];
+      let totalEmployees = 0; // To track the total count
+  
       for (const training of trainings) {
         const response = await fetchTrainingEmployees(training.trainingId);
-        const employeesWithDetails = response.data.map((employee) => ({
-          ...employee,
-          trainingId: training.trainingId,
-          trainingTitle: training.trainingTitle,
-          trainerName: training.trainerName,
-          startTrainingDate: dayjs(training.startTrainingDate).format("DD-MM-YYYY"),
-          endTrainingDate: dayjs(training.endTrainingDate).format("DD-MM-YYYY"),
-        }));
-        allEmployees.push(...employeesWithDetails);
+  
+        // Ensure response has the correct structure
+        if (response && response.data) {
+          const employeesWithDetails = response.data.map((employee) => ({
+            ...employee,
+            trainingId: training.trainingId,
+            trainingTitle: training.trainingTitle,
+            startTrainingDate: training.startTrainingDate,
+            endTrainingDate:training.endTrainingDate,
+          }));
+  
+          allEmployees.push(...employeesWithDetails);
+          totalEmployees += response.count || employeesWithDetails.length; // Use `count` or fallback to data length
+        }
       }
+  
       setEmployeesData(allEmployees);
-      setIsModalOpen(true);
+      console.log("data", allEmployees)
+      setCount(totalEmployees);
+    } catch (error) {
+      console.error("Error fetching employee data:", error);
+      setCount(0);
+    }
   };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
+  
+  useEffect(() => {
+    if (trainings.length > 0) {
+      handleViewEmployees(setemployeecount);
+    }
+  }, [trainings]); 
+  
+  const modalopen1 = async () =>{
+    setIsModalOpen(true);
+  }
 
   const handleSearch = (selectedValue) => {
     setSearchTerm(selectedValue);
@@ -91,9 +126,9 @@ const TrainerSwitch = () => {
   };
 
   const getTrainingStatus = (startDate, endDate) => {
-    const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
+    const start = startDate;
+    const end = endDate;
 
     if (today >= start && today <= end) {
       return <span className="status-bubble ongoing">Ongoing</span>;
@@ -105,8 +140,8 @@ const TrainerSwitch = () => {
   };
 
   const handleViewDetails = (training) => {
-    const today = new Date();
-    const trainingEndDate = new Date(training.endTrainingDate);
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
+    const trainingEndDate = training.endTrainingDate;
     const isActive = today > trainingEndDate ? 1 : 0;
     navigate('/TrainerTrainingDetails', {
       state: {
@@ -131,7 +166,7 @@ const TrainerSwitch = () => {
         employeeId: row.employeeId,
         trainingId: row.trainingId,
         trainingTitle: row.trainingTitle,
-        trainerName: row.trainerName,
+        trainerName: trainerName,
         startTrainingDate: row.startTrainingDate,
         endTrainingDate: row.endTrainingDate,
       },
@@ -180,8 +215,8 @@ const TrainerSwitch = () => {
     { id: 'employeeName', label: 'Employee Name', align: 'center' },
     { id: 'departmentName', label: 'Department', align: 'center' },
     { id: 'trainingTitle', label: 'Training Title', align: 'center' },
-    { id: 'startTrainingDate', label: 'Start Date', align: 'center', render: (row) => new Date(row.startTrainingDate).toLocaleDateString() },
-    { id: 'endTrainingDate', label: 'End Date', align: 'center', render: (row) => new Date(row.endTrainingDate).toLocaleDateString() },
+    { id: 'startTrainingDate', label: 'Start Date', align: 'center' },
+    { id: 'endTrainingDate', label: 'End Date', align: 'center' },
     {
       id: 'actions',
       label: 'View Details',
@@ -191,7 +226,7 @@ const TrainerSwitch = () => {
           onClick={() => handleEmployeeViewDetails(row)}
           className="action-icon"
           size={18}
-          style={{ color: '#0061A1', fontWeight: '900' }}
+          style={{ color: '#0061A1', fontWeight: '900', align: 'right', marginLeft: '50px' }}
         />
       ),
     },
@@ -210,13 +245,9 @@ const TrainerSwitch = () => {
         </header> */}
 
         <div className="trainerSwitch-tickets">
-          <div className="ticket">
-            <h3>Total Trainings</h3>
-            <p>{trainings.length}</p>
-          </div>
-          <div className="ticket" onClick={handleViewEmployees}>
-            <h3>Total Employees</h3>
-            <p>{employeesData.length}</p>
+          <div className="trainerSwitch-ticket" >
+            <Tickit text="Total Trainings" count={trainings.length} />
+            <Tickit text="Employees List" onClick={() => modalopen1()} count={employeecount} />
           </div>
         </div>
         <div className="trainerSwitch-search-bar-container">
@@ -241,16 +272,16 @@ const TrainerSwitch = () => {
         </div>
       </div>
 
-      <Modal isOpen={isModalOpen} onRequestClose={closeModal} className="modal" overlayClassName="overlay">
-        <h2>Employees Enrolled</h2>
-        <TableCo
-          rows={employeesData}
-          columns={employeeColumns}
-          items={employeesData}
-          itemKey="employeeId"
-        />
-        <button onClick={closeModal} className="close-button">Close</button>
-      </Modal>
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="close-modal" onClick={() => setIsModalOpen(false)}>
+              &times;
+            </button>
+                <TableCo rows={employeesData} columns={employeeColumns} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

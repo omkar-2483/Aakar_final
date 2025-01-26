@@ -8,7 +8,7 @@ import './AllTraining.css';
 import TableComponent from '../../components/TableCo';
 import GeneralSearchBar from '../../components/GenralSearchBar';
 import TableCo from '../../components/TableCo';
-import {fetchAllTraining, searchTraining, deleteTraining, fetchEmployeeDataAPI,} from './TrainingAPI';
+import {fetchAllTraining, deleteTraining, fetchEmployeeoneDataAPI, fetchEmployeetwoDataAPI} from './TrainingAPI';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 
@@ -26,15 +26,18 @@ const AllTraining = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editTrainingData, setEditTrainingData] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState(null);
   const [employeeCountOne, setEmployeeCountOne] = useState(null);
   const [employeeCountTwo, setEmployeeCountTwo] = useState(null);
-  const [employeesData, setEmployeesData] = useState([]);
+  const [employeesoneData, setEmployeesoneData] = useState([]);
+  const [employeestwoData, setEmployeestwoData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [trainingList, setTrainingList] = useState([]);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
   const departmentId = useSelector((state) => state.auth.user?.departmentId);
   const access = useSelector((state) =>  state?.auth?.user?.employeeAccess).split(',')[2];
+
   const addAccess = access[17] === "1";
   const readAccess = access[18];
   const updateAccess = access[19] === "1";
@@ -42,56 +45,53 @@ const AllTraining = () => {
 
   useEffect(() => {
     fetchTrainingData();
-    fetchEmployeeData([1, 3], setEmployeeCountOne);
-    fetchEmployeeData([2, 3], setEmployeeCountTwo);
+     fetchEmployeeList1(setEmployeeCountOne);
+     fetchEmployeeList2( setEmployeeCountTwo);
   }, []);
 
   const fetchTrainingData = async () => {
     console.log("Fetched access: ", access);
     try {
-      const data = await fetchAllTraining();
+      const data = await fetchAllTraining(departmentId);
       
       const updatedData = data.map(data => ({
         ...data ,
+        numberOfDays: Math.abs(dayjs(data.endTrainingDate).diff(dayjs(data.startTrainingDate), "day") + 1) || "",
         startTrainingDate: dayjs(data.startTrainingDate).format("DD-MM-YYYY"),
         endTrainingDate: dayjs(data.endTrainingDate).format("DD-MM-YYYY"),
         "Training Status" : getTrainingStatusLabel(data.startTrainingDate, data.endTrainingDate)
-
       }))
       console.log("Data : ",updatedData);
       setTrainingData(updatedData);
       setFilteredData(updatedData);
-      setTrainingList(
-        Array.from(new Set(data.map((item) => ({ id: item.trainingId, label: item.trainingTitle }))))
-      );
+      setTrainingList(Array.from(new Set(data.map((item) => ({ id: item.trainingId, label: item.trainingTitle })))));
     } catch (error) {
       console.error('Error fetching training data:', error);
       toast.error('Failed to fetch training data!');
     }
   };  
   
-  useEffect(() => {
-    fetchTrainingData();
-  }, []);
-  
-  const handleSearch = async (searchTerm) => {
-    setSearch(searchTerm);
-    try {
-      const data = await searchTraining(searchTerm);
-      const updatedData = data.map(data => ({
-        ...data ,
-        startTrainingDate: dayjs(data.startTrainingDate).format("DD-MM-YYYY"),
-        endTrainingDate: dayjs(data.endTrainingDate).format("DD-MM-YYYY"),
-        "Training Status" : getTrainingStatusLabel(data.startTrainingDate, data.endTrainingDate)
+  function reverseEvaluationType(value) {
+    const evaluationTypeMapping = {
+      1: 'Multiple Choice Questions',
+      2: 'Assignments',
+    };
+    return evaluationTypeMapping[value] || null; 
+  }
 
-      }))
-      setFilteredData(updatedData);
-    } catch (error) {
-      console.error('Error searching training data:', error);
-      toast.error('Failed to search training data!');
+  const handleSearch = (searchTerm) => {
+    if (!searchTerm || typeof searchTerm.label !== "string") {
+      setFilteredData(trainingData); 
+      return;
     }
-  };
-
+    const lowerCasedTerm = searchTerm.label.toLowerCase();
+    const filteredResults = trainingData.filter((item) => 
+      item.trainingTitle?.toLowerCase().includes(lowerCasedTerm)
+    );
+    console.log("Searched results: ", filteredResults);
+    setFilteredData(filteredResults);
+  }; 
+    
   const handleDelete = async (trainingId) => {
     const isConfirmed = window.confirm('Are you sure you want to delete this training?');
     
@@ -139,10 +139,11 @@ const AllTraining = () => {
   
     console.log("training Id : ",training.trainerId);
     const skillIds = training.skillIds.split(",").map(Number);
+    const skillLabels = training.skills.split(",").map(skill => skill.trim());
     const selectedSkills = skillIds.map((id, index) => ({
       id: id,
-      label: training.skills[index],
-    }));
+      label: skillLabels[index] || "",
+    }));
 
     console.log("selected skilss from training : ",selectedSkills)
 
@@ -154,15 +155,11 @@ const AllTraining = () => {
       evaluationType: evaluationTypeMapping[training.evaluationType] || null,
     };
 
-    console.log("formated data in edeting  : ", formattedTraining);
     setEditTrainingData(formattedTraining);  
     setIsAdding(true);
     setIsEditing(true); 
   };
 
-  useEffect(()=>{
-    console.log("Filtered training : ",filteredData)
-  },[])
 
   const handleTrainingAdded = async () => {
     setIsAdding(false);
@@ -207,13 +204,11 @@ const AllTraining = () => {
   };
   
   const getTrainingStatus = (startDate, endDate) => {
-    const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-  
-    if (today >= start && today <= end) {
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
+      
+    if (today >= startDate && today <= endDate) {
       return <span className="status-bubble ongoing">Ongoing</span>;
-    } else if (today > end) {
+    } else if (today > endDate) {
       return <span className="status-bubble completed">Completed</span>;
     } else {
       return <span className="status-bubble upcoming">Upcoming</span>;
@@ -221,9 +216,9 @@ const AllTraining = () => {
   };  
     
   const getTrainingStatusLabel = (startDate, endDate) => {
-    const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = dayjs(startDate).format("DD-MM-YYYY");
+    const end = dayjs(endDate).format("DD-MM-YYYY");
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
   
     if (today >= start && today <= end) {
       return "Ongoing"
@@ -257,8 +252,8 @@ const AllTraining = () => {
     { id: 'employeeDepartmentName', label: 'Department' },
     { id: 'trainingTitle', label: 'Training' },
     { id: 'skillsIncluded', label: 'Skills' },
-    { id: 'trainingStartDate', label: 'Start Date'},
-    { id: 'trainingEndDate', label: 'End Date' },
+    { id: 'startTrainingDate', label: 'Start Date'},
+    { id: 'endTrainingDate', label: 'End Date' },
     {
       id: 'actions',
       label: 'View Details',
@@ -268,7 +263,7 @@ const AllTraining = () => {
           onClick={() => handleEmployeeViewDetails(row)}
           className="action-icon"
           size={18}
-          style={{ color: '#0061A1', fontWeight: '900' }}
+          style={{ color: '#0061A1', fontWeight: '900', align: 'right', marginLeft: '50px' }}
         />
       ),
     },
@@ -346,30 +341,60 @@ const AllTraining = () => {
     setFilteredData((prevData) => [...prevData, ...newData]);
   }
 
-  const fetchEmployeeData = async (departmentSkillTypes, setCount) => {
+  const fetchEmployeeList1 = async (setCount) => {
     try {
-      if (!departmentId) {
-        console.error('Missing departmentId');
-        return;
-      }
-      const employeeCountOneData = await fetchEmployeeDataAPI(departmentId, departmentSkillTypes);
-      if (employeeCountOneData) setCount(employeeCountOneData.count);
-    } catch (error) {
-      console.error('Error fetching employee count:', error);
-    }
-  };
-
-  const fetchEmployeeList = async (departmentSkillTypes) => {
-    try {
-      const employeeCountTwoData = await fetchEmployeeDataAPI(departmentId, departmentSkillTypes);
-      if (employeeCountTwoData) {
-        setEmployeesData(employeeCountTwoData.data);
-        setIsModalOpen(true);
+      const employeeCountOneData = await fetchEmployeeoneDataAPI(departmentId);
+      console.log("Employee data (Option 1):", employeeCountOneData);
+  
+      if (employeeCountOneData?.data?.length) {
+        const updatedData = employeeCountOneData.data.map((data) => ({
+          ...data,
+          startTrainingDate: dayjs(data.trainingStartDate).format("DD-MM-YYYY"),
+          endTrainingDate: dayjs(data.trainingEndDate).format("DD-MM-YYYY"),
+        }));
+        console.log("updateddata", updatedData);
+        setEmployeesoneData(updatedData); // Update the state after transformation
+        setCount(employeeCountOneData.count); // Update the count
+      } else {
+        console.warn("No employee data found.");
+        setCount(0);
       }
     } catch (error) {
-      console.error('Error fetching employee list:', error);
+      console.error("Error fetching employee list for option 1:", error);
     }
   };
+    
+  const fetchEmployeeList2 = async (setCount) => {
+    try {
+      const employeeCountTwoData = await fetchEmployeetwoDataAPI(departmentId);
+      console.log("Employee data (Option 1):", employeeCountTwoData);
+  
+      if (employeeCountTwoData?.data?.length) {
+        const updatedData = employeeCountTwoData.data.map((data) => ({
+          ...data,
+          startTrainingDate: dayjs(data.trainingStartDate).format("DD-MM-YYYY"),
+          endTrainingDate: dayjs(data.trainingEndDate).format("DD-MM-YYYY"),
+        }));
+        console.log("updateddata", updatedData);
+        setEmployeestwoData(updatedData); // Update the state after transformation
+        setCount(employeeCountTwoData.count); // Update the count
+      } else {
+        console.warn("No employee data found.");
+        setCount(0);
+      }
+    } catch (error) {
+      console.error("Error fetching employee list for option 1:", error);
+     }
+   };
+    
+  const openmodal1 = async (ticket) => {
+    try{
+      setSelectedTicket(ticket);
+      setIsModalOpen(true);
+    } catch (error){
+      console.log("fgvhsdj");
+    }
+  }
 
   return (
     <div className="all-training-training-content">
@@ -378,8 +403,8 @@ const AllTraining = () => {
         <h4 className='employeeSwitch-title'>Employee Details</h4>
       </header> */}
       <div  className='tickit-container'>
-        <Tickit text="Employees for My Department Training" icon={<FiAward />} onClick={() => fetchEmployeeList([1, 3])} count={employeeCountOne} />
-        <Tickit text="My Department Employees for Training" icon={<FiUser />} onClick={() => fetchEmployeeList([2, 3])} count={employeeCountTwo} />
+        <Tickit text="Employees for My Department Training" icon={<FiAward />} onClick={() => openmodal1("one")} count={employeeCountOne} />
+        <Tickit text="My Department Employees for Training" icon={<FiUser />} onClick={() => openmodal1("two")} count={employeeCountTwo} />
       </div>
 
       {isModalOpen && (
@@ -388,12 +413,16 @@ const AllTraining = () => {
           <button className="close-modal" onClick={() => setIsModalOpen(false)}>
             &times;
           </button>
-          <TableCo rows={employeesData} columns={employeeColumns} />
+          {selectedTicket === "one" && (
+              <TableCo rows={employeesoneData} columns={employeeColumns} />
+            )}
+            {selectedTicket === "two" && (
+              <TableCo rows={employeestwoData} columns={employeeColumns} />
+            )}
         </div>
       </div>
       )}
       
-
       <div className="add-training-container">
         <div className="all-training-search-bar-container">
           <GeneralSearchBar
@@ -424,18 +453,22 @@ const AllTraining = () => {
         />      
       )}
 
-      <div className="all-training-table-container">
-        <TableComponent 
-          rows={filteredData} 
-          columns={columns}
-          linkBasePath={null}
-          defaultSortOrder='newest'
-          itemKey={filteredData.trainingId}
-          itemLabel={filteredData.trainingTitle}
-          navigateTo="/training-details"
-          searchLabel="Search Training"
-        />
-      </div>
+      {filteredData.length === 0 ? (
+        <div className='overall-no-data'>No trainings found!</div>
+       ) : (
+          <div className="all-training-table-container">
+            <TableComponent 
+              rows={filteredData} 
+              columns={columns}
+              linkBasePath={null}
+              defaultSortOrder='newest'
+              itemKey={filteredData.trainingId}
+              itemLabel={filteredData.trainingTitle}
+              navigateTo="/training-details"
+              searchLabel="Search Training"
+            />
+          </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Textfield from '../../components/Textfield';
 import CustomDatePicker from '../../components/CustomDatePicker';
 import { toast } from 'react-toastify'; 
@@ -9,9 +8,10 @@ import GeneralSearchBar from '../../components/GenralSearchBar';
 import 'react-toastify/dist/ReactToastify.css';
 import { MenuItem, FormControl, InputLabel, Select } from '@mui/material';
 import { fetchTrainersBySkills, fetchSkillsByDepartment, addTraining, updateTraining } from './TrainingAPI';
+import {FiXCircle} from 'react-icons/fi';
 import { useSelector } from 'react-redux';
 
-const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditing, prevSelectedSkill}) => {
+const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditing, prevSelectedSkill, cancelButton = false}) => {
   const [newTraining, setNewTraining] = useState({
     trainingTitle: "",
     trainerId: "",
@@ -63,6 +63,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
     }
   }, [departmentId]);
 
+
   //fetch employees
     const handleSelectEmployee = ((employeeInfo) =>{
       setSearchedEmp(employeeInfo);
@@ -76,18 +77,12 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
           console.log("After selecting trainer : " , newTraining)
     })
 
+
   //edit training
   useEffect(() => {
     if (isEditing && editTrainingData) {
       console.log("Edit data:", editTrainingData);
 
-      const formattedStartDate = editTrainingData.startTrainingDate
-        ? dayjs(editTrainingData.startTrainingDate).format("YYYY-MM-DD")
-        : null;
-      const formattedEndDate = editTrainingData.endTrainingDate
-        ? dayjs(editTrainingData.endTrainingDate).format("YYYY-MM-DD")
-        : null;
-      
       const skillsArray = Array.isArray(editTrainingData.skills)
             ? editTrainingData.skills.map((skill) => {
                   if (typeof skill === "object" && skill.id && skill.label) {
@@ -116,20 +111,18 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
       console.log("Parsed Skills Array:", skillsArray); 
 
       const trainer = employeeOptions.find(emp => emp.label === editTrainingData.trainerName);
-      const trainerId = trainer ? trainer.id : "";
-      const calculatedDays = dayjs(editTrainingData.endTrainingDate).diff(
-        dayjs(editTrainingData.startTrainingDate),
+      const calculatedDays = dayjs(editTrainingData.endTrainingDate, "DD-MM-YYYY").diff(
+        dayjs(editTrainingData.startTrainingDate, "DD-MM-YYYY"),
         "day"
-      );
+      ) + 1;
       const evaluationTypeValue = reverseEvaluationType(editTrainingData.evaluationType);
 
-      console.log("Trainer id fetched:", trainerId);
       setNewTraining({
         trainingTitle: editTrainingData.trainingTitle || "",
         trainerId: editTrainingData.trainerId,
         trainerName: editTrainingData.trainerName || "",
-        startTrainingDate: formattedStartDate, 
-        endTrainingDate: formattedEndDate,
+        startTrainingDate: dayjs(editTrainingData.startTrainingDate, "DD-MM-YYYY"), 
+        endTrainingDate: dayjs(editTrainingData.endTrainingDate, "DD-MM-YYYY"),
         skills: skillOptions || [],
         evaluationType: editTrainingData.evaluationType || "",
         numberOfDays: Math.abs(calculatedDays) || "",
@@ -176,6 +169,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
     });
   }
 
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewTraining(prevState => ({
@@ -183,6 +177,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
       [name]: value,
     }));
   };
+
 
   const handleDateChange = (name, date) => {
     const today = dayjs().startOf('day'); 
@@ -225,6 +220,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
     });
   };
   
+
   const handleNumberOfDaysChange = (e) => {
     const days = parseInt(e.target.value, 10);
     const today = dayjs().startOf('day');
@@ -235,7 +231,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
       return;
     }
   
-    const calculatedDays = dayjs(endTrainingDate).diff(dayjs(startTrainingDate), 'day');
+    const calculatedDays = dayjs(endTrainingDate).diff(dayjs(startTrainingDate), 'day') + 1;
     if (days !== Math.abs(calculatedDays)) {
       toast.error("The number of days entered does not match the training duration!");
       return;
@@ -247,44 +243,6 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
     }));
   };
 
-  // const handleSelectSkill = async (values) => {
-  //   console.log("Selected skills:", values);
-    
-  //   setSelectedSkills(values);
-  //   setNewTraining((prevState) => ({
-  //     ...prevState,
-  //     skills: values.map((value) => ({
-  //       id: value.id,
-  //       label: value.label,
-  //     })),
-  //   }));
-  
-  //   const skillIds = values.map(skill => skill.id).join(',');
-  //   console.log("My new         :", skillIds);
-  //   if (skillIds === '') {
-  //     setEmployeeOptions([]);
-  //     setSearchedEmp("");
-  //     setNewTraining((prevState) => ({
-  //       ...prevState,
-  //       trainerId: "",
-  //       trainerName: "",
-  //     }));
-  //     return;
-  //   }
-  //   try {
-  //     const response = await axios.get('http://localhost:8081/api/employees', {
-  //       params: { skillIds },
-  //     });
-  //     console.log("Response from server:", response.data);
-  //     setEmployeeOptions(response.data.map(emp => ({
-  //       id: emp.employeeId,
-  //       label: emp.employeeName,
-  //     })));
-  //   } catch (error) {
-  //     console.error('Error fetching trainers:', error);
-  //   }
-  //  };
-  
 
   const handleSaveTraining = async () => {
     console.log("New training:",newTraining);
@@ -354,7 +312,7 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
     }
     
   }; 
-  
+
   const resetForm = () => {
     setNewTraining({
       trainingTitle: '',
@@ -370,8 +328,11 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
     setEvaluationType("");
   };
 
+  const handleCancelClick = () => {
+    resetForm();
+  }
+  
   return (
- 
       <div className="add-training-form">
         <Textfield
           label="Training Name"
@@ -459,6 +420,11 @@ const AddTraining = ({ onTrainingAdded, editTrainingData, isEditing, setIsEditin
         <button onClick={handleSaveTraining} className="save-training-btn">
           {isEditing ? 'Update' : 'Save'}
         </button>
+
+        {cancelButton && (
+          <button onClick={handleCancelClick} className="cancel-training-btn">
+          <FiXCircle size={18} style={{ marginRight: '8px', color: '#0061A1'}} /> Cancel
+        </button>)}
       </div>
   );
 };

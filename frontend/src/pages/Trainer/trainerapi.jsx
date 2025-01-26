@@ -12,7 +12,6 @@ export const fetchTrainings = async (employeeId) => {
   } catch (error) {
     //toast.error('Error fetching trainings');
     if (error.response && error.response.status === 404) {
-      toast.error('No trainings found for this trainer.');
     } else {
       toast.error('Failed to fetch trainings. Please try again later.');
     }
@@ -79,15 +78,17 @@ export const fetchEmployeesEnrolled = async (trainingId) => {
     const response = await axios.get(`http://localhost:3000/employeesEnrolled/${trainingId}`);
     return response.data;
   } catch (error) {
-    toast.error('Employee not found');
     throw new Error(error.response?.data?.message || 'Error fetching employees');
   }
 };
 
 export const saveFeedback = async (feedbackArray) => {
   try {
+    console.log("brfeh");
     const response = await axios.post(`http://localhost:3000/saveFeedback`, feedbackArray);
+    console.log("response", response.data);
     return response;
+    
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Error saving feedback');
   }

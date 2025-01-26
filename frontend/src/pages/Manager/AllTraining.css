@@ -195,9 +195,26 @@
 .status-bubble.completed {
   background-color: rgba(174, 255, 192, 0.5);
   color: #117f0f;
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: center;
+  min-width: 100px;
 }
 
 .status-bubble.upcoming {
   background-color: rgba(90, 189, 255, 0.4);
   color: #0061a1;
+}
+
+.overall-no-data{
+  font-size: 20px;
+  font-weight: bolder;
+  justify-self: center;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  align-items: center;
 }

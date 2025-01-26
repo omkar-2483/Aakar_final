@@ -105,7 +105,7 @@ if (error) {
         <header className="training-details-dash-header">
           <FiArrowLeftCircle
             className="employeeSwitch-back-button"
-            onClick={() => navigate("/EmployeeSwitch")}
+            onClick={() => navigate(-1)}
             title="Go back"
           />
           <h4 className='employeeSwitch-title'>All Trainings</h4>

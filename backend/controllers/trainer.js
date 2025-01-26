@@ -108,24 +108,80 @@ router.get('/employeesEnrolled/:trainingId', (req, res) => {
   });
 });
 
-router.get("/api/employeeCount", (req, res) => {
-  const { departmentId, departmentSkillTypes } = req.query;
+router.get("/api/employeeoneCount", (req, res) => {
+  const { departmentId } = req.query;
 
   // Validate input
-  if (!departmentId || !departmentSkillTypes) {
+  if (!departmentId ) {
     return res.status(400).json({ message: "Missing required parameters" });
   }
 
-  // Parse skill types into an array
-  const skillTypes = departmentSkillTypes.split(',').map(Number);
-  if (!Array.isArray(skillTypes) || skillTypes.length === 0) {
-    return res.status(400).json({ message: "Invalid departmentSkillTypes format" });
+ 
+
+
+  
+  // Prepare the query with IN clause and placeholders
+  const query = `
+    SELECT 
+    e.employeeName,
+    e.employeeId,
+    d.departmentName AS employeeDepartmentName,
+    t.trainingTitle,
+    t.trainingId,
+    t.startTrainingDate AS trainingStartDate,
+    t.endTrainingDate AS trainingEndDate,
+    (
+        SELECT GROUP_CONCAT(DISTINCT sk.skillName ORDER BY sk.skillName SEPARATOR ', ')
+        FROM trainingSkills ts
+        JOIN skill sk ON ts.skillId = sk.skillId
+        WHERE ts.trainingId = t.trainingId
+    ) AS skillsIncluded
+FROM 
+    training t
+JOIN 
+    trainingRegistration tr ON t.trainingId = tr.trainingId
+JOIN 
+    employee e ON tr.employeeId = e.employeeId
+JOIN 
+    employeeDesignation ed ON e.employeeId = ed.employeeId
+JOIN 
+    department d ON ed.departmentId = d.departmentId
+WHERE 
+    EXISTS (
+        SELECT 1
+        FROM departmentSkill ds
+        WHERE ds.skillId IN (
+            SELECT skillId 
+            FROM trainingSkills 
+            WHERE trainingId = t.trainingId
+        )
+        AND ds.departmentSkillType IN (1,3)
+        AND ds.departmentId = ?
+    )
+GROUP BY 
+    e.employeeId, d.departmentName, t.trainingId, t.startTrainingDate, t.endTrainingDate;
+
+  `;
+
+  // Execute the query with skillTypes and departmentId as parameters
+  connection.query(query, [ departmentId], (err, results) => {
+    if (err) {
+      console.error("Error executing query:", err);
+      return res.status(500).json({ error: "Error executing query.", details: err.message });
+    }
+
+    // Return the results as JSON
+    res.json({ count: results.length, data: results });
+  });
+});
+
+router.get("/api/employeetwoCount", (req, res) => {
+  const { departmentId } = req.query;
+
+  // Validate input
+  if (!departmentId ) {
+    return res.status(400).json({ message: "Missing required parameters" });
   }
-
-  console.log('Skill types:', skillTypes);
-
-  // Build the placeholders for the IN clause dynamically
-  const skillTypePlaceholders = skillTypes.map(() => '?').join(',');
   
   // Prepare the query with IN clause and placeholders
   const query = `
@@ -160,15 +216,16 @@ router.get("/api/employeeCount", (req, res) => {
         WHERE ds.skillId IN (
             SELECT skillId FROM trainingSkills WHERE trainingId = t.trainingId
         )
-        AND ds.departmentSkillType IN (${skillTypePlaceholders})
+        AND ds.departmentSkillType IN (2,3)
       )
       AND ed.departmentId = ?
     GROUP BY 
       e.employeeId, d.departmentName, t.trainingId, t.startTrainingDate, t.endTrainingDate;
+
   `;
 
   // Execute the query with skillTypes and departmentId as parameters
-  connection.query(query, [...skillTypes, departmentId], (err, results) => {
+  connection.query(query, [ departmentId], (err, results) => {
     if (err) {
       console.error("Error executing query:", err);
       return res.status(500).json({ error: "Error executing query.", details: err.message });

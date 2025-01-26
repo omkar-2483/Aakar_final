@@ -23,10 +23,14 @@ const SendConformEmpToTraining = () => {
     const [trainingPreSelectedEmpId,setTrainingPreselectedempId] = useState([])
     const [loading, setLoading] = useState(false);
     const [selectToSend, setSelectToSend] = useState([]);
+    const [constEmpId,setConstEmpId] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchData , setSearchData] = useState([]);
+    const [removeEmpIds,setRemovedEmpIds] = useState([])
+
     const navigate = useNavigate();
     const location = useLocation();
+
     const { skill } = location.state || {}; 
     const departmentId = useSelector((state) => state.auth.user?.departmentId); 
     const employeeAccess = useSelector((state) => state.auth.user?.employeeAccess).split(",")[2];
@@ -60,7 +64,7 @@ const SendConformEmpToTraining = () => {
                     training.skills.toLowerCase().includes(searchQuery)
                 );
             });
-            setSearchData(filteredData);
+                setSearchData(filteredData);
             }else{
                 setSearchData(filterTrainingData);
             }
@@ -83,12 +87,13 @@ const SendConformEmpToTraining = () => {
     };
 
     const handelToSend = (trainingId) => {
-        if (selectToSend.length > 0) {
+        if (selectToSend.length > 0 || removeEmpIds.length > 0) {
           console.log("Employees to send:", selectToSend); 
           
           axios.post('http://localhost:3000/send-multiple-emps-to-trainings', {
             trainingId: trainingId,
-            selectedEmployees: selectToSend 
+            selectedEmployees: selectToSend,
+            selectedEmpToRemove : removeEmpIds 
           })
           .then((response) => {
             console.log("Employees successfully sent to training:", response.data);
@@ -144,10 +149,15 @@ const SendConformEmpToTraining = () => {
             .get(`http://localhost:3000/get-department-needed-trainings/${departmentId}`)
             .then((response) => {
                 const today = formatDateToYYYYMMDD(new Date());
+                //console.log("Start Date : " , startDate);
+                console.log("Todays Date : " , today)
                 const filteredData = response.data
                     .filter((train) => {
                         const startDate = formatDateToYYYYMMDD(new Date(train.startTrainingDate));
-                        return startDate > today;
+                        console.log("Todays Date : " , today)
+                        console.log("Start date : ",startDate)
+                        console.log("jo",startDate >= today)
+                        return startDate >= today;
                     })
                     .map((train) => ({
                         ...train,
@@ -169,7 +179,7 @@ const SendConformEmpToTraining = () => {
                 const filteredData = response.data
                     .filter((train) => {
                         const startDate = formatDateToYYYYMMDD(new Date(train.startTrainingDate));
-                        return startDate > today;
+                        return startDate >= today;
                     })
                     .map((train) => ({
                         ...train,
@@ -184,6 +194,7 @@ const SendConformEmpToTraining = () => {
         }
         
     }, [departmentId]);
+
 
     useEffect(() => {
         if (!selectedTrainingId) return;
@@ -202,6 +213,7 @@ const SendConformEmpToTraining = () => {
                 setEligibleEmployees(uniqueEmployees);
                 //setEligibleEmployees(response.data);
                 setTrainingPreselectedempId(emp_ids);
+                setConstEmpId(emp_ids);
                 console.log("Eligible employee data : ",emp_ids)
                 console.log("Eligible employee data : ",response.data)
             })
@@ -220,56 +232,49 @@ const SendConformEmpToTraining = () => {
         setExpandedRowId((prevId) => (prevId === id ? null : id));
     };
 
-    const onSelectionChange = (emp_id, isChecked) => {
-        setSelectToSend((prevSelected) => {
-            let updated;
-            if (isChecked) {
-                if (!prevSelected.includes(emp_id)) {
-                    updated = [...prevSelected, emp_id];
-                    console.log("Updated selectToSend (added):", updated);
-                } else {
-                    updated = [...prevSelected]; 
-                }
-            } else {
-                updated = prevSelected.filter((id) => id !== emp_id);
-                console.log("Updated selectToSend (removed):", updated); 
-            }
-            return updated;
-        });
+        const onSelectionChange = (emp_id, isChecked) => {
+            // Update `selectToSend`
+            setSelectToSend((prev = []) => {
+                const updated = isChecked
+                    ? constEmpId.includes(emp_id)?[...prev]:[...prev, emp_id]
+                    : prev.filter((id) => id !== emp_id);
+                console.log("Updated selectToSend:", updated);
+                return updated;
+            });
+        
+            // Update `preSelectedEmp`
+            setPreSelectedEmp((prev = []) => {
+                const updated = isChecked
+                    ? [...prev, emp_id]
+                    : prev.filter((id) => id !== emp_id);
+                console.log("Updated preSelectedEmp:", updated);
+                return updated;
+            });
+        
+            // Update `trainingPreselectedempId`
+            setTrainingPreselectedempId((prev = []) => {
+                const updated = isChecked
+                    ? [...prev, emp_id]
+                    : prev.filter((id) => id !== emp_id);
+                console.log("Updated trainingPreselectedempId:", updated);
+                return updated;
+            });
+        
+            // Update `removedEmpIds` only if the employee was previously selected for this training
+            setRemovedEmpIds((prev = []) => {
+                const updated = isChecked
+                    ? prev.filter((id) => id !== emp_id) // Remove if selected again
+                    : constEmpId.includes(emp_id) // Only add if previously selected for training
+                    ? [...prev, emp_id]
+                    : prev; // Do nothing if not previously selected for training
+                console.log("Updated removedEmpIds:", updated);
+                return updated;
+            });
+        
+            // Log action
+            console.log(`Employee ${isChecked ? "selected" : "deselected"}:`, emp_id);
+        };
     
-        setPreSelectedEmp((prev) => {
-            let updatedPreSelected;
-            if (isChecked) {
-                
-                if (!prev.includes(emp_id)) {
-                    updatedPreSelected = [...prev, emp_id];
-                    console.log("Updated PreSelectedEmp (added):", updatedPreSelected); // Debug log
-                } else {
-                    updatedPreSelected = [...prev]; 
-                }
-            } else {
-                updatedPreSelected = prev.filter((id) => id !== emp_id);
-                console.log("Updated PreSelectedEmp (removed):", updatedPreSelected); // Debug log
-            }
-            return updatedPreSelected;
-        });
-        setTrainingPreselectedempId((prev) => {
-            let updatedPreSelected;
-            if (isChecked) {
-                
-                if (!prev.includes(emp_id)) {
-                    updatedPreSelected = [...prev, emp_id];
-                    console.log("Updated TrainingPreSelectedEmp (added):", updatedPreSelected); // Debug log
-                } else {
-                    updatedPreSelected = [...prev]; 
-                }
-            } else {
-                updatedPreSelected = prev.filter((id) => id !== emp_id);
-                console.log("Updated TrainingPreSelectedEmp (removed):", updatedPreSelected); // Debug log
-            }
-            return updatedPreSelected;
-        });
-    };
 
     const handleTrainingAdded = (training) => {
         console.log("Training added:", training);
@@ -340,6 +345,7 @@ const SendConformEmpToTraining = () => {
                     setIsEditing={undefined}
                     departmentId={departmentId}
                     prevSelectedSkill = {skill}
+                    cancelButton = {true}
                   />
                 }
             </div>

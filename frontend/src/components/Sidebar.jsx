@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import axios from 'axios'
 import './Sidebar.css'
 import {
   FiMenu,
@@ -42,15 +44,43 @@ const iconMap = {
 const Sidebar = () => {
   const navigate = useNavigate()
   const [openSection, setOpenSection] = useState(null)
+  const [employeeAccess1, setEmployeeAccess1] = useState('0')
+  const [trainerAccess, setTrainerAccess] = useState('0')
 
   const access = useSelector(
     (state) => state?.auth?.user?.employeeAccess
   ).split(',')
+  const employeeId = useSelector((state) => state.auth.user?.employeeId);
 
+  useEffect(() => {
+    const fetchAccess = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/GetEmployeeAccess', {
+          params: { employeeId }, // Send employeeId as a query parameter
+        })
+        const { isRegistered, isTrainer } = response.data;
+        console.log("Responses: ", isRegistered ? '1' : '0');
+  
+        // Update access based on API response
+        setEmployeeAccess1(isRegistered ? '1' : '0');
+        setTrainerAccess(isTrainer ? '1' : '0');
+      } catch (error) {
+        console.error('Error fetching access:', error)
+      }
+    }
+  
+    if (employeeId) fetchAccess();
+  }, [employeeId]);
+
+  console.log("EMP: ", employeeAccess1);
+        console.log("TRAINER: ", trainerAccess);
+  
   const HRManagementAccess = access[0]
   const ProjectManagementAccess = access[1]
   const TrainingManagementAccess = access[2]
   const TicketManagementAccess = access[3]
+
+  console.log("TRaining management: ", TrainingManagementAccess[0]);
 
   const toggleSection = (section) => {
     setOpenSection((prev) => (prev === section ? null : section))
@@ -121,10 +151,10 @@ const Sidebar = () => {
     {
       name: 'Training',
       icon: 'MdOutlineModelTraining',
-      access: TrainingManagementAccess[0],
+      access: employeeAccess1 || trainerAccess || TrainingManagementAccess[0],
       children: [
         {
-          name: 'Employee Status',
+          name: 'My Status',
           slug: '/EmployeeSwitch',
           icon: 'FaUserAlt',
           access: '1',
@@ -157,7 +187,7 @@ const Sidebar = () => {
           name: 'Trainer Status',
           slug: '/TrainerSwitch',
           icon: 'AiOutlineCheckCircle',
-          access: '1',
+          access: trainerAccess,
         },
       ],
     },

@@ -38,3 +38,25 @@
   .save-training-btn:hover {
     background-color:#166faa;
   }
+
+  .cancel-training-btn {
+    background-color: #ffffff;
+    color: #0061a1;
+    border: 2px solid #0061a1;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    width: 120px;
+    height: 40px;
+    border-radius: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+    margin-top: 1%;
+  }
+  
+  .cancel-training-btn:hover {
+    background-color: #e1eff3;
+  }

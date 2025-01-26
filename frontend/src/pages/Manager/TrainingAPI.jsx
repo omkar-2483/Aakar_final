@@ -49,13 +49,13 @@ export const updateTraining = async (trainingId, trainingData) => {
   }
 };
 
-export const fetchAllTraining = async () => {
+export const fetchAllTraining = async (departmentId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/all-training`);
+    const response = await axios.get(`${API_BASE_URL}/all-training/${departmentId}`);
     const updatedTrainings = response.data.map((training) => {
       const startDate = dayjs(training.startTrainingDate);
       const endDate = dayjs(training.endTrainingDate);
-      const numberOfDays = endDate.diff(startDate, 'day');
+      const numberOfDays = endDate.diff(startDate, 'day') + 1;
       const evaluationTypeMapping = {
         1: 'Multiple Choice Questions',
         2: 'Assignments',
@@ -76,18 +76,6 @@ export const fetchAllTraining = async () => {
   }
 };
 
-export const searchTraining = async (searchTerm) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/search-training`, {
-      params: { q: searchTerm.label },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error searching training data:', error);
-    throw error;
-  }
-};
-
 export const deleteTraining = async (trainingId) => {
   try {
     await axios.delete(`${API_BASE_URL}/delete-training/${trainingId}`);
@@ -97,10 +85,22 @@ export const deleteTraining = async (trainingId) => {
   }
 };
 
-export const fetchEmployeeDataAPI = async (departmentId, departmentSkillTypes) => {
+export const fetchEmployeeoneDataAPI = async (departmentId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/employeeCount`, {
-      params: { departmentId, departmentSkillTypes: departmentSkillTypes.join(',') },
+    const response = await axios.get(`${API_BASE_URL}/api/employeeoneCount`, {
+      params: { departmentId },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching employee data:', error);
+    throw error;
+  }
+};
+
+export const fetchEmployeetwoDataAPI = async (departmentId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/employeetwoCount`, {
+      params: { departmentId },
     });
     return response.data;
   } catch (error) {

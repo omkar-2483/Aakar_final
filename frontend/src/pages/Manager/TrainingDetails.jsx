@@ -74,8 +74,8 @@ const TrainingDetails = () => {
                     <div className="training-details-form">
                         <Textfield label="Training Name" value={trainingTitle || ''} readOnly />
                         <Textfield label="Trainer Name" value={trainerName || ''} readOnly />
-                        <Textfield label="Start Date" value={dayjs(startTrainingDate).format("YYYY-MM-DD") || ''} readOnly />
-                        <Textfield label="End Date" value={dayjs(endTrainingDate).format("YYYY-MM-DD") || ''} readOnly />
+                        <Textfield label="Start Date" value={startTrainingDate || ''} readOnly />
+                        <Textfield label="End Date" value={endTrainingDate || ''} readOnly />
                     </div>
                 </section>
 

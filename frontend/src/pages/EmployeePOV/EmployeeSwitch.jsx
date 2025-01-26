@@ -20,9 +20,9 @@ const EmployeeSwitch = () => {
 
 
   const getTrainingStatusLabel = (startDate, endDate) => {
-    const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = dayjs(startDate).format("DD-MM-YYYY");
+    const end = dayjs(endDate).format("DD-MM-YYYY");
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
   
     if (today >= start && today <= end) {
       return "Ongoing"
@@ -34,7 +34,6 @@ const EmployeeSwitch = () => {
   }; 
 
   useEffect(() => {
-    console.log("hihihihihih")
     fetchTrainings();
     fetchSkillMatrix();
   }, []);
@@ -101,13 +100,11 @@ const EmployeeSwitch = () => {
   };
 
   const getTrainingStatus = (startDate, endDate) => {
-    const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
   
-    if (today >= start && today <= end) {
+    if (today >= startDate && today <= endDate) {
       return <span className="status-bubble ongoing">Ongoing</span>;
-    } else if (today > end) {
+    } else if (today > endDate) {
       return <span className="status-bubble completed">Completed</span>;
     } else {
       return <span className="status-bubble upcoming">Upcoming</span>;
@@ -173,6 +170,9 @@ const EmployeeSwitch = () => {
         </header> */}
 
         {/* Skill Matrix Table */}
+        {skillMatrix.rows.length === 0 ? (
+           <div className='overall-no-data'>No Skills found for your Department!</div>
+          ) :(
         <div className="employeeSwitch-table-container">
           <h3>Skill Matrix</h3>
           <TableComponent
@@ -180,43 +180,46 @@ const EmployeeSwitch = () => {
             columns={skillMatrixColumns} // Include grade grid for skills
           />
         </div>
+          )}
+        {filteredTrainings.length === 0 ? (
+          <div className='overall-no-data'>No trainings found!</div>
+         ) :(
+          <>
+            <div className="employeeSwitch-search-bar-container">
+              <GeneralSearchBar
+                options={trainings}
+                label='Search Training'
+                displayKey='trainingTitle'
+                includeSelectAll={false}
+                selectedValues={searchTerm}
+                setSelectedValues={handleSearch}
+                isMultiSelect={false}
+              />
+            </div>
 
-        {/* Other Components */}
-        <div className="employeeSwitch-search-bar-container">
-          <GeneralSearchBar
-            options={trainings}
-            label='Search Training'
-            displayKey='trainingTitle'
-            includeSelectAll={false}
-            selectedValues={searchTerm}
-            setSelectedValues={handleSearch}
-            isMultiSelect={false}
-          />
-        </div>
-
-        <div className="employeeSwitch-table-container">
-          <TableComponent
-            rows={filteredTrainings}
-            columns={[
-              { id: 'trainingTitle', label: 'Training Title', align: 'center' },
-              { id: 'trainerName', label: 'Trainer Name', align: 'center' },
-              {
-                id: 'skillNames',
-                label: 'Skills',
-                align: 'center',
-                render: (row) => renderSkillsBubbles(row.skillNames),
-              },
-              {
-                id: 'startTrainingDate',
-                label: 'Start Date',
-                align: 'center',
-              },
-              {
-                id: 'endTrainingDate',
-                label: 'End Date',
-                align: 'center',
-              },
-              { id: 'trainingStatus', label: 'Training Status', align: 'center', render: (row) => getTrainingStatus(row.startTrainingDate, row.endTrainingDate) },
+            <div className="employeeSwitch-table-container">
+              <TableComponent
+                rows={filteredTrainings}
+                columns={[
+                  { id: 'trainingTitle', label: 'Training Title', align: 'center' },
+                  { id: 'trainerName', label: 'Trainer Name', align: 'center' },
+                  {
+                    id: 'skillNames',
+                    label: 'Skills',
+                    align: 'center',
+                    render: (row) => renderSkillsBubbles(row.skillNames),
+                  },
+                  {
+                    id: 'startTrainingDate',
+                    label: 'Start Date',
+                    align: 'center',
+                  },
+                  {
+                    id: 'endTrainingDate',
+                    label: 'End Date',
+                    align: 'center',
+                  },
+                  { id: 'trainingStatus', label: 'Training Status', align: 'center', render: (row) => getTrainingStatus(row.startTrainingDate, row.endTrainingDate) },
                   {
                     id: 'actions',
                     label: 'View Details',
@@ -225,9 +228,11 @@ const EmployeeSwitch = () => {
                       <FiEdit onClick={() => handleViewDetails(row)} className="action-icon" size={18} style={{color: '#0061A1', fontWeight: '900', marginLeft: '40px'}}/>
                     ),
                   },
-            ]}
-          />
-        </div>
+                ]}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

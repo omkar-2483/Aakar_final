@@ -35,7 +35,8 @@ router.post('/add-training', (req, res) => {
   })})
   
   
-  router.get('/all-training', (req, res) => {
+  router.get('/all-training/:departmentId', (req, res) => {
+    const departmentId = req.params.departmentId;
     const query = `
       SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, e.employeeName AS trainerName, t.trainerId,
         GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills, GROUP_CONCAT(s.skillId SEPARATOR ', ') AS skillIds, t.evaluationType
@@ -43,10 +44,11 @@ router.post('/add-training', (req, res) => {
       LEFT JOIN employee e ON t.trainerId = e.employeeId
       LEFT JOIN trainingSkills ts ON t.trainingId = ts.trainingId
       LEFT JOIN skill s ON ts.skillId = s.skillId
+      WHERE s.departmentId = ?
       GROUP BY t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, e.employeeName
     `;
   
-    connection.query(query, (err, result) => {
+    connection.query(query,[departmentId], (err, result) => {
       if (err) {
         console.error('Error fetching training data:', err);
         res.status(500).json({ error: 'Failed to fetch training data' });
@@ -110,36 +112,7 @@ router.post('/add-training', (req, res) => {
       }
     );
   });
-  
-  
-  router.get('/search-training', (req, res) => {
-    const searchTerm = req.query.q || '';
-    console.log('Search Term:', searchTerm);
-  
-    const query = `
-      SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, e.employeeName AS trainerName, t.evaluationType,
-             GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills
-      FROM training t
-      LEFT JOIN trainingSkills ts ON t.trainingId = ts.trainingId
-      LEFT JOIN skill s ON ts.skillId = s.skillId
-      LEFT JOIN employee e ON e.employeeId = t.trainerId
-      WHERE t.trainingTitle LIKE ? OR e.employeeName LIKE ?
-      GROUP BY t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, e.employeeName
-    `;
-  
-    const searchPattern = `%${searchTerm}%`;
-  
-    connection.query(query, [searchPattern, searchPattern], (err, result) => {
-      if (err) {
-        console.error('Error searching training data:', err);
-        return res.status(500).json({ error: 'Failed to search training data' });
-      }
-  
-      res.json(result);
-    });
-  });
-  
-  
+    
   router.delete('/delete-training/:trainingId', (req, res) => {
     const trainingId = req.params.trainingId;
   

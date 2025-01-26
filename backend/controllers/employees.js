@@ -120,16 +120,22 @@ router.get('/employee/:employeeId', (req, res) => {
     d.departmentName,
     s.skillName,
     es.grade
-  FROM
+FROM
     department d
-  JOIN departmentSkill ds ON d.departmentId = ds.departmentId
-  JOIN skill s ON ds.skillId = s.skillId
-  JOIN employeeDesignation ed ON ed.departmentId = d.departmentId
-  JOIN employeeSkill es ON es.skillId = s.skillId AND es.employeeId = ?  -- Employee ID
-  WHERE
-    ed.employeeId = ? AND s.skillActivityStatus = 1 AND ds.departmentSkillType IN (2, 3)
-  ORDER BY
+JOIN departmentSkill ds ON d.departmentId = ds.departmentId
+JOIN skill s ON ds.skillId = s.skillId
+JOIN employeeDesignation ed ON ed.departmentId = d.departmentId
+JOIN employeeSkill es ON es.skillId = s.skillId AND es.employeeId = ?  -- Employee ID
+WHERE
+    ed.employeeId = ? 
+    AND s.skillActivityStatus = 1
+    AND (
+        (ds.departmentSkillType = 2 AND ds.departmentSkillStatus = 1)
+        OR (ds.departmentSkillType = 3)
+    )
+ORDER BY
     d.departmentId, s.skillId;
+
   
     `;
   
@@ -155,7 +161,58 @@ router.get('/employee/:employeeId', (req, res) => {
     })
   })
 
+// API to check employee access (employeeAccess and trainerAccess)
+router.get('/GetEmployeeAccess', (req, res) => {
+  const { employeeId } = req.query; // Assuming employeeId is sent as a query parameter
 
+  if (!employeeId) {
+    return res.status(400).json({ error: 'Employee ID is required' });
+  }
+
+  // Query to check if the employee is registered for training
+  const checkEmployeeQuery = `
+    SELECT COUNT(*) AS isRegistered
+    FROM trainingRegistration
+    WHERE employeeId = ?;
+  `;
+
+  // Query to check if the employee is a trainer
+  const checkTrainerQuery = `
+    SELECT COUNT(*) AS isTrainer
+    FROM training
+    WHERE trainerId = ?;
+  `;
+
+  // Execute both queries
+  connection.query(checkEmployeeQuery, [employeeId], (err, employeeResult) => {
+    if (err) {
+      console.error('Error fetching employee registration data:', err);
+      return res
+        .status(500)
+        .json({ error: 'Error fetching employee registration data' });
+    }
+
+    connection.query(checkTrainerQuery, [employeeId], (err, trainerResult) => {
+      if (err) {
+        console.error('Error fetching trainer data:', err);
+        return res
+          .status(500)
+          .json({ error: 'Error fetching trainer data' });
+      }
+
+      // Response: Combine both results into a single object
+      res.json({
+        isRegistered: employeeResult[0].isRegistered > 0, // 1 if found, 0 otherwise
+        isTrainer: trainerResult[0].isTrainer > 0, // 1 if found, 0 otherwise
+      });
+
+      console.log('Access check result:', {
+        isRegistered: employeeResult[0].isRegistered > 0,
+        isTrainer: trainerResult[0].isTrainer > 0,
+      });
+    });
+  });
+});
 
   // Export the router
 export default router;

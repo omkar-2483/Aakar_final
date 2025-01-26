@@ -49,7 +49,7 @@ const SearchBar = () => {
       });
     
       if (hasInvalidSelection) {
-        toast.error('Cannot assign training for grade 4!');
+        //toast.error('Cannot assign training for grade 4!');
       }
       setDisableAssign(hasInvalidSelection);
     } catch (error) {
@@ -144,18 +144,17 @@ const SearchBar = () => {
       (emp) => emp.employeeId === employeeId && emp.skillId === skillId
     );
   
-    if (newGrade === 4 && isCheckboxSelected) {
-      toast.error('Grade 4 cannot be assigned when the checkbox is selected!');
-      setDisableAssign(true);
-      console.log("from grade change!!");
-      return; 
-    }
-  
     setGradeChanges((prev) => ({
       ...prev,
       [`${employeeId}-${skillId}`]: { employeeId, skillId, grade: newGrade },
     }));
 
+    if (newGrade === 4 && isCheckboxSelected) {
+      //toast.error('Grade 4 cannot be assigned when the checkbox is selected!');
+      setDisableAssign(true);
+      console.log("from grade change!!");
+      return; 
+    }
     if (newGrade === 4) {
       const isCheckboxSelected = selectedEmp.some(
         (emp) => emp.employeeId === employeeId && emp.skillId === skillId
@@ -217,22 +216,22 @@ const SearchBar = () => {
     return Object.values(groupedData);
   };
 
-  const onSelectionChange = (employeeId, skillId, isChecked) => {
-    const employee = data.find((emp) => emp.employeeId === employeeId);
-    const grade = employee.skills[skillId];
-    console.log("My grade: ", grade);
-  
-    if (isChecked && grade === 4) {
-      toast.error('Checkbox cannot be selected for Grade 4!');
-      setDisableAssign(true);
-      console.log("Called me");
-      return; 
-    }
-    
-    setDisableAssign(false);
 
+  function getGrade(employeeId, skillId) {
+    for (const [key, value] of Object.entries(gradeChanges)){
+      console.log("Values : ",value);
+      if (value.employeeId === employeeId && value.skillId === skillId) {
+        return value.grade; 
+      }
+    }
+    return null; 
+  }
+
+
+  const onSelectionChange = (employeeId, skillId, isChecked) => {
     if (isChecked) {
       setNewSelectedEmp(prevEmp => {
+        
           const exists = prevEmp.some(emp => emp.employeeId === employeeId && emp.skillId === skillId);
           if (!exists) {
               return [...prevEmp, { employeeId: employeeId, skillId: skillId }];
@@ -268,9 +267,36 @@ const SearchBar = () => {
   console.log('Selected EMP : ', selectedEmp);
   console.log('New Selected emp : ', newSelectedEmp);
   console.log('Remove emp : ', removeEmp);
+
+  const updated_grade = getGrade(employeeId,skillId)
+  const grade = updated_grade;
+  console.log("My grade: ", updated_grade);
+  if(gradeChanges.length != 0){
+    console.log("Grades  from selection change: ",gradeChanges)
+  }
+  const hasGrade4 = selectedEmp.some(({ employeeId: eId, skillId: sId }) => {
+    if (gradeChanges[`${eId}-${sId}`] === 4) {
+      console.log("eId ", eId);
+      console.log("sId ", sId);
+      console.log("grade ", gradeChanges[`${eId}-${sId}`]);
+      //toast.error('Checkbox cannot be selected for Grade 4!');
+      setDisableAssign(true);
+      console.log("Called me");
+      return true;
+    }
+    return false;
+  });
   
-  //setTimeout(() => invalidSelection(), 0);
-  };
+  if (hasGrade4) return;
+  
+  if (isChecked && grade === 4) {
+    //toast.error('Checkbox cannot be selected for Grade 4!');
+    setDisableAssign(true);
+    console.log("Called me");
+    return; 
+  }    
+  setDisableAssign(false);
+};
   
   const handleSave = () => {
     saveEmployeeData(newSelectedEmp, removeEmp, gradeChanges)
@@ -328,7 +354,7 @@ const SearchBar = () => {
       {error && <p>{error}</p>}
   
       {selectedSkills.length === 0 ? (
-        <p className='searchbar-no-data'>No data available!</p>
+        <div className='searchbar-no-data'>No data available!</div>
       ) :
       data.length > 0 && (
         <div className="searchbar-table-containerr">

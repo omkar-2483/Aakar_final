@@ -36,7 +36,7 @@ const EmployeeTrainingEnrolled = () => {
         });
         setFeedbackData(initialFeedback);
       } catch (error) {
-        toast.error('Error fetching employee data. Please try again later.');
+       // toast.error('Error fetching employee data. Please try again later.');
       }
     };
 
@@ -51,14 +51,16 @@ const EmployeeTrainingEnrolled = () => {
   };
 
   const handleSaveFeedback = async () => {
+    console.log("feed")
     const feedbackArray = Object.keys(feedbackData).map((employeeId) => ({
       employeeId,
-      feedback: feedbackData[employeeId],
+      trainerFeedback: feedbackData[employeeId],
+      trainingId,
     }));
 
     try {
       await saveFeedback(feedbackArray);
-      toast.success('Feedback saved successfully!');
+      toast.success("Feedback saved sucessfully");
     } catch (error) {
       toast.error('Error saving feedback. Please try again.');
     }

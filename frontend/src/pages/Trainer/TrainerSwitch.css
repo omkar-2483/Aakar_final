@@ -64,61 +64,16 @@
   }
 
   .trainerSwitch-tickets {
-    display: flex;
-    margin-top: 1.5%;
-    margin-bottom: 1.5%;
-    gap: 1.5%;
-    margin-right: 10%;
-  }
-  
-  .ticket {
-    display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 11px;
-  width: 200px;
-  height: 50px;
-  margin: 0;
-  border-radius: 20px;
-  border: 1px solid #ddd;
-  background-color: white;
-  color: #000;
-  font-size: 18px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-  box-sizing: border-box;
-  position: relative; /* Ensures proper stacking context */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .ticket:hover {
-    transform: scale(1.05);
-  }
-  
-  .modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    max-width: 900px;
-    width: 90%;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .overlay {
-    background: rgba(0, 0, 0, 0.5);
-    position: fixed ;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    display:flex;
+    flex-direction: column;
+    margin-top: 5px;
+    margin-left: 0px;
+    width: 150% !important;
   }
 
-.close-button{
-  margin-top:10px;
-  width: 100px;
-  margin-left: 800px;
-}
+  .trainerSwitch-ticket {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+  }
+  

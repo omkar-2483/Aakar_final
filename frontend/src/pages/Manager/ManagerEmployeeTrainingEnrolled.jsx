@@ -16,6 +16,8 @@ const ManagerEmployeeTrainingEnrolled = () => {
   const [employeeData, setEmployeeData] = useState([]);
   const [skills, setSkills] = useState([]);
   const [gradeChanges, setGradeChanges] = useState({});
+  const [newSelectedEmp, setNewSelectedEmp] = useState([]);
+  const [removeEmp, setRemoveEmp] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchEmployeeData = () => {
@@ -28,7 +30,7 @@ const ManagerEmployeeTrainingEnrolled = () => {
     fetchEmployeesEnrolled(trainingId)
       .then((response) => {
         console.log("Training Id  : ",trainingId)
-        console.log("Response Data : trainin planning : ".response);
+        console.log("Response Data : trainin planning : ",response);
         if (Array.isArray(response)) {
           const skillSet = new Set();
           const data = response.reduce((acc, curr) => {
@@ -77,7 +79,8 @@ const ManagerEmployeeTrainingEnrolled = () => {
       ...prev,
       [`${employeeId}-${skillId}`]: { employeeId, skillId, grade: newGrade },
     }));
-
+  
+    // Update employee data with new grade
     setEmployeeData((prevData) =>
       prevData.map((employee) => {
         if (employee.employeeId === employeeId) {
@@ -99,27 +102,43 @@ const ManagerEmployeeTrainingEnrolled = () => {
         return employee;
       })
     );
+  
+    // Add to removeEmp if grade has changed
+    setRemoveEmp((prevRemoveEmp) => {
+      const exists = prevRemoveEmp.some(
+        (item) => item.employeeId === employeeId && item.skillId === skillId
+      );
+  
+      if (!exists && newGrade !== null) {
+        return [...prevRemoveEmp, { employeeId, skillId }];
+      }
+  
+      return prevRemoveEmp;
+    });
   };
-
+  
   const handleUpdateGrades = () => {
     if (Object.keys(gradeChanges).length === 0) {
       toast.info('No changes to update.');
       return;
     }
-
+  
     setLoading(true);
-
+  
     saveEmployeeData(newSelectedEmp, removeEmp, gradeChanges)
       .then(() => {
+        console.log("remove", removeEmp);
         toast.success('Grades updated successfully!');
         setGradeChanges({});
+        setRemoveEmp([]); // Clear the removeEmp state after update
         fetchEmployeeData();
       })
       .catch((error) => {
-        toast.error('Error updating grades: ' + error.message);
+        console.log('Error updating grades: ' + error.message);
       })
       .finally(() => setLoading(false));
   };
+  
 
   const baseColumns = [
     { id: 'employeeName', label: 'Employee Name', align: 'center' },
@@ -161,7 +180,7 @@ const ManagerEmployeeTrainingEnrolled = () => {
 
       {showUpdateButton && (
         <button
-          className="update-grade-button"
+          className="employee-save-feedback-button"
           onClick={handleUpdateGrades}
           disabled={loading || Object.keys(gradeChanges).length === 0}
         >

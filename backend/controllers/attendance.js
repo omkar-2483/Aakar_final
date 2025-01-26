@@ -97,9 +97,10 @@ router.get('/viewAttendance/:sessionId', (req, res) => {
 // Endpoint to save feedback
 router.post('/saveFeedback', (req, res) => {
   const feedbackArray = req.body;
+  
   const query = `UPDATE trainingRegistration SET trainerFeedback = ? 
     WHERE employeeId = ? AND trainingId = ?`;
-
+console.log("fvibhwbhs")
   feedbackArray.forEach((feedback) => {
     const { employeeId, trainingId, trainerFeedback } = feedback;
 

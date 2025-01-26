@@ -219,24 +219,127 @@ WHERE ds.departmentId = ?
   })
 })
 
+// router.post('/send-multiple-emps-to-trainings', (req, res) => {
+//   const { trainingId, selectedEmployees, selectedEmpToRemove } = req.body;
+
+//   if (!trainingId || !selectedEmployees || !selectedEmployees.length) {
+//     return res.status(400).json({ error: 'Missing trainingId or selectedEmployees' });
+//   }
+
+//   // Query 1: Insert employees into training
+//   const insertValues = selectedEmployees.map(employeeId => [employeeId, trainingId]);
+//   const insertQuery = 'INSERT INTO trainingRegistration (employeeId, trainingId) VALUES ?';
+
+//   connection.query(insertQuery, [insertValues], (insertErr, insertResults) => {
+//     if (insertErr) {
+//       console.error('Error inserting employees into trainings:', insertErr);
+//       return res.status(500).json({ error: 'Failed to add employees to training.' });
+//     }
+
+//     console.log('Inserted employees into trainings:', insertResults);
+
+//     // Proceed with deletion only if employees to remove exist
+//     if (Array.isArray(selectedEmpToRemove) && selectedEmpToRemove.length > 0) {
+//       // Query 2: Delete employees from training
+//       console.log("Remove emps : ",selectedEmpToRemove)
+//       const deleteQuery = `DELETE FROM trainingRegistration WHERE trainingId = ? AND employeeId IN (?)`;
+//       connection.query(deleteQuery, [trainingId, selectedEmpToRemove], (deleteErr, deleteResults) => {
+//         if (deleteErr) {
+//           console.error('Error removing employees from training:', deleteErr);
+//           return res.status(500).json({
+//             message: 'Employees were added, but some could not be removed.',
+//             error: deleteErr.message,
+//             inserted: insertResults.affectedRows,
+//           });
+//         }
+
+//         console.log('Deleted employees from training:', deleteResults);
+//         return res.status(200).json({
+//           message: 'Employees added and removed from training successfully.',
+//           inserted: insertResults.affectedRows,
+//           deleted: deleteResults.affectedRows,
+//         });
+//       });
+//     } else {
+//       // No deletion needed, respond with success for insertion
+//       return res.status(200).json({
+//         message: 'Employees added to training successfully.',
+//         inserted: insertResults.affectedRows,
+//       });
+//     }
+//   });
+// });
+
 router.post('/send-multiple-emps-to-trainings', (req, res) => {
-  const { trainingId, selectedEmployees } = req.body;
-  if (!trainingId || !selectedEmployees || !selectedEmployees.length) {
-    return res.status(400).json({ error: 'Missing trainingId or selectedEmployees' });
+  const { trainingId, selectedEmployees, selectedEmpToRemove } = req.body;
+
+  // Validate input
+  if (!trainingId) {
+    return res.status(400).json({ error: 'Missing trainingId' });
   }
 
-  const values = selectedEmployees.map(employeeId => [employeeId, trainingId]);
-  const query = 'INSERT INTO trainingRegistration (employeeId, trainingId) VALUES ?';
+  // Validate selectedEmployees
+  const hasSelectedEmployees = Array.isArray(selectedEmployees) && selectedEmployees.length > 0;
+  const hasEmployeesToRemove = Array.isArray(selectedEmpToRemove) && selectedEmpToRemove.length > 0;
 
-  connection.query(query, [values], (err, results) => {
-    if (err) {
-      console.error('Error inserting employees into trainings:', err);
-      return res.status(500).json({ error: 'Database insertion failed' });
-    }
-    console.log('Inserted employees into trainings:', results);
-    res.status(200).json({ message: 'Employees added to trainings successfully' });
-  });
+  if (!hasSelectedEmployees && !hasEmployeesToRemove) {
+    return res.status(400).json({ error: 'No employees to add or remove.' });
+  }
+
+  // Function to insert employees
+  const insertEmployees = () => {
+    return new Promise((resolve, reject) => {
+      if (!hasSelectedEmployees) return resolve({ inserted: 0 });
+
+      const insertValues = selectedEmployees.map(employeeId => [employeeId, trainingId]);
+      const insertQuery = 'INSERT INTO trainingRegistration (employeeId, trainingId) VALUES ?';
+
+      connection.query(insertQuery, [insertValues], (err, results) => {
+        if (err) {
+          console.error('Error inserting employees into trainings:', err);
+          return reject(err);
+        }
+        console.log('Inserted employees into trainings:', results);
+        resolve({ inserted: results.affectedRows });
+      });
+    });
+  };
+
+  // Function to delete employees
+  const deleteEmployees = () => {
+    return new Promise((resolve, reject) => {
+      if (!hasEmployeesToRemove) return resolve({ deleted: 0 });
+
+      const deleteQuery = 'DELETE FROM trainingRegistration WHERE trainingId = ? AND employeeId IN (?)';
+      connection.query(deleteQuery, [trainingId, selectedEmpToRemove], (err, results) => {
+        if (err) {
+          console.error('Error removing employees from training:', err);
+          return reject(err);
+        }
+        console.log('Deleted employees from training:', results);
+        resolve({ deleted: results.affectedRows });
+      });
+    });
+  };
+
+  // Execute both operations in parallel
+  Promise.all([insertEmployees(), deleteEmployees()])
+    .then(([insertResults, deleteResults]) => {
+      res.status(200).json({
+        message: 'Employees added and/or removed from training successfully.',
+        inserted: insertResults.inserted,
+        deleted: deleteResults.deleted,
+      });
+    })
+    .catch(err => {
+      console.error('Error processing training updates:', err);
+      res.status(500).json({
+        error: 'An error occurred while processing the request.',
+        details: err.message,
+      });
+    });
 });
+
 
 router.get('/get-distinct-department-employess-skill-to-train/:departmentId',(req,res)=>{
   const a = req.params.departmentId;
@@ -328,7 +431,7 @@ router.get('/department-eligible-for-training/:departmentId/:skillId?', (req, re
   const skillId = req.params.skillId;
 
   // SQL query to fetch training data based on the presence of skillId
-  const query = skillIds
+  const query = skillId
     ? `
       SELECT t.trainingId, t.trainingTitle, t.startTrainingDate, t.endTrainingDate, 
         GROUP_CONCAT(s.skillName SEPARATOR ', ') AS skills, e.employeeName AS trainerName, t.evaluationType

@@ -4,7 +4,7 @@ import Textfield from '../../components/Textfield';
 import TableComponent from '../../components/TableCo';
 import CustomTimePicker from '../../components/CustomTimePicker';
 import { fetchAllSessions, saveSession, deleteSession } from './trainerapi'; // Centralized API functions
-import { FiArrowLeftCircle, FiEdit2, FiTrash, FiPenTool } from 'react-icons/fi';
+import { FiArrowLeftCircle, FiEdit2, FiTrash, FiEdit, FiXCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import CustomDatePicker from '../../components/CustomDatePicker';
 import '../Overall/TrainingDetails.css';
@@ -93,11 +93,10 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
   };
 
   const handleEmployees = () => {
-    const today = new Date();
-    const trainingEndDate = new Date(endTrainingDate);
+    const today = dayjs(new Date()).format("DD-MM-YYYY");
+    const trainingEndDate = endTrainingDate;
     const isActive = today > trainingEndDate ? 1 : 0;
-  
-    navigate('/EmployeeTrainingEnrolled', { state: { trainingId, active: isActive } });
+    navigate('/EmployeeTrainingEnrolled', { state: { trainingId, active: isActive} });
   };
   
   const handleSave = async () => {
@@ -172,13 +171,25 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
     setEditingSession(session);
     setNewSession({
       sessionName: session.sessionName,
-      date: dayjs(session.sessionDate),
+      date: dayjs(session.sessionDate, "DD-MM-YYYY"),
       startTime: dayjs(session.sessionStartTime, "HH:mm:ss"),
       endTime: dayjs(session.sessionEndTime, "HH:mm:ss"),
       sessionDescription: session.sessionDescription,
       trainingId: session.trainingId,
     });
   };
+
+  const handleCancelClick = () => {
+    setNewSession({
+      sessionName: '',
+      date: null,
+      startTime: null,
+      endTime: null,
+      sessionDescription: '',
+      trainingId: trainingId,
+    });
+    setEditingSession(null); 
+  };  
 
   const sessionColumns = [
     { id: 'sessionName', label: 'Session Name', align: 'center' },
@@ -198,7 +209,7 @@ const [editingSession, setEditingSession] = useState(null); // To track session 
         return (
           <div className='trainer-training-details-actions'>
             {isTrainingEditable && isSessionFutureOrToday ? (
-              <FiPenTool
+              <FiEdit
                 onClick={() => handleEditSession(row)}
                 className="action-icon"
                 size={18}
@@ -254,6 +265,9 @@ return (
       
         <div className="training-details-add-session-header">
           <h3>{editingSession ? 'Update session' : 'Add session details'}</h3>
+          <button onClick={handleCancelClick} className="cancel-session-btn">
+            <FiXCircle size={18} style={{ marginRight: '8px', color: '#0061A1'}} /> Cancel
+          </button>
           <button className="training-details-save-button" onClick={handleSave}>Save</button>
         </div>
         
@@ -267,7 +281,7 @@ return (
           />
           <CustomDatePicker
               label="Date"
-              selected={dayjs(newSession.date).toDate()}
+              selected={newSession.date}
               onChange={(newDate) => handleDateChange('date', newDate)}
           />
           <CustomTimePicker
@@ -287,14 +301,11 @@ return (
               name="sessionDescription"
               isRequired={true}
           />
-          
         </div>
-      
       </section>
       )}
       
       <section className="training-details-session-details-section">
-        <h3>Session Details</h3>
         <TableComponent
           rows={sessionData}
           columns={sessionColumns}
