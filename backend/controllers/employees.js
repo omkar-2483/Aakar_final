@@ -40,7 +40,7 @@ router.get('/api/employees', (req, res) => {
   
     connection.query(query, [...skillIdArray, skillIdArray.length], (err, result) => {
       if (err) {
-        console.error('Error fetching trainers:', err);
+        // console.error('Error fetching trainers:', err);
         return res.status(500).json({ error: 'Failed to fetch trainers' });
       }
   
@@ -80,7 +80,7 @@ router.get('/employee/:employeeId', (req, res) => {
   
     connection.query(query, [employeeId], (err, results) => {
       if (err) {
-        console.error("Error fetching employee's training details: ", err);
+        // console.error("Error fetching employee's training details: ", err);
         res.status(500).send('Server error');
       } else {
         res.json(results);
@@ -101,7 +101,7 @@ router.get('/employee/:employeeId', (req, res) => {
 
     connection.query(query, [employeeId], (error, result) => {
         if (error) {
-            console.error("Error in getting department details:", error);
+            // console.error("Error in getting department details:", error);
             return res.status(500).send("Error in getting department details");
         }
 
@@ -142,7 +142,7 @@ ORDER BY
     // Execute the query
     connection.query(query, [employeeId, employeeId], (err, results) => {
       if (err) {
-        console.error("Error fetching skill matrix: ", err);
+        // console.error("Error fetching skill matrix: ", err);
         res.status(500).send('Server error');
       } else {
         res.json(results);
@@ -157,7 +157,7 @@ ORDER BY
         return res.status(500).json({ error: 'Error fetching data from registration' });
       }
       res.json(result);
-      console.log('Emp from Registration .',result);
+      // console.log('Emp from Registration .',result);
     })
   })
 

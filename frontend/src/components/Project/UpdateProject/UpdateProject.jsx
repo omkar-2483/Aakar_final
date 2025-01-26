@@ -53,9 +53,8 @@ const UpdateProject = () => {
     endDate: '',
     projectType: '',
     projectPOLink: '',
-    progress: '',
+    progress: 0,
     projectDesignDocLink: '',
-    projectCreatedBy: user.employeeId,
     updateReason: '',
   })
 
@@ -108,7 +107,6 @@ const UpdateProject = () => {
         activeStages.map((s) => ({
           ...s,
           owner: `${s.owner}(${s.ownerId})`,
-          createdBy: user.employeeId,
         }))
       )
       setOriginalStages(activeStages.map((s) => ({ ...s })))
@@ -119,6 +117,7 @@ const UpdateProject = () => {
   const handleSave = (e) => {
     e.preventDefault()
     console.log({ updateInputValuesAfter: inputValues })
+    inputValues.updateReason
     const updateReason =
       stage
         .filter((s, index) => hasChanges(s, originalStages[index]))
@@ -151,7 +150,9 @@ const UpdateProject = () => {
 
   const hasChanges = (stage, originalStage) => {
     if (!stage || !originalStage) return false // Ensure both are valid objects
-    return Object.keys(stage).some((key) => stage[key] !== originalStage[key])
+    return Object.keys(stage).some(
+      (key) => key !== 'createdBy' && stage[key] !== originalStage[key]
+    )
   }
 
   return (

@@ -47,7 +47,7 @@ export const addDepartment = createAsyncThunk(
     'department/addDepartment',
     async (departmentData, { rejectWithValue }) => {
         try {
-            console.log(departmentData);
+            // console.log(departmentData);
             const response = await axios.post(`${BASE_URL}/addDepartment`, departmentData);
             return response.data;
         } catch (err) {
@@ -59,7 +59,7 @@ export const addDepartment = createAsyncThunk(
 export const deleteDepartment = createAsyncThunk(
     'department/deleteDepartment',
     async (departmentId, { rejectWithValue }) => {
-        console.log("Redux deleteDepartment", departmentId);
+        // console.log("Redux deleteDepartment", departmentId);
         try {
             const response = await axios.post(`${BASE_URL}/deleteDepartment/`, {deptId: departmentId});
             return response.data;
@@ -71,9 +71,10 @@ export const deleteDepartment = createAsyncThunk(
 
 export const updateDepartment = createAsyncThunk(
     'department/updateDepartment',
-    async ({ departmentId, departmentData }, { rejectWithValue }) => {
+    async ({ departmentId, departmentName }, { rejectWithValue }) => {
         try {
-            const response = await axios.put(`${BASE_URL}/updateDepartment/${departmentId}`, departmentData);
+            console.log({deptId: departmentId, departmentName})
+            const response = await axios.put(`${BASE_URL}/updateDepartment/`, {deptId: departmentId, departmentName});
             return response.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || 'Failed to update department');

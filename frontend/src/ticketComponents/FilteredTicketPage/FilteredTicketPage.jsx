@@ -230,7 +230,7 @@ function FilteredTicketPage() {
   useEffect(() => {
     setSelectedRole(currentRole)
 
-    return () => {} // Clean up on component unmount
+    return () => { } // Clean up on component unmount
   }, [currentRole])
 
   useEffect(() => {
@@ -250,16 +250,16 @@ function FilteredTicketPage() {
         if (currentRole?.designation === 'Assignee') {
           ft = tickets.filter(
             (ticket) =>
-              new Date(ticket.ticket_created_at) < new Date() &&
+              new Date(ticket.ticket_created_at) < new Date(new Date().setDate(new Date().getDate() - 7)) &&
               ticket.status !== 'close' &&
               ticket.assignee === user.name
-          )
+          );
         } else {
           ft = tickets.filter(
             (ticket) =>
-              new Date(ticket.ticket_created_at) < new Date() &&
+              new Date(ticket.ticket_created_at) < new Date(new Date().setDate(new Date().getDate() - 7)) &&
               ticket.status !== 'close'
-          )
+          );
         }
         break
       case 'Due today':
@@ -472,7 +472,7 @@ function FilteredTicketPage() {
             ))}
           </ul>
         </div>
-              
+
       </div>
 
       {/* Search bar and Filter dropdown in the same row */}

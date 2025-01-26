@@ -17,15 +17,30 @@ import { useDispatch, useSelector } from 'react-redux'
 
 const ProjectForm = ({ inputValues, setInputValues, action }) => {
   const [isChanged, setIsChanged] = useState(false)
-  const dispatch = useDispatch()
-  const { projects: companyList } = useSelector((state) => state.projects)
-  // console.log({ initiallyIsChanged: isChanged })
   const handleChange = useCallback(
     (e) => {
       const { name, value } = e.target
+
       setInputValues((prevValues) => ({
         ...prevValues,
         [name]: value,
+      }))
+
+      setIsChanged(true)
+    },
+    [setInputValues]
+  )
+
+  const handleProgressChange = useCallback(
+    (e) => {
+      const { name, value } = e.target
+
+      // Prevent non-numeric and out-of-range values
+      const numericValue = Math.min(100, Math.max(0, Number(value)))
+
+      setInputValues((prevValues) => ({
+        ...prevValues,
+        [name]: isNaN(numericValue) ? 0 : numericValue, // Default to 0 if input is invalid
       }))
       setIsChanged(true)
     },
@@ -92,7 +107,6 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
     },
   ]
 
-  console.log({ inputValues: inputValues })
   return (
     <>
       <h2>Project details</h2>
@@ -143,7 +157,6 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
               readOnly: true,
             }}
             value={inputValues.projectPOLink?.name}
-            required
           />
 
           <div className="uploadContainer">
@@ -177,7 +190,6 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
               sx: { borderRadius: 2 },
               readOnly: true,
             }}
-            required
             value={inputValues.projectDesignDocLink?.name}
           />
           <div className="uploadContainer">
@@ -227,12 +239,12 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
         <FormControl>
           <InputLabel id="status-label">Project status</InputLabel>
           <Select
+            required
             labelId="status-label"
             id="status"
             name="projectStatus"
             value={inputValues.projectStatus}
             onChange={handleChange}
-            required
             sx={{
               width: '150px',
               borderRadius: '1px solid #7D7D7D',
@@ -259,7 +271,7 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
         <TextField
           label="Progress(%)"
           variant="outlined"
-          type="Number"
+          type="number"
           sx={{
             width: '130px',
             borderRadius: '1px solid #7D7D7D',
@@ -273,16 +285,11 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
             },
           }}
           name="progress"
-          value={
-            inputValues.progress < 0
-              ? 0
-              : inputValues.progress >= 100
-              ? 100
-              : inputValues.progress
-          }
-          onChange={handleChange}
+          value={inputValues.progress}
+          onChange={handleProgressChange}
           required
         />
+
         {action == 'update' && isChanged && (
           <TextField
             label="Reason"

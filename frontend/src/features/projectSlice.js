@@ -7,11 +7,14 @@ export const addProject = createAsyncThunk(
     try {
       const response = await axios.post(
         'http://localhost:3000/api/projects',
+
         project,
+
         {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
+          withCredentials: true,
         }
       )
       return response.data.data
@@ -27,7 +30,8 @@ export const fetchHistoryProjects = createAsyncThunk(
   'projects/fetchHistoryProjects',
   async (pNo = '') => {
     const response = await axios.get(
-      `http://localhost:3000/api/historyProjects/${pNo}`
+      `http://localhost:3000/api/historyProjects/${pNo}`,
+      { withCredentials: true }
     )
     console.log(response)
     return response.data
@@ -37,7 +41,12 @@ export const fetchHistoryProjects = createAsyncThunk(
 export const fetchActiveProjects = createAsyncThunk(
   'projects/fetchActiveProjects',
   async () => {
-    const response = await axios.get('http://localhost:3000/api/activeProjects')
+    const response = await axios.get(
+      'http://localhost:3000/api/activeProjects',
+      {
+        withCredentials:true
+      }
+    )
     console.log(response)
     return response.data
   }
@@ -46,7 +55,9 @@ export const fetchActiveProjects = createAsyncThunk(
 export const fetchProjects = createAsyncThunk(
   'projects/fetchProjects',
   async () => {
-    const response = await axios.get(`http://localhost:3000/api/projects`)
+    const response = await axios.get(`http://localhost:3000/api/projects`, {
+      withCredentials: true,
+    })
     console.log(response)
     return response.data
   }
@@ -55,7 +66,12 @@ export const fetchProjects = createAsyncThunk(
 export const fetchProjectById = createAsyncThunk(
   'projects/fetchProjectById',
   async (id = '') => {
-    const response = await axios.get(`http://localhost:3000/api/projects/${id}`)
+    const response = await axios.get(
+      `http://localhost:3000/api/projects/${id}`,
+      {
+        withCredentials: true,
+      }
+    )
     console.log(response)
     return response.data
   }
@@ -72,6 +88,7 @@ export const updateProject = createAsyncThunk(
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        withCredentials: true,
       }
     )
     return response.data.data
@@ -82,7 +99,10 @@ export const deleteProject = createAsyncThunk(
   'projects/deleteProject',
   async (id = '') => {
     const response = await axios.delete(
-      `http://localhost:3000/api/projects/${id}`
+      `http://localhost:3000/api/projects/${id}`,
+      {
+        withCredentials: true,
+      }
     )
     return response.data.data
   }

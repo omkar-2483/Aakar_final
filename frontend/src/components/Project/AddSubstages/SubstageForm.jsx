@@ -15,11 +15,16 @@ const SubstageForm = ({
   employeeList,
 }) => {
   const [isChanged, setIsChanged] = useState(false)
+
   const handleChange = (e) => {
     const { name, value } = e.target
     const updatedValues = { ...inputValues, [name]: value }
 
-    if (name === 'startDate' || name === 'endDate') {
+    if (name === 'progress') {
+      // Constrain progress to be between 0 and 100
+      const numericValue = Math.min(100, Math.max(0, Number(value)))
+      updatedValues[name] = isNaN(numericValue) ? 0 : numericValue
+    } else if (name === 'startDate' || name === 'endDate') {
       const startDate = new Date(updatedValues.startDate)
       const endDate = new Date(updatedValues.endDate)
 
@@ -41,7 +46,6 @@ const SubstageForm = ({
     setInputValues(updatedValues)
     setIsChanged(true)
   }
-
   const handleDurationChange = (e) => {
     const { value } = e.target
     const durationInDays = parseInt(value, 10)
@@ -156,25 +160,6 @@ const SubstageForm = ({
           )}
         />
 
-        <TextField
-          label="Machine"
-          variant="outlined"
-          sx={{
-            width: '200px',
-            '& .MuiOutlinedInput-root': {
-              height: '50px',
-            },
-            '& .MuiFormLabel-root': {
-              height: '50px',
-              lineHeight: '50px',
-              top: '-15px',
-            },
-          }}
-          name="machine"
-          value={inputValues.machine}
-          onChange={handleChange}
-        />
-
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Start Date"
@@ -212,7 +197,24 @@ const SubstageForm = ({
             required
           />
         </LocalizationProvider>
-
+        <TextField
+          label="Machine"
+          variant="outlined"
+          sx={{
+            width: '200px',
+            '& .MuiOutlinedInput-root': {
+              height: '50px',
+            },
+            '& .MuiFormLabel-root': {
+              height: '50px',
+              lineHeight: '50px',
+              top: '-15px',
+            },
+          }}
+          name="machine"
+          value={inputValues.machine}
+          onChange={handleChange}
+        />
         <TextField
           label="Duration(Hrs)"
           variant="outlined"
@@ -235,7 +237,7 @@ const SubstageForm = ({
         <TextField
           label="Progress(%)"
           variant="outlined"
-          type="Number"
+          type="number"
           sx={{
             width: '130px',
             borderRadius: '1px solid #7D7D7D',
