@@ -31,24 +31,23 @@ export const addEmployee = createAsyncThunk(
 )
 
 export const updateEmployee = createAsyncThunk(
-    'employees/updateEmployee',
-    async ({ employeeId, payload }) => {
-        try {
-            const response = await axios.put(
-                `http://localhost:3000/api/v1/employee/${employeeId}/with-relations`,
-                payload // Pass the entire payload object as required by the API
-            );
-            return response.data;
-        } catch (error) {
-            console.error('Error updating employee:', error);
-            throw new Error(
-                error.response?.data?.message ||
-                'An error occurred while updating the employee.'
-            );
-        }
+  'employees/updateEmployee',
+  async ({ employeeId, payload }) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/v1/employee/${employeeId}/with-relations`,
+        payload // Pass the entire payload object as required by the API
+      )
+      return response.data
+    } catch (error) {
+      console.error('Error updating employee:', error)
+      throw new Error(
+        error.response?.data?.message ||
+          'An error occurred while updating the employee.'
+      )
     }
-);
-
+  }
+)
 
 export const deleteEmployee = createAsyncThunk(
   'employees/deleteEmployee',

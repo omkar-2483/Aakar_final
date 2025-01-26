@@ -30,7 +30,7 @@ const AddStage = ({
         endDate: '',
         owner: '',
         machine: '',
-        duration: 0,
+        duration: '',
         seqPrevStage:
           stages.length > 0
             ? name == 'substage'
@@ -39,7 +39,7 @@ const AddStage = ({
             : null,
         createdBy: user.employeeId,
         updateReason: '',
-        progress: 0,
+        progress: '',
       },
     ])
     console.log({ stages: stages })

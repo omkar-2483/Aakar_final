@@ -15,7 +15,10 @@ export const addSubStage = createAsyncThunk(
   async (stage) => {
     const response = await axios.post(
       'http://localhost:3000/api/subStages',
-      stage
+      stage,
+      {
+        withCredentials: true,
+      }
     )
     return response.data.data
   }
@@ -27,7 +30,10 @@ export const updateSubStage = createAsyncThunk(
     console.log(s)
     const response = await axios.put(
       `http://localhost:3000/api/subStages/${s.substageId}`,
-      s
+      s,
+      {
+        withCredentials: true,
+      }
     )
     return response.data.data
   }
@@ -37,7 +43,10 @@ export const getActiveSubStagesByStageId = createAsyncThunk(
   'stage/getActiveSubStagesByStageId',
   async (id = '') => {
     const response = await axios.get(
-      `http://localhost:3000/api/activeSubStages/${id}`
+      `http://localhost:3000/api/activeSubStages/${id}`,
+      {
+        withCredentials: true,
+      }
     )
     return response.data
   }
@@ -47,7 +56,10 @@ export const getHistorySubStagesBySubStageId = createAsyncThunk(
   'stage/getHistorySubStagesBySubStageId',
   async (id = '') => {
     const response = await axios.get(
-      `http://localhost:3000/api/historySubStages/${id}`
+      `http://localhost:3000/api/historySubStages/${id}`,
+      {
+        withCredentials: true,
+      }
     )
     return response.data
   }
@@ -57,7 +69,10 @@ export const getSubStagesByStageId = createAsyncThunk(
   'stage/getSubStagesByStageId',
   async (id = '') => {
     const response = await axios.get(
-      `http://localhost:3000/api/subStages/${id}`
+      `http://localhost:3000/api/subStages/${id}`,
+      {
+        withCredentials: true,
+      }
     )
     return response.data
   }
@@ -67,7 +82,10 @@ export const getSubStagesByProjectNumber = createAsyncThunk(
   'stage/getSubStagesByProjectNumber',
   async (id = '') => {
     const response = await axios.get(
-      `http://localhost:3000/api/project/subStages/${id}`
+      `http://localhost:3000/api/project/subStages/${id}`,
+      {
+        withCredentials: true,
+      }
     )
     return response.data
   }
@@ -78,7 +96,10 @@ export const deleteSubStage = createAsyncThunk(
   async (id = '') => {
     console.log(id)
     const response = await axios.delete(
-      `http://localhost:3000/api/subStages/${id}`
+      `http://localhost:3000/api/subStages/${id}`,
+      {
+        withCredentials: true,
+      }
     )
     console.log(response)
     return response.data.data

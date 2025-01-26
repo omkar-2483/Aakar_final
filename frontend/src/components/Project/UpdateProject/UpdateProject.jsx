@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, act } from 'react'
 import './../AddProject/AddProject.css'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -55,7 +55,6 @@ const UpdateProject = () => {
     projectPOLink: '',
     progress: 0,
     projectDesignDocLink: '',
-    projectCreatedBy: user.employeeId,
     updateReason: '',
   })
 
@@ -108,13 +107,14 @@ const UpdateProject = () => {
         activeStages.map((s) => ({
           ...s,
           owner: `${s.owner}(${s.ownerId})`,
-          createdBy: user.employeeId,
         }))
       )
       setOriginalStages(activeStages.map((s) => ({ ...s })))
     }
   }, [activeStages])
   console.log({ updateInputValuesBefore: inputValues })
+  console.log({ originalStages: originalStages })
+  console.log({ activeStages: activeStages })
 
   const handleSave = (e) => {
     e.preventDefault()
@@ -131,10 +131,18 @@ const UpdateProject = () => {
       const originalStage = originalStages[index]
       if (s && originalStage) {
         if (hasChanges(s, originalStage)) {
-          dispatch(updateStage({ ...s, projectNumber: pNo }))
+          dispatch(
+            updateStage({
+              ...s,
+              projectNumber: pNo,
+              createdBy: user.employeeId,
+            })
+          )
         }
       } else if (s && !originalStage) {
-        dispatch(addStage({ ...s, projectNumber: pNo }))
+        dispatch(
+          addStage({ ...s, projectNumber: pNo, createdBy: user.employeeId })
+        )
       }
     })
     dispatch(
