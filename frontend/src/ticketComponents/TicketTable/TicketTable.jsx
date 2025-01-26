@@ -344,11 +344,11 @@ const TicketTable = ({
                           displayEmpty
                           inputProps={{ 'aria-label': 'Status' }}
                         >
-                          {(user.permissions.charAt(5) ==='1' && <MenuItem value="open">Open</MenuItem>) || ((row.status === "open") && <MenuItem value="open">Open</MenuItem>)}
-                          {(user.permissions.charAt(5) ==='1' && <MenuItem value="close">Closed</MenuItem>) || ((row.status === "close") && <MenuItem value="close">Closed</MenuItem>)}
-                          {(user.permissions.charAt(5) ==='1' && <MenuItem value="hold">Hold</MenuItem>) || ((row.status === "hold") && <MenuItem value="hold">Hold</MenuItem>)}
-                          {(user.permissions.charAt(5) ==='1' && <MenuItem value="pending">Pending</MenuItem>) || ((row.status === "pending") && <MenuItem value="pending">Pending</MenuItem>)}
-                          {user.permissions.charAt(8) ==='1' && row.status === 'close' && new Date() - new Date(row.last_status_updated_at) < 3 * 24 * 60 * 60 * 1000 && <MenuItem value="reopened">Reopened</MenuItem> }
+                          {(user.permissions.charAt(5) === '1' && <MenuItem value="open">Open</MenuItem>) || ((row.status === "open") && <MenuItem value="open">Open</MenuItem>)}
+                          {(user.permissions.charAt(5) === '1' && <MenuItem value="close">Closed</MenuItem>) || ((row.status === "close") && <MenuItem value="close">Closed</MenuItem>)}
+                          {(user.permissions.charAt(5) === '1' && <MenuItem value="hold">Hold</MenuItem>) || ((row.status === "hold") && <MenuItem value="hold">Hold</MenuItem>)}
+                          {(user.permissions.charAt(5) === '1' && <MenuItem value="pending">Pending</MenuItem>) || ((row.status === "pending") && <MenuItem value="pending">Pending</MenuItem>)}
+                          {user.permissions.charAt(8) === '1' && row.status === 'close' && new Date() - new Date(row.last_status_updated_at) < 3 * 24 * 60 * 60 * 1000 && <MenuItem value="reopened">Reopened</MenuItem>}
                         </StyledSelect>
                       ) : (
                         <StatusChip status={row.status}>{row.status}</StatusChip>
@@ -361,7 +361,7 @@ const TicketTable = ({
                           <>
 
                             {/* Show the "Release Ticket" button if the current role is "Assignee" and the ticket has an assignee */}
-                            {(currentRole.designation ==='Assignee' && (
+                            {(user.permissions.charAt(7) === '1' && (
                               <Button
                                 variant="outlined"
                                 color="secondary"
@@ -378,14 +378,14 @@ const TicketTable = ({
                               inputProps={{ 'aria-label': 'Assignee' }}
                             >
                                 {assigneeOptionsState.map((option, index) => (
-                                  (user.permissions.charAt(6)==='1' && <MenuItem key={index} value={option.name}>{option.name}</MenuItem>) ||
+                                  (user.permissions.charAt(6) === '1' && <MenuItem key={index} value={option.name}>{option.name}</MenuItem>) ||
                                   (row.assignee === option.name && <MenuItem key={index} value={option.name}>{option.name}</MenuItem>)
                                 ))}
                               </StyledSelect>}
                           </>
                         ) : (
                           // If there is no assignee and the current role is 'Assignee', show the "Get Assigned" button
-                          user.permissions.charAt(7)==='1' ? (
+                          user.permissions.charAt(7) === '1' ? (
                             <Button
                               variant="outlined"
                               color="primary"
@@ -403,7 +403,7 @@ const TicketTable = ({
                               inputProps={{ 'aria-label': 'Assignee' }}
                             >
                               {assigneeOptionsState.map((option, index) => (
-                                (user.permissions.charAt(6)==='1' && <MenuItem key={index} value={option.name}>{option.name}</MenuItem>) ||
+                                (user.permissions.charAt(6) === '1' && <MenuItem key={index} value={option.name}>{option.name}</MenuItem>) ||
                                 (row.assignee === option.name && <MenuItem key={index} value={option.name}>{option.name}</MenuItem>)
                               ))}
                             </StyledSelect>
@@ -414,7 +414,7 @@ const TicketTable = ({
                         row.assignee ? (
                           row.assignee // Display the assignee's name
                         ) : (
-                          user.permissions.charAt(7)==='1' && (
+                          user.permissions.charAt(7) === '1' && (
                             <Button
                               variant="outlined"
                               color="primary"

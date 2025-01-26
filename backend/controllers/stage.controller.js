@@ -338,7 +338,7 @@ export const deleteStage = asyncHandler(async (req, res) => {
       .promise()
       .query(updateSubsequentStagesQuery, [prevStageId, stageId])
 
-    console.log(`Updated ${updateResult.affectedRows} subsequent stages`)
+    // console.log(`Updated ${updateResult.affectedRows} subsequent stages`)
 
     // Delete the stage
     const deleteStageQuery = 'DELETE FROM stage WHERE stageId = ?' //OR historyOf=?
@@ -413,7 +413,7 @@ export const updateStage = asyncHandler(async (req, res) => {
       const checkOwnerQuery = `SELECT employeeId FROM employee WHERE customEmployeeId = ?`
       db.query(checkOwnerQuery, [customEmployeeId], (err, result) => {
         if (err) {
-          console.log('Error checking owner:', err)
+          // console.log('Error checking owner:', err)
           return res
             .status(500)
             .json(new ApiResponse(500, null, 'Error checking owner'))

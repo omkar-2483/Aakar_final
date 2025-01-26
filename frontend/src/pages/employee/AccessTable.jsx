@@ -52,15 +52,23 @@ const AccessTable = ({ access, setAccess }) => {
 
             if (active) {
                 const subOptionsArray = [];
-                for (let i = 0; i < subOptions[module].length; i++) {
-                    const startIndex = i * 4;
-                    const subOptionBits = subOptionsBits.slice(startIndex, startIndex + 4);
-                    subOptionsArray.push({
-                        Add: subOptionBits[0] === '1',
-                        Read: subOptionBits[1] === '1',
-                        Update: subOptionBits[2] === '1',
-                        Delete: subOptionBits[3] === '1',
-                    });
+                if (module === 'TicketTracking') {
+                    // Single checkbox logic for Ticket Tracking
+                    for (let i = 0; i < subOptions[module].length; i++) {
+                        subOptionsArray.push({ All: subOptionsBits[i] === '1' });
+                    }
+                } else {
+                    // HR Management and others with Add, Read, Update, Delete
+                    for (let i = 0; i < subOptions[module].length; i++) {
+                        const startIndex = i * 4;
+                        const subOptionBits = subOptionsBits.slice(startIndex, startIndex + 4);
+                        subOptionsArray.push({
+                            Add: subOptionBits[0] === '1',
+                            Read: subOptionBits[1] === '1',
+                            Update: subOptionBits[2] === '1',
+                            Delete: subOptionBits[3] === '1',
+                        });
+                    }
                 }
                 parsedState[module].subOptions = subOptionsArray;
             }
@@ -82,7 +90,11 @@ const AccessTable = ({ access, setAccess }) => {
                 ...prevState[module],
                 active: !prevState[module].active,
                 subOptions: !prevState[module].active
-                    ? Array(subOptions[module].length).fill({ Add: false, Read: false, Update: false, Delete: false })
+                    ? Array(subOptions[module].length).fill(
+                        module === 'TicketTracking'
+                            ? { All: false }
+                            : { Add: false, Read: false, Update: false, Delete: false }
+                    )
                     : [],
             },
         }));
@@ -91,10 +103,16 @@ const AccessTable = ({ access, setAccess }) => {
     const handleCheckboxChange = (module, subOptionIndex, action) => {
         setModuleState((prevState) => {
             const updatedSubOptions = [...prevState[module].subOptions];
-            updatedSubOptions[subOptionIndex] = {
-                ...updatedSubOptions[subOptionIndex],
-                [action]: !updatedSubOptions[subOptionIndex][action],
-            };
+            if (module === 'TicketTracking') {
+                updatedSubOptions[subOptionIndex] = {
+                    All: !updatedSubOptions[subOptionIndex].All,
+                };
+            } else {
+                updatedSubOptions[subOptionIndex] = {
+                    ...updatedSubOptions[subOptionIndex],
+                    [action]: !updatedSubOptions[subOptionIndex][action],
+                };
+            }
 
             return {
                 ...prevState,
@@ -113,11 +131,17 @@ const AccessTable = ({ access, setAccess }) => {
                 if (!active) return '0'.repeat(52);
 
                 const bits = ['1'];
-                subOptions.forEach((subOption) => {
-                    ['Add', 'Read', 'Update', 'Delete'].forEach((action) => {
-                        bits.push(subOption[action] ? '1' : '0');
+                if (module === 'TicketTracking') {
+                    subOptions.forEach((subOption) => {
+                        bits.push(subOption.All ? '1' : '0');
                     });
-                });
+                } else {
+                    subOptions.forEach((subOption) => {
+                        ['Add', 'Read', 'Update', 'Delete'].forEach((action) => {
+                            bits.push(subOption[action] ? '1' : '0');
+                        });
+                    });
+                }
                 return bits.join('').padEnd(52, '0');
             });
 
@@ -128,7 +152,6 @@ const AccessTable = ({ access, setAccess }) => {
         setAccess(newAccessString); // Update the access string in parent state
         console.log('Updated Access String:', newAccessString); // Log the access string
     }, [moduleState, setAccess]);
-
 
     return (
         <div className="add-employee-details my-1 bg-white rounded">
@@ -170,10 +193,13 @@ const AccessTable = ({ access, setAccess }) => {
                                     <TableHead>
                                         <TableRow>
                                             <TableCell>Options</TableCell>
-                                            <TableCell align="center">Add</TableCell>
-                                            <TableCell align="center">Read</TableCell>
-                                            <TableCell align="center">Update</TableCell>
-                                            <TableCell align="center">Delete</TableCell>
+                                            {module === 'TicketTracking' ? (
+                                                <TableCell align="center">Enable</TableCell>
+                                            ) : (
+                                                ['Add', 'Read', 'Update', 'Delete'].map((action) => (
+                                                    <TableCell key={action} align="center">{action}</TableCell>
+                                                ))
+                                            )}
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -182,18 +208,31 @@ const AccessTable = ({ access, setAccess }) => {
                                                 <TableCell component="th" scope="row">
                                                     {subOption}
                                                 </TableCell>
-                                                {['Add', 'Read', 'Update', 'Delete'].map((action) => (
-                                                    <TableCell key={action} align="center">
+                                                {module === 'TicketTracking' ? (
+                                                    <TableCell align="center">
                                                         <Checkbox
                                                             checked={
-                                                                moduleState[module].subOptions[index]?.[action] || false
+                                                                moduleState[module].subOptions[index]?.All || false
                                                             }
                                                             onChange={() =>
-                                                                handleCheckboxChange(module, index, action)
+                                                                handleCheckboxChange(module, index, 'All')
                                                             }
                                                         />
                                                     </TableCell>
-                                                ))}
+                                                ) : (
+                                                    ['Add', 'Read', 'Update', 'Delete'].map((action) => (
+                                                        <TableCell key={action} align="center">
+                                                            <Checkbox
+                                                                checked={
+                                                                    moduleState[module].subOptions[index]?.[action] || false
+                                                                }
+                                                                onChange={() =>
+                                                                    handleCheckboxChange(module, index, action)
+                                                                }
+                                                            />
+                                                        </TableCell>
+                                                    ))
+                                                )}
                                             </TableRow>
                                         ))}
                                     </TableBody>

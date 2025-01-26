@@ -244,7 +244,7 @@ const TableComponent = ({
                     ? {
                         component: RowComponent,
                         to: `${linkBasePath}/${
-                          row.empId || row.deptId || row.projectId
+                          row.empId || row.deptId || row.projectId || row.designId
                         }`,
                         sx: {
                           cursor: 'pointer',

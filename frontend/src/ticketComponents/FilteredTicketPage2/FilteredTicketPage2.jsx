@@ -25,7 +25,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 function FilteredTicketPage() {
   const location = useLocation()
   const type = location.state?.ticketsType || '' // Only receive ticketsType from route location state
-
+  const AccessLevelValue = location.state?.AccessLevelValue || 4
   const [tickets, setTickets] = useState([]) // Local state for all fetched tickets
   const [ticketsType, setTicketsType] = useState(type)
   const [filteredTickets, setFilteredTickets] = useState([])
@@ -34,62 +34,39 @@ function FilteredTicketPage() {
   const [submittedQuery, setSubmittedQuery] = useState('')
 
   const { user, currentRole, updateCurrentRole } = useContext(UserContext)
-  const [selectedRole, setSelectedRole] = useState(() => {
-    // Default to "Executive" role if it exists in the user's roles
-    return currentRole || null
-  })
+
+  const [department, setDepartment] = useState(() => {
+
+    return location.state?.department || null;
+  });
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const handleRoleSelection = (role, updateCurrentRole) => {
-    updateCurrentRole(role)
-    setSelectedRole(role) // Set selected role
-  }
+
+  const handleDepartmentSelection = (department, setDepartment) => {
+    setDepartment(department);
+
+  };
+
 
   // Function to fetch tickets based on role and user info
-  const fetchTickets = async () => {
+  const fetchTickets = async (AccessLevelValue, department) => {
     try {
-      // let endpoint = "http://localhost:3000/tickets/tickets";
-      // let params = {};
-
-      // if (currentRole?.designation === "Executive") {
-      //   params = { employee_id: user.id };
-      // } else if (currentRole?.designation === "HOD") {
-      //   params = { department: currentRole.department };
-      // } else if (currentRole?.designation === "Admin") {
-      //   // No additional params needed for admin
-      // } else if (currentRole?.designation === "Assignee") {
-      //   if (type === "Unassigned") {
-      //     params = { department: currentRole.department };
-
-      //   } else {
-      //     params = { assignee: user.name };
-      //   }
-
-      // }
-
-      // const response = await axios.get(endpoint, { params });
-      // setTickets(response.data);
 
       let params = {}
 
-      if (currentRole?.designation === 'Executive') {
-        params = { employee_id: user.id, ticketsType: ticketsType }
-      } else if (currentRole?.designation === 'HOD') {
-        params = {
-          department: currentRole.department,
-          ticketsType: ticketsType,
-        }
-      } else if (currentRole?.designation === 'Admin') {
-        params = { ticketsType: ticketsType } // Add default for admin if required
-      } else if (currentRole?.designation === 'Assignee') {
-        params = {
-          assignee: user.name,
-          assigneeDepartment: currentRole.department,
-          ticketsType: ticketsType,
-        }
+      if (AccessLevelValue === 1) {
+        params = { employee_id: user.id };
+      } else if (AccessLevelValue === 2) {
+        params = { department: department };
+      } else if (AccessLevelValue === 3) {
+        params = { department: department };
+      } else if (5) {
+        params = { assignee: user.name };
       }
+      params.accessLevel = AccessLevelValue;
+      params.ticketsType = ticketsType;
 
-      let endpoint = 'http://localhost:3000/tickets/filteredTickets'
+      let endpoint = 'http://localhost:3000/tickets/filteredTickets2'
 
       // Debugging
       console.log('Sending request to:', endpoint)
@@ -227,17 +204,13 @@ function FilteredTicketPage() {
     return filteredList
   }
 
-  useEffect(() => {
-    setSelectedRole(currentRole)
 
-    return () => {} // Clean up on component unmount
-  }, [currentRole])
 
   useEffect(() => {
     if (currentRole && user) {
-      fetchTickets() // Fetch tickets on component mount or role/user change
+      fetchTickets(AccessLevelValue, department) // Fetch tickets on component mount or role/user change
     }
-  }, [currentRole, user])
+  }, [currentRole, user, ticketsType, department])
 
   useEffect(() => {
     // Log the tickets state whenever it changes for debugging
@@ -250,16 +223,16 @@ function FilteredTicketPage() {
         if (currentRole?.designation === 'Assignee') {
           ft = tickets.filter(
             (ticket) =>
-              new Date(ticket.ticket_created_at) < new Date() &&
+              new Date(ticket.ticket_created_at) < new Date(new Date().setDate(new Date().getDate() - 7)) &&
               ticket.status !== 'close' &&
               ticket.assignee === user.name
-          )
+          );
         } else {
           ft = tickets.filter(
             (ticket) =>
-              new Date(ticket.ticket_created_at) < new Date() &&
+              new Date(ticket.ticket_created_at) < new Date(new Date().setDate(new Date().getDate() - 7)) &&
               ticket.status !== 'close'
-          )
+          );
         }
         break
       case 'Due today':
@@ -455,24 +428,23 @@ function FilteredTicketPage() {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            {(selectedRole?.designation ?? 'Select') +
-              ' ' +
-              (selectedRole?.department ?? 'Role')}
+            {(department ?? "Select Departmet")}
+
           </button>
           <ul className="dropdown-menu">
             {user?.roles?.map((role, index) => (
               <li key={index}>
                 <button
                   className="dropdown-item"
-                  onClick={() => handleRoleSelection(role, updateCurrentRole)}
+                  onClick={() => handleDepartmentSelection(role.department, setDepartment)}
                 >
-                  {role.designation + '-' + role.department}
+                  {role.department}
                 </button>
               </li>
             ))}
           </ul>
         </div>
-              
+
       </div>
 
       {/* Search bar and Filter dropdown in the same row */}

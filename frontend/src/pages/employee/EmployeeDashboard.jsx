@@ -11,7 +11,7 @@ const EmployeeList = () => {
     const navigate = useNavigate();
     const {employees, loading, error} = useSelector((state) => state.employee);
 
-    const access = useSelector((state) =>  state?.auth?.user?.employeeAccess).split(',')
+    const access = useSelector((state) => state?.auth?.user?.employeeAccess).split(',')
     const HRManagementAccess = access[0];
     console.log(HRManagementAccess);
     const [rows, setRows] = useState([]);
@@ -71,12 +71,14 @@ const EmployeeList = () => {
                         className={'selected'}
                     />
                 </div>
-                {HRManagementAccess[1] === '1' && <button
-                    className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3 hover:cursor-pointer"
-                    onClick={() => navigate('/employee/addEmployee')}>
-                    <FiPlusCircle style={{marginRight: '10px', width: '25px', height: '25px'}}/>
-                    Add employee
-                </button>}
+                {
+                    HRManagementAccess[1] === '1' && <button
+                        className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3 hover:cursor-pointer"
+                        onClick={() => navigate('/employee/addEmployee')}>
+                        <FiPlusCircle style={{marginRight: '10px', width: '25px', height: '25px'}}/>
+                        Add employee
+                    </button>
+                }
             </div>
 
             <div className='employee-list-container'>

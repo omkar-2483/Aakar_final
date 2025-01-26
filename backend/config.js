@@ -8,8 +8,8 @@ const pool = mysql
   .createPool({
     host: '127.0.0.1',
     user: 'root',
-    password: '',
-    database: 'aakarerp',
+    password: 'Ashutosh@2003',
+    database: 'commondb1',
   })
   .promise()
 

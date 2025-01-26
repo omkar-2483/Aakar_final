@@ -24,6 +24,8 @@ const DesignationDashboard = () => {
     // Access working departments from Redux state
     const { designations } = useSelector(state => state.designation);
 
+    console.log(designations)
+
     // Populate rows from working departments
     const rows = designations.map((designation) => ({
         designId: designation.designationId,
@@ -48,14 +50,16 @@ const DesignationDashboard = () => {
                 {
                     HRManagementAccess[9] &&
                     <button
-                        className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3 hover:cursor-pointer">
+                        className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3 hover:cursor-pointer"
+                        onClick={() => navigate('/designations/addDesignation')}>
                         <FiPlusCircle style={{marginRight: '10px', width: '25px', height: '25px'}}/>
                         Add designation
                     </button>
                 }
             </div>
 
-            <TableComponent rows={rows} columns={columns} linkBasePath={`/designation`} itemLabel={'Designations'} searchLabel={'Search by designation name'} defaultSortOrder={'oldest'}/>
+            <TableComponent rows={rows} columns={columns} linkBasePath={`/designation`} itemLabel={'Designations'}
+                            searchLabel={'Search by designation name'} defaultSortOrder={'oldest'}/>
         </div>
     );
 };
