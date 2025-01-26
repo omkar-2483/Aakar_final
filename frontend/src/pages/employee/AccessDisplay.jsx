@@ -11,13 +11,14 @@ import {
     TableHead,
     TableRow,
     Typography,
+    Switch,
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 const AccessDisplay = ({ accessString }) => {
     const subOptions = {
         HRManagement: ['Employee Management', 'Department Management', 'Designation Management'],
-        ProjectManagement: ['Project Management', 'Stage Management', "Substage Management"],
+        ProjectManagement: ['Project Management', 'Stage Management', 'Substage Management'],
         TrainingManagement: ['Employee Training', 'Course Management'],
         TicketTracking: [
             'View self created tickets',
@@ -37,30 +38,30 @@ const AccessDisplay = ({ accessString }) => {
 
         Object.keys(subOptions).forEach((module, index) => {
             const group = groups[index];
+            if (!group) return;
+
             const active = group[0] === '1'; // First bit indicates module active state
 
-            if (!active) {
-                // If the module is inactive, skip it entirely
-                return;
-            }
+            if (!active) return;
 
-            const subOptionStates = group.slice(1).match(/.{1,4}/g); // Group bits by 4 (Add, Read, Update, Delete)
-            const parsedSubOptions = subOptionStates?.map((state, i) => ({
-                name: subOptions[module][i],
-                Add: state[0] === '1',
-                Read: state[1] === '1',
-                Update: state[2] === '1',
-                Delete: state[3] === '1',
-            }));
+            const isTicketModule = module === 'TicketTracking';
+            const parsedSubOptions = isTicketModule
+                ? subOptions[module].map((option, i) => ({
+                    name: option,
+                    Enable: group[i + 1] === '1', // Enable flag for each ticket option
+                }))
+                : subOptions[module].map((option, i) => {
+                    const operationBits = group.slice(i * 4 + 1, i * 4 + 5); // Extract Add, Read, Update, Delete flags
+                    return {
+                        name: option,
+                        Add: operationBits[0] === '1',
+                        Read: operationBits[1] === '1',
+                        Update: operationBits[2] === '1',
+                        Delete: operationBits[3] === '1',
+                    };
+                });
 
-            // Filter sub-options to only include active ones
-            const filteredSubOptions = parsedSubOptions?.filter(
-                (option) => option.Add || option.Read || option.Update || option.Delete
-            );
-
-            if (filteredSubOptions && filteredSubOptions.length > 0) {
-                result[module] = { active, subOptions: filteredSubOptions };
-            }
+            result[module] = { active, subOptions: parsedSubOptions };
         });
 
         return result;
@@ -70,7 +71,14 @@ const AccessDisplay = ({ accessString }) => {
 
     const [collapsedModules, setCollapsedModules] = useState(
         Object.keys(parsedAccess).reduce((acc, module) => {
-            acc[module] = true; // Initially all modules are expanded
+            acc[module] = true;
+            return acc;
+        }, {})
+    );
+
+    const [moduleToggles, setModuleToggles] = useState(
+        Object.keys(parsedAccess).reduce((acc, module) => {
+            acc[module] = parsedAccess[module].active;
             return acc;
         }, {})
     );
@@ -82,43 +90,64 @@ const AccessDisplay = ({ accessString }) => {
         }));
     };
 
-    return (
-        <Box sx={{ maxWidth: 700, marginTop: '20px' }}>
-            <h3 style={{fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold"}}>
-                Access Details
-            </h3>
+    const handleToggleChange = (module) => {
+        setModuleToggles((prevState) => ({
+            ...prevState,
+            [module]: !prevState[module],
+        }));
+    };
 
-            {Object.entries(parsedAccess).map(([module, {active, subOptions}]) => (
-                <Box key={module} sx={{marginBottom: '20px'}}>
-                <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-                        <Typography
-                            sx={{ fontWeight: 'semibold', flexGrow: 1, fontSize: "17px", color: active ? 'black' : 'gray' }}
-                        >
+    return (
+        <Box sx={{ maxWidth: 800, marginTop: '20px' }}>
+            {Object.entries(parsedAccess).map(([module, { subOptions }]) => (
+                <Box key={module} sx={{ marginBottom: '20px' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: '10px',
+                        }}
+                    >
+                        <Typography sx={{ fontWeight: 'bold', fontSize: '16px' }}>
                             {module.replace(/([A-Z])/g, ' $1').trim()}
                         </Typography>
-                        <IconButton onClick={() => toggleCollapse(module)}>
+                        <IconButton onClick={() => handleToggleChange(module)}>
                             {collapsedModules[module] ? <ExpandLess /> : <ExpandMore />}
                         </IconButton>
                     </Box>
 
-                    <Collapse in={collapsedModules[module]}>
-                        {active && (
-                            <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid #c4c4c4' }}>
-                                <Table>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>Options</TableCell>
-                                            <TableCell align="center">Add</TableCell>
-                                            <TableCell align="center">Read</TableCell>
-                                            <TableCell align="center">Update</TableCell>
-                                            <TableCell align="center">Delete</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {subOptions.map((subOption) => (
-                                            <TableRow key={subOption.name}>
-                                                <TableCell>{subOption.name}</TableCell>
-                                                {['Add', 'Read', 'Update', 'Delete'].map((action) => (
+                    <Collapse in={collapsedModules[module] && moduleToggles[module]}>
+                        <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid #c4c4c4' }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Options</TableCell>
+                                        {module === 'TicketTracking' ? (
+                                            <TableCell align="center">Enable</TableCell>
+                                        ) : (
+                                            <>
+                                                <TableCell align="center">Add</TableCell>
+                                                <TableCell align="center">Read</TableCell>
+                                                <TableCell align="center">Update</TableCell>
+                                                <TableCell align="center">Delete</TableCell>
+                                            </>
+                                        )}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {subOptions.map((subOption) => (
+                                        <TableRow key={subOption.name}>
+                                            <TableCell>{subOption.name}</TableCell>
+                                            {module === 'TicketTracking' ? (
+                                                <TableCell
+                                                    align="center"
+                                                    sx={{ color: subOption.Enable ? 'green' : 'gray' }}
+                                                >
+                                                    {subOption.Enable ? '✔' : '✘'}
+                                                </TableCell>
+                                            ) : (
+                                                ['Add', 'Read', 'Update', 'Delete'].map((action) => (
                                                     <TableCell
                                                         key={action}
                                                         align="center"
@@ -126,13 +155,13 @@ const AccessDisplay = ({ accessString }) => {
                                                     >
                                                         {subOption[action] ? '✔' : '✘'}
                                                     </TableCell>
-                                                ))}
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        )}
+                                                ))
+                                            )}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     </Collapse>
                 </Box>
             ))}
