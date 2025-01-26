@@ -156,25 +156,6 @@ const SubstageForm = ({
           )}
         />
 
-        <TextField
-          label="Machine"
-          variant="outlined"
-          sx={{
-            width: '200px',
-            '& .MuiOutlinedInput-root': {
-              height: '50px',
-            },
-            '& .MuiFormLabel-root': {
-              height: '50px',
-              lineHeight: '50px',
-              top: '-15px',
-            },
-          }}
-          name="machine"
-          value={inputValues.machine}
-          onChange={handleChange}
-        />
-
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Start Date"
@@ -212,7 +193,24 @@ const SubstageForm = ({
             required
           />
         </LocalizationProvider>
-
+        <TextField
+          label="Machine"
+          variant="outlined"
+          sx={{
+            width: '200px',
+            '& .MuiOutlinedInput-root': {
+              height: '50px',
+            },
+            '& .MuiFormLabel-root': {
+              height: '50px',
+              lineHeight: '50px',
+              top: '-15px',
+            },
+          }}
+          name="machine"
+          value={inputValues.machine}
+          onChange={handleChange}
+        />
         <TextField
           label="Duration(Hrs)"
           variant="outlined"

@@ -92,9 +92,9 @@ const AddSubStage = () => {
     endDate: '',
     owner: '',
     machine: '',
-    duration: '',
+    duration: 0,
     updateReason: '',
-    progress: '',
+    progress: 0,
     seqPrevStage:
       activeStages.length > 0
         ? activeStages[activeStages.length - 1].stageId

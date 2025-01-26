@@ -162,25 +162,7 @@ const StageComponent = ({
             />
           )}
         />
-        <TextField
-          label="Machine"
-          variant="outlined"
-          name="machine"
-          value={stage.machine}
-          onChange={handleChange}
-          sx={{
-            width: '150px',
-            borderRadius: '1px solid #7D7D7D',
-            '& .MuiOutlinedInput-root': {
-              height: '50px',
-            },
-            '& .MuiFormLabel-root': {
-              height: '50px',
-              lineHeight: '50px',
-              top: '-15px',
-            },
-          }}
-        />
+
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Start date"
@@ -255,6 +237,25 @@ const StageComponent = ({
             }}
           />
         </LocalizationProvider>
+        <TextField
+          label="Machine"
+          variant="outlined"
+          name="machine"
+          value={stage.machine}
+          onChange={handleChange}
+          sx={{
+            width: '150px',
+            borderRadius: '1px solid #7D7D7D',
+            '& .MuiOutlinedInput-root': {
+              height: '50px',
+            },
+            '& .MuiFormLabel-root': {
+              height: '50px',
+              lineHeight: '50px',
+              top: '-15px',
+            },
+          }}
+        />
         <TextField
           type="number"
           label="Duration(Hrs)"

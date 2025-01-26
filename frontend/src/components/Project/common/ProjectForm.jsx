@@ -143,7 +143,6 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
               readOnly: true,
             }}
             value={inputValues.projectPOLink?.name}
-            required
           />
 
           <div className="uploadContainer">
@@ -177,7 +176,6 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
               sx: { borderRadius: 2 },
               readOnly: true,
             }}
-            required
             value={inputValues.projectDesignDocLink?.name}
           />
           <div className="uploadContainer">
@@ -227,12 +225,12 @@ const ProjectForm = ({ inputValues, setInputValues, action }) => {
         <FormControl>
           <InputLabel id="status-label">Project status</InputLabel>
           <Select
+            required
             labelId="status-label"
             id="status"
             name="projectStatus"
             value={inputValues.projectStatus}
             onChange={handleChange}
-            required
             sx={{
               width: '150px',
               borderRadius: '1px solid #7D7D7D',

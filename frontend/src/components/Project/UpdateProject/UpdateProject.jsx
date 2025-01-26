@@ -53,7 +53,7 @@ const UpdateProject = () => {
     endDate: '',
     projectType: '',
     projectPOLink: '',
-    progress: '',
+    progress: 0,
     projectDesignDocLink: '',
     projectCreatedBy: user.employeeId,
     updateReason: '',
