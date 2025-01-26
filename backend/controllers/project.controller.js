@@ -126,7 +126,7 @@ export const getHistoricalProjects = asyncHandler(async (req, res) => {
 
 // Get project by ID
 export const getProjectById = asyncHandler(async (req, res) => {
-  // console.log(req.user)
+
   const projectNumber = req.params.id
   const query = 'SELECT * FROM project WHERE projectNumber = ?'
 

@@ -11,14 +11,13 @@ import {
   getCompanyList,
 } from '../controllers/project.controller.js'
 import { upload } from '../utils/multer.js'
-import { authMiddleware } from '../middleware/authMiddleware.js'
 const router = Router()
 
 router.get('/project/companyList', getCompanyList)
 router.get('/activeProjects',authMiddleware, getActiveProjects) //tested
 router.get('/historyProjects/:pNo', getHistoricalProjects) //tested
 router.get('/projects', getAllProjects) //tested
-router.get('/projects/:id', authMiddleware, getProjectById) //tested
+router.get('/projects/:id', getProjectById) //tested
 router.post(
   '/projects',
   upload.fields([

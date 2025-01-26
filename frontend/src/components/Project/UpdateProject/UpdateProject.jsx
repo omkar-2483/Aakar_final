@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, act } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import './../AddProject/AddProject.css'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -113,12 +113,11 @@ const UpdateProject = () => {
     }
   }, [activeStages])
   console.log({ updateInputValuesBefore: inputValues })
-  console.log({ originalStages: originalStages })
-  console.log({ activeStages: activeStages })
 
   const handleSave = (e) => {
     e.preventDefault()
     console.log({ updateInputValuesAfter: inputValues })
+    inputValues.updateReason
     const updateReason =
       stage
         .filter((s, index) => hasChanges(s, originalStages[index]))
@@ -131,18 +130,10 @@ const UpdateProject = () => {
       const originalStage = originalStages[index]
       if (s && originalStage) {
         if (hasChanges(s, originalStage)) {
-          dispatch(
-            updateStage({
-              ...s,
-              projectNumber: pNo,
-              createdBy: user.employeeId,
-            })
-          )
+          dispatch(updateStage({ ...s, projectNumber: pNo }))
         }
       } else if (s && !originalStage) {
-        dispatch(
-          addStage({ ...s, projectNumber: pNo, createdBy: user.employeeId })
-        )
+        dispatch(addStage({ ...s, projectNumber: pNo }))
       }
     })
     dispatch(
@@ -159,7 +150,9 @@ const UpdateProject = () => {
 
   const hasChanges = (stage, originalStage) => {
     if (!stage || !originalStage) return false // Ensure both are valid objects
-    return Object.keys(stage).some((key) => stage[key] !== originalStage[key])
+    return Object.keys(stage).some(
+      (key) => key !== 'createdBy' && stage[key] !== originalStage[key]
+    )
   }
 
   return (
