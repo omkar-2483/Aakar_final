@@ -458,10 +458,10 @@ export const deleteSubStage = asyncHandler(async (req, res) => {
       .query(updateSubsequentSubStagesQuery, [prevSubStageId, substageId])
 
     // Delete the substage
-    const deleteSubStageQuery = 'DELETE FROM substage WHERE substageId = ?'
+    const deleteSubStageQuery = 'DELETE FROM substage WHERE substageId = ? OR historyOf=?'
     const [deleteResult] = await db
       .promise()
-      .query(deleteSubStageQuery, [substageId])
+      .query(deleteSubStageQuery, [substageId, substageId])
 
     if (deleteResult.affectedRows === 0) {
       console.error(`Failed to delete substage with ID ${substageId}`)
